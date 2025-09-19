@@ -1,8 +1,9 @@
+// layout.tsx
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
-import Navbar from "../app/components/Navbar/Navbar"
+import { FilterProvider } from "@/context/FilterContext";
+import Navbar from "../app/components/Navbar/Navbar";
 
 export const metadata: Metadata = {
   title: "Amor Fati",
@@ -17,13 +18,13 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className={`w-screen h-screen flex flex-row font-inter`} >
-          <Navbar />
-          <main
-            className={`w-screen h-screen bg-BGpage`}
-        >
-          {children}
-          </main>
+        <body className={`w-screen h-screen flex flex-row font-inter`}>
+          <FilterProvider>
+            <Navbar />
+            <main className={`w-screen h-screen bg-BGpage`}>
+              {children}
+            </main>
+          </FilterProvider>
         </body>
       </html>
     </ClerkProvider>

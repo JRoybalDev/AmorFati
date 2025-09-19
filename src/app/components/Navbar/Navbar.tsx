@@ -24,8 +24,8 @@ function Navbar() {
 
       {/* Filter */}
       <div className="border-b-4 border-BGdivider py-4">
-        <h4>FILTER BY TYPE:</h4>
-        <ContentFilters />
+        <h4 className='text-h2 font-semibold'>FILTER BY TYPE:</h4>
+        <ContentFilters/>
       </div>
       {/* Links */}
       <div className="border-b-4 border-BGdivider py-4 flex flex-col gap-4">
