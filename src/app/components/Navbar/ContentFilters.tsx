@@ -1,7 +1,7 @@
 'use client'
 
 import { useFilter } from '@/context/FilterContext';
-import React, { useState } from 'react'
+import React from 'react'
 
 function ContentFilters() {
 
@@ -10,15 +10,17 @@ function ContentFilters() {
   const { filterSelection, setFilterSelection } = useFilter();
 
   return (
-    filterChoices.map((filter) => (
+    <div className='flex gap-1'>
+      {filterChoices.map((filter) => (
       <button
         onClick={() => setFilterSelection(filter)}
         key={filter}
-        className={``}
+          className={`w-1/3 border-2 rounded-lg ${filterSelection === filter ? 'bg-BGbuttonSelected ' : 'bg-BGbutton hover:bg-HOVERbutton'} hover:cursor-pointer duration-250`}
       >
         {filter}
       </button>
-    ))
+      ))}
+    </div>
   )
 }
 

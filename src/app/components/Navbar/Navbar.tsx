@@ -17,22 +17,30 @@ function Navbar() {
   return (
     <nav className='w-1/6 bg-BGnav px-4 py-6 text-white'>
       {/* Hero */}
-      <div className="border-b-4 border-BGdivider pb-4">
+      <div className="pb-4">
         <Link className="text-h1 font-semibold" href={"/"}>AMOR FATI</Link>
         <h3 className="text-h3 font-semibold">Tagline</h3>
       </div>
 
+      <div className='border-b-6 rounded-lg border-BGdivider'/>
+
       {/* Filter */}
-      <div className="border-b-4 border-BGdivider py-4">
+      <div className="py-4 flex flex-col gap-2">
         <h4 className='text-h2 font-semibold'>FILTER BY TYPE:</h4>
         <ContentFilters/>
       </div>
+
+      <div className='border-b-6 rounded-lg border-BGdivider'/>
+
       {/* Links */}
-      <div className="border-b-4 border-BGdivider py-4 flex flex-col gap-4">
+      <div className="py-4 flex flex-col gap-4">
         {navItems.map((item, idx) => (
-          <Link key={idx} className={`font-semibold text-h3 hover:text-HOVERlink duration-300`} href={item.link}>{item.title}</Link>
+          <Link key={idx} className={`font-semibold text-h3 hover:text-HOVERlink duration-250`} href={item.link}>{item.title}</Link>
         ))}
       </div>
+
+      <div className='border-b-6 rounded-lg border-BGdivider'/>
+
       {/* Copyright */}
       <div className='py-4 flex items-center gap-1 text-main'>
         <FaRegCopyright />
