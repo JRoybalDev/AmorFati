@@ -16,9 +16,13 @@
   --font-inter: "Inter", sans-serif;
 
   --text-h1: 24px;
-    --text-h2: 16px;
+  --text-h2: 16px;
     --text-h3: 14px;
     --text-h4: 12px;
     --text-main: 12px;
     --text-note: 12px;
+--text-h1Mob: 20px;
+  --text-h2Mob: 14px;
+  --text-h3Mob: 12px;
+  --text-h4Mob: 10px;
 }
