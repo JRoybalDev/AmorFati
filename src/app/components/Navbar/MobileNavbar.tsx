@@ -1,6 +1,5 @@
 'use client'
 
-import ContentFilters from '@/app/components/Navbar/ContentFilters';
 import Link from 'next/link';
 import { useState } from 'react';
 import { AiOutlineMenu } from 'react-icons/ai';
@@ -48,7 +47,7 @@ function MobileNavbar({ navItems }: NavItems) {
     <nav className='sticky top-0 bg-BGnav px-4 py-4 text-white w-screen z-50'>
       {/* Closed Nav (Header) */}
       <div className='flex justify-between items-center'>
-        <Link className="text-h1Mob font-semibold" href={"/"}>AMOR FATI</Link>
+        <Link className="text-h1Mob font-semibold" href={"/"} onClick={() => setOpen(false)}>AMOR FATI</Link>
         <AiOutlineMenu className='h-5 w-5 cursor-pointer' onClick={() => setOpen((prev) => !prev)} />
       </div>
 
