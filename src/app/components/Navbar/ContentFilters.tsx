@@ -10,12 +10,12 @@ function ContentFilters() {
   const { filterSelection, setFilterSelection } = useFilter();
 
   return (
-    <div className='flex gap-1'>
+    <div className='flex flex-col xl:flex-row gap-1'>
       {filterChoices.map((filter) => (
       <button
         onClick={() => setFilterSelection(filter)}
         key={filter}
-          className={`w-1/3 border-2 rounded-lg ${filterSelection === filter ? 'bg-BGbuttonSelected ' : 'bg-BGbutton hover:bg-HOVERbutton'} hover:cursor-pointer duration-250`}
+          className={`xl:w-1/3 border-2 rounded-lg ${filterSelection === filter ? 'bg-BGbuttonSelected ' : 'bg-BGbutton hover:bg-HOVERbutton'} hover:cursor-pointer duration-250`}
       >
         {filter}
       </button>
