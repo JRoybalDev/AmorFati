@@ -15,10 +15,10 @@ function Navbar() {
 
   return (
     <>
-      <div className='lg:flex hidden w-1/6'>
+      <div className='md:flex hidden w-3/12'>
         <DesktopNavbar navItems={navItems}/>
       </div>
-      <div className='lg:hidden w-screen'>
+      <div className='md:hidden w-screen'>
         <MobileNavbar navItems={navItems}/>
       </div>
     </>

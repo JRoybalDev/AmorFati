@@ -19,7 +19,7 @@ export default function RootLayout({
       <html lang="en">
         <body>
           <FilterProvider>
-            <div className={`w-screen h-screen flex flex-col lg:flex-row font-inter`}>
+            <div className={`w-screen h-screen flex flex-col md:flex-row font-inter`}>
               <Navbar />
               <main className={`w-full h-screen bg-BGpage`}>
                 {children}
