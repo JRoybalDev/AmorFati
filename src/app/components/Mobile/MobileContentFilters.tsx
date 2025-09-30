@@ -18,7 +18,7 @@ function MobileContentFilters() {
   return (
     <div className="w-full h-full">
       <div className="px-4 py-4">
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-center justify-between">
           <button
             type="button"
             aria-expanded={isOpen}
@@ -30,7 +30,7 @@ function MobileContentFilters() {
             <span>Filters</span>
           </button>
 
-          <div className="flex-1 min-w-0">
+          <div className="flex overflow-hidden">
             <AnimatePresence>
               {isOpen && (
                 <motion.div
@@ -42,7 +42,7 @@ function MobileContentFilters() {
                   transition={{ duration: 0.22, ease: [0.2, 0.8, 0.2, 1] }}
                   style={{ transformOrigin: 'right' }}
                 >
-                  <div className="flex gap-2 overflow-x-auto justify-end">
+                  <div className="flex gap-2 overflow-x-auto justify-end w-full h-full">
                     {filterChoices.map((choice) => {
                       const isActive = filterSelection === choice;
 
@@ -53,10 +53,10 @@ function MobileContentFilters() {
                             setFilterSelection(choice);
                             setIsOpen(false);
                           }}
-                          className={`flex-shrink-0 px-4 py-2 rounded-2xl font-semibold transition-colors duration-200 focus:outline-none ${isActive ? 'bg-slate-800 text-white' : 'bg-white text-slate-800 border border-slate-200'} text-h3Mob`}
+                          className={`flex-shrink-0 px-4 py-2 rounded-full font-semibold transition-colors duration-200 focus:outline-none ${isActive ? 'bg-BGbuttonSelected text-slate-100 border border-slate-100' : 'bg-white text-BGbutton border border-BGbutton'} text-h3Mob`}
                           aria-pressed={isActive}
                           whileTap={{ scale: 0.95 }}
-                          animate={{ scale: isActive ? 1.03 : 1 }}
+                          animate={{ scale: 1 }}
                           transition={{ type: 'spring', stiffness: 300, damping: 20 }}
                         >
                           {choice.toUpperCase()}
