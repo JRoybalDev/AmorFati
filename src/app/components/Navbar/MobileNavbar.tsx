@@ -44,7 +44,7 @@ function MobileNavbar({ navItems }: NavItems) {
   const [isOpen, setOpen] = useState(false);
 
   return (
-    <nav className='sticky top-0 bg-BGnav px-4 py-4 text-white w-screen z-50'>
+    <nav className='sticky top-0 bg-BGnav px-4 py-4 text-TEXTmain w-screen z-50'>
       {/* Closed Nav (Header) */}
       <div className='flex justify-between items-center'>
         <Link className="text-h1Mob font-semibold" href={"/"} onClick={() => setOpen(false)}>AMOR FATI</Link>

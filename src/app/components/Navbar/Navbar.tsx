@@ -2,7 +2,7 @@ import DesktopNavbar from './DesktopNavbar';
 import MobileNavbar from './MobileNavbar';
 
 async function Navbar() {
-  
+
   const navItems = [
     { title: "Dear Diary", link: "/dear-diary" },
     { title: "Sweet Disposition", link: "/sweet-disposition" },

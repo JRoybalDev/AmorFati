@@ -17,7 +17,7 @@ type NavItems = {
 function DesktopNavbar({ navItems }: NavItems) {
 
   return (
-    <nav className='bg-BGnav px-4 py-6 text-white w-full'>
+    <nav className='bg-BGnav px-4 py-6 text-TEXTmain w-full'>
       {/* Hero */}
       <div className="pb-4">
         <Link className="text-h1 font-semibold" href={"/"}>AMOR FATI</Link>
