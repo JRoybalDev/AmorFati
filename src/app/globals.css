@@ -3,15 +3,17 @@
 @plugin "daisyui";
 
 @theme {
-  --color-BGnav: #A67DC2;
-  --color-BGdivider: #9D76B8;
-  --color-BGbutton: #9D76B8;
-  --color-BGbuttonSelected: #84659C;
-  --color-BGpage: #FBF4E6;
-  --color-HOVERlink: #84659C;
+  --color-BGnav: #FFBF00;
+  --color-BGdivider: #CC9900;
+  --color-BGbutton: #CC9900;
+  --color-BGbuttonSelected: #B88A00;
+  --color-BGpage: #FFF5D6;
+  --color-HOVERlink: #B88A00;
   --color-HOVERbutton: rgba(132, 101, 156, 0.50);
 
-  --color-MOBILEnav: #A67DC2;
+  --color-TEXTmain: #FFF0C2;
+
+  --color-MOBILEnav: #FFBF00;
 
   --font-inter: "Inter", sans-serif;
 

@@ -21,7 +21,7 @@ export default function RootLayout({
           <FilterProvider>
             <div className={`w-screen h-screen flex flex-col md:flex-row font-inter`}>
               <Navbar />
-              <main className={`w-full h-screen bg-BGpage`}>
+              <main className={`w-full h-screen bg-BGpage text-TEXTmain`}>
                 {children}
               </main>
             </div>
