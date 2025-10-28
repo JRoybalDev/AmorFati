@@ -20,7 +20,7 @@ function DesktopNavbar({ navItems }: NavItems) {
     <nav className='bg-BGnav px-4 py-6 text-TEXTmain w-full'>
       {/* Hero */}
       <div className="pb-4">
-        <Link className="text-h1 font-semibold" href={"/"}>AMOR FATI</Link>
+        <Link className="text-h1 font-semibold font-kingthingsSpikeless" href={"/"}>AMOR FATI</Link>
         <h3 className="text-h3 font-semibold">Tagline</h3>
       </div>
 

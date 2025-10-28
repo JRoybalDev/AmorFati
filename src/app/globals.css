@@ -1,21 +1,30 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">');
 @import "tailwindcss";
 @plugin "daisyui";
 
+@font-face {
+  font-family: 'KingthingsSpikeless';
+  src: url('/fonts/KingthingsSpikeless-lKPZ.ttf') format('ttf');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 @theme {
-  --color-BGnav: #FFBF00;
-  --color-BGdivider: #CC9900;
-  --color-BGbutton: #CC9900;
-  --color-BGbuttonSelected: #B88A00;
+  --color-BGnav: #dba400;
+    --color-BGdivider: #b38600;
+    --color-BGbutton: #dba400;
+    --color-BGbuttonSelected: #866300;
   --color-BGpage: #FFF5D6;
+  --color-BGpageDark: #180f00;
   --color-HOVERlink: #B88A00;
-  --color-HOVERbutton: rgba(132, 101, 156, 0.50);
+  --color-HOVERbutton: #B88A00;
 
   --color-TEXTmain: #FFFAEB;
 
-  --color-MOBILEnav: #FFBF00;
+  --color-MOBILEnav: #dba400;
 
-  --font-inter: "Inter", sans-serif;
+  --font-old-standard-tt: "Old Standard TT", serif;
+    --font-kingthingsSpikeless: "KingthingsSpikeless", sans-serif;
 
   --text-h1: 24px;
   --text-h2: 16px;
