@@ -1,9 +1,13 @@
-import { RedirectToSignIn } from '@clerk/nextjs'
+'use client'
+
+import { RedirectToSignIn, SignedOut } from '@clerk/nextjs'
 import React from 'react'
 
 function SignIn() {
   return (
-    <RedirectToSignIn />
+    <SignedOut>
+      <RedirectToSignIn redirectUrl={'/'}/>
+    </SignedOut>
   )
 }
 

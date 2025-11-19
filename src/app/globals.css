@@ -10,26 +10,26 @@
   font-display: swap;
 }
 @theme {
-  --color-BGnav: #dba400;
-    --color-BGdivider: #b38600;
-    --color-BGbutton: #dba400;
-    --color-BGbuttonSelected: #866300;
+  --color-BGnav: #BE5103;
+    --color-BGdivider: #9B4000;
+    --color-BGbutton: #BE5103;
+    --color-BGbuttonSelected: #712F00;
   --color-BGpage: #FFF5D6;
   --color-BGpageDark: #180f00;
-  --color-HOVERlink: #B88A00;
-  --color-HOVERbutton: #B88A00;
+  --color-HOVERlink: #712F00;
+  --color-HOVERbutton: #9B4000;
 
   --color-TEXTmain: #FFFAEB;
 
-  --color-MOBILEnav: #dba400;
+  --color-MOBILEnav: #BE5103;
 
   --font-old-standard-tt: "Old Standard TT", serif;
-    --font-kingthingsSpikeless: "KingthingsSpikeless", sans-serif;
+  --font-kingthingsSpikeless: "KingthingsSpikeless", sans-serif;
 
   --text-h1: 24px;
   --text-h2: 16px;
   --text-h3: 14px;
-    --text-h4: 12px;
+  --text-h4: 12px;
     --text-main: 12px;
     --text-note: 12px;
     --text-h1Mob: 20px;
