@@ -27,12 +27,12 @@ function DesktopNavbar({ navItems }: NavItems) {
       <div className='border-b-6 rounded-lg border-BGdivider' />
 
       {/* Filter */}
-      <div className="py-4 flex flex-col gap-2">
+      {/* <div className="py-4 flex flex-col gap-2">
         <h4 className='text-h2 font-semibold'>FILTER BY TYPE:</h4>
         <ContentFilters />
       </div>
 
-      <div className='border-b-6 rounded-lg border-BGdivider' />
+      <div className='border-b-6 rounded-lg border-BGdivider' /> */}
 
       {/* Links */}
       <div className="py-4 flex flex-col gap-4">
