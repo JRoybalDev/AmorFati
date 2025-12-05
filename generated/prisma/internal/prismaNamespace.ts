@@ -384,7 +384,10 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 
 export const ModelName = {
-  User: 'User'
+  User: 'User',
+  ImagePost: 'ImagePost',
+  TextPost: 'TextPost',
+  FilmPost: 'FilmPost'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -400,7 +403,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user"
+    modelProps: "user" | "imagePost" | "textPost" | "filmPost"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -478,6 +481,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ImagePost: {
+      payload: Prisma.$ImagePostPayload<ExtArgs>
+      fields: Prisma.ImagePostFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ImagePostFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePostPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ImagePostFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePostPayload>
+        }
+        findFirst: {
+          args: Prisma.ImagePostFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePostPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ImagePostFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePostPayload>
+        }
+        findMany: {
+          args: Prisma.ImagePostFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePostPayload>[]
+        }
+        create: {
+          args: Prisma.ImagePostCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePostPayload>
+        }
+        createMany: {
+          args: Prisma.ImagePostCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ImagePostCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePostPayload>[]
+        }
+        delete: {
+          args: Prisma.ImagePostDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePostPayload>
+        }
+        update: {
+          args: Prisma.ImagePostUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePostPayload>
+        }
+        deleteMany: {
+          args: Prisma.ImagePostDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ImagePostUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ImagePostUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePostPayload>[]
+        }
+        upsert: {
+          args: Prisma.ImagePostUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ImagePostPayload>
+        }
+        aggregate: {
+          args: Prisma.ImagePostAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateImagePost>
+        }
+        groupBy: {
+          args: Prisma.ImagePostGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImagePostGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ImagePostCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ImagePostCountAggregateOutputType> | number
+        }
+      }
+    }
+    TextPost: {
+      payload: Prisma.$TextPostPayload<ExtArgs>
+      fields: Prisma.TextPostFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.TextPostFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextPostPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.TextPostFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextPostPayload>
+        }
+        findFirst: {
+          args: Prisma.TextPostFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextPostPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.TextPostFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextPostPayload>
+        }
+        findMany: {
+          args: Prisma.TextPostFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextPostPayload>[]
+        }
+        create: {
+          args: Prisma.TextPostCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextPostPayload>
+        }
+        createMany: {
+          args: Prisma.TextPostCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.TextPostCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextPostPayload>[]
+        }
+        delete: {
+          args: Prisma.TextPostDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextPostPayload>
+        }
+        update: {
+          args: Prisma.TextPostUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextPostPayload>
+        }
+        deleteMany: {
+          args: Prisma.TextPostDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.TextPostUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.TextPostUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextPostPayload>[]
+        }
+        upsert: {
+          args: Prisma.TextPostUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$TextPostPayload>
+        }
+        aggregate: {
+          args: Prisma.TextPostAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateTextPost>
+        }
+        groupBy: {
+          args: Prisma.TextPostGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TextPostGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.TextPostCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.TextPostCountAggregateOutputType> | number
+        }
+      }
+    }
+    FilmPost: {
+      payload: Prisma.$FilmPostPayload<ExtArgs>
+      fields: Prisma.FilmPostFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.FilmPostFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilmPostPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.FilmPostFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilmPostPayload>
+        }
+        findFirst: {
+          args: Prisma.FilmPostFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilmPostPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.FilmPostFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilmPostPayload>
+        }
+        findMany: {
+          args: Prisma.FilmPostFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilmPostPayload>[]
+        }
+        create: {
+          args: Prisma.FilmPostCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilmPostPayload>
+        }
+        createMany: {
+          args: Prisma.FilmPostCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.FilmPostCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilmPostPayload>[]
+        }
+        delete: {
+          args: Prisma.FilmPostDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilmPostPayload>
+        }
+        update: {
+          args: Prisma.FilmPostUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilmPostPayload>
+        }
+        deleteMany: {
+          args: Prisma.FilmPostDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.FilmPostUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.FilmPostUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilmPostPayload>[]
+        }
+        upsert: {
+          args: Prisma.FilmPostUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$FilmPostPayload>
+        }
+        aggregate: {
+          args: Prisma.FilmPostAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateFilmPost>
+        }
+        groupBy: {
+          args: Prisma.FilmPostGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FilmPostGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.FilmPostCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.FilmPostCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -526,6 +751,38 @@ export const UserScalarFieldEnum = {
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
+export const ImagePostScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  imageUrl: 'imageUrl'
+} as const
+
+export type ImagePostScalarFieldEnum = (typeof ImagePostScalarFieldEnum)[keyof typeof ImagePostScalarFieldEnum]
+
+
+export const TextPostScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  title: 'title',
+  date: 'date',
+  content: 'content'
+} as const
+
+export type TextPostScalarFieldEnum = (typeof TextPostScalarFieldEnum)[keyof typeof TextPostScalarFieldEnum]
+
+
+export const FilmPostScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  title: 'title',
+  content: 'content',
+  filmPosterUrl: 'filmPosterUrl',
+  filmDbUrl: 'filmDbUrl'
+} as const
+
+export type FilmPostScalarFieldEnum = (typeof FilmPostScalarFieldEnum)[keyof typeof FilmPostScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -559,6 +816,20 @@ export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 
  * Reference to a field of type 'String[]'
  */
 export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String[]'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime'
+ */
+export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
+
+/**
+ * Reference to a field of type 'DateTime[]'
+ */
+export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
     
 
 
@@ -671,6 +942,9 @@ export type PrismaClientOptions = ({
 }
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
+  imagePost?: Prisma.ImagePostOmit
+  textPost?: Prisma.TextPostOmit
+  filmPost?: Prisma.FilmPostOmit
 }
 
 /* Types for Logging */

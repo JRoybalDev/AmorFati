@@ -9,4 +9,7 @@
  * 🟢 You can import this file directly.
  */
 export type * from './models/User'
+export type * from './models/ImagePost'
+export type * from './models/TextPost'
+export type * from './models/FilmPost'
 export type * from './commonInputTypes'

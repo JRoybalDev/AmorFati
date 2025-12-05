@@ -44,3 +44,18 @@ export { Prisma }
  * 
  */
 export type User = Prisma.UserModel
+/**
+ * Model ImagePost
+ * 
+ */
+export type ImagePost = Prisma.ImagePostModel
+/**
+ * Model TextPost
+ * 
+ */
+export type TextPost = Prisma.TextPostModel
+/**
+ * Model FilmPost
+ * 
+ */
+export type FilmPost = Prisma.FilmPostModel

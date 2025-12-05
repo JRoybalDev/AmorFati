@@ -51,7 +51,10 @@ export const AnyNull = runtime.AnyNull
 
 
 export const ModelName = {
-  User: 'User'
+  User: 'User',
+  ImagePost: 'ImagePost',
+  TextPost: 'TextPost',
+  FilmPost: 'FilmPost'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -77,6 +80,38 @@ export const UserScalarFieldEnum = {
 } as const
 
 export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
+
+
+export const ImagePostScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  imageUrl: 'imageUrl'
+} as const
+
+export type ImagePostScalarFieldEnum = (typeof ImagePostScalarFieldEnum)[keyof typeof ImagePostScalarFieldEnum]
+
+
+export const TextPostScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  title: 'title',
+  date: 'date',
+  content: 'content'
+} as const
+
+export type TextPostScalarFieldEnum = (typeof TextPostScalarFieldEnum)[keyof typeof TextPostScalarFieldEnum]
+
+
+export const FilmPostScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  title: 'title',
+  content: 'content',
+  filmPosterUrl: 'filmPosterUrl',
+  filmDbUrl: 'filmDbUrl'
+} as const
+
+export type FilmPostScalarFieldEnum = (typeof FilmPostScalarFieldEnum)[keyof typeof FilmPostScalarFieldEnum]
 
 
 export const SortOrder = {

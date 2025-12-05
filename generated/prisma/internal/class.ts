@@ -20,7 +20,7 @@ const config: runtime.GetPrismaClientConfig = {
   "clientVersion": "7.1.0",
   "engineVersion": "ab635e6b9d606fa5c8fb8b1a7f909c3c3c1c98ba",
   "activeProvider": "postgresql",
-  "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id       String @id @default(uuid())\n  email    String @unique\n  username String @unique\n}\n",
+  "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id       String @id @default(uuid())\n  email    String @unique\n  username String @unique\n}\n\nmodel ImagePost {\n  // Essential Fields\n  id        String   @id @default(uuid())\n  createdAt DateTime @default(now())\n\n  // Specific Fields\n  imageUrl String @map(\"image_url\")\n}\n\nmodel TextPost {\n  // Essential Fields\n  id        String   @id @default(uuid())\n  createdAt DateTime @default(now())\n\n  // Specific Fields\n  title   String\n  date    DateTime\n  content String   @db.Text\n}\n\nmodel FilmPost {\n  // Essential Fields\n  id        String   @id @default(uuid())\n  createdAt DateTime @default(now())\n\n  // Specific Fields\n  title         String\n  content       String @db.Text\n  filmPosterUrl String @map(\"film_poster_url\")\n  filmDbUrl     String @map(\"film_db_url\")\n}\n",
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -28,7 +28,7 @@ const config: runtime.GetPrismaClientConfig = {
   }
 }
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"username\",\"kind\":\"scalar\",\"type\":\"String\"}],\"dbName\":null},\"ImagePost\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"imageUrl\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"image_url\"}],\"dbName\":null},\"TextPost\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"date\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"content\",\"kind\":\"scalar\",\"type\":\"String\"}],\"dbName\":null},\"FilmPost\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"title\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"content\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"filmPosterUrl\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"film_poster_url\"},{\"name\":\"filmDbUrl\",\"kind\":\"scalar\",\"type\":\"String\",\"dbName\":\"film_db_url\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 
 async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Module> {
   const { Buffer } = await import('node:buffer')
@@ -183,6 +183,36 @@ export interface PrismaClient<
     * ```
     */
   get user(): Prisma.UserDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.imagePost`: Exposes CRUD operations for the **ImagePost** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ImagePosts
+    * const imagePosts = await prisma.imagePost.findMany()
+    * ```
+    */
+  get imagePost(): Prisma.ImagePostDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.textPost`: Exposes CRUD operations for the **TextPost** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more TextPosts
+    * const textPosts = await prisma.textPost.findMany()
+    * ```
+    */
+  get textPost(): Prisma.TextPostDelegate<ExtArgs, { omit: OmitOpts }>;
+
+  /**
+   * `prisma.filmPost`: Exposes CRUD operations for the **FilmPost** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more FilmPosts
+    * const filmPosts = await prisma.filmPost.findMany()
+    * ```
+    */
+  get filmPost(): Prisma.FilmPostDelegate<ExtArgs, { omit: OmitOpts }>;
 }
 
 export function getPrismaClientClass(): PrismaClientConstructor {

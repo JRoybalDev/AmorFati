@@ -28,7 +28,7 @@ model TextPost {
   createdAt DateTime @default(now())
 
   // Specific Fields
-  title     String 
+  title     String
   date      DateTime
   content   String   @db.Text
 }
