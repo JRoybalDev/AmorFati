@@ -7,7 +7,6 @@ async function Navbar() {
     { title: "Dear Diary", link: "/dear-diary" },
     { title: "Sweet Disposition", link: "/sweet-disposition" },
     { title: "Cinematic Feels", link: "/cinematic-feels" },
-    { title: " Before Death", link: "/before-death" },
     { title: "Archive", link: "/archive" },
   ]
 
