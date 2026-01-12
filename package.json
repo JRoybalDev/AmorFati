@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"
@@ -12,6 +12,7 @@
   "dependencies": {
     "@clerk/nextjs": "^6.32.0",
     "@prisma/adapter-pg": "^7.1.0",
+    "@prisma/extension-accelerate": "^3.0.1",
     "daisyui": "^5.1.12",
     "dotenv": "^17.2.3",
     "lucide-react": "^0.562.0",

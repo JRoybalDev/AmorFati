@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">');
+@import url('https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap');
 @import "tailwindcss";
 @plugin "daisyui";
 
@@ -11,7 +11,7 @@
 }
 @theme {
   --color-BGnav: #BE5103;
-    --color-BGdivider: #9B4000;
+  --color-BGdivider: #9B4000;
     --color-BGbutton: #BE5103;
     --color-BGbuttonSelected: #712F00;
   --color-BGpage: #FFF5D6;
@@ -30,7 +30,7 @@
   --text-h2: 16px;
   --text-h3: 14px;
   --text-h4: 12px;
-    --text-main: 12px;
+  --text-main: 12px;
     --text-note: 12px;
     --text-h1Mob: 20px;
   --text-h2Mob: 14px;

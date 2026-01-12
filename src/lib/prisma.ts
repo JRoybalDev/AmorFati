@@ -1,34 +1,28 @@
-// Import the native PostgreSQL driver and the Prisma Adapter
-import { Pool } from 'pg';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '@/generated/prisma/client';
+import { PrismaClient } from '@/generated/prisma/client'
 
-// 1. Setup the Adapter
-// The connection string is read from your environment variables
-const connectionString = process.env.PRISMA_DATABASE_URL;
+const prismaClientSingleton = () => {
+  const accelerateUrl = process.env.DATABASE_URL
 
-if (!connectionString) {
-  throw new Error('PRISMA_DATABASE_URL environment variable is not set.');
+  if (!accelerateUrl) {
+    throw new Error('DATABASE_URL environment variable is not defined')
+  }
+
+  if (!accelerateUrl.startsWith('prisma+postgres://')) {
+    throw new Error('DATABASE_URL must be a Prisma Accelerate URL (prisma+postgres://)')
+  }
+
+  return new PrismaClient({
+    accelerateUrl,
+    log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
+  })
 }
 
-// Initialize the native driver pool
-const pool = new Pool({ connectionString });
-
-// Initialize the Prisma adapter with the pool
-const adapter = new PrismaPg(pool);
-
-// 2. Define the Global Prisma Client
-// This is done to preserve the instance during hot-reloads in development.
 declare global {
-  // eslint-disable-next-line no-var
-  var prisma: PrismaClient | undefined;
+  var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton>
 }
 
-// 3. Implement the Singleton Logic
-// In production, create a single instance. In development, reuse the global instance.
-export const prisma = global.prisma || new PrismaClient({ adapter });
+export const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
 
-// In development, store the instance globally
 if (process.env.NODE_ENV !== 'production') {
-  global.prisma = prisma;
+  globalThis.prismaGlobal = prisma
 }
