@@ -1,7 +1,5 @@
 'use client'
 
-import ContentFilters from '@/app/components/Navbar/ContentFilters';
-import { SignedIn, SignOutButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import { FaRegCopyright } from "react-icons/fa";
 
@@ -42,16 +40,6 @@ function DesktopNavbar({ navItems }: NavItems) {
       </div>
 
       <div className='border-b-6 rounded-lg border-BGdivider' />
-
-      <SignedIn>
-        <div className='py-4 flex flex-col gap-4'>
-          <Link className='font-semibold text-h3 hover:text-HOVERlink duration-250' href='/dashboard'>Dashboard</Link>
-          <SignOutButton>
-            <button className='w-full border-1 rounded-lg py-1 font-semibold text-h2 hover:bg-HOVERlink duration-250 underline hover:cursor-pointer'>Sign Out</button>
-          </SignOutButton>
-        </div>
-        <div className='border-b-6 rounded-lg border-BGdivider' />
-      </SignedIn>
 
       {/* Copyright */}
       <div className='py-4 flex items-center gap-1 text-main'>
