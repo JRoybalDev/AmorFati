@@ -1,46 +1,40 @@
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
+enum PostType {
+  IMAGE
+  TEXT
+  FILM
+}
+
 model User {
-  id       String @id @default(uuid())
-  email    String @unique
-  username String @unique
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  posts     Post[]
 }
 
-model ImagePost {
-  // Essential Fields
+model Post {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  // Specific Fields
-  imageUrl  String   @map("image_url")
-}
+  type      PostType
+  title     String?
+  content   String?  @db.Text
+  imageUrl  String?  @map("image_url") // Used for ImagePost image or FilmPost poster
+  link      String?  // Used for FilmPost db url
 
-model TextPost {
-  // Essential Fields
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-
-  // Specific Fields
-  title     String
-  date      DateTime
-  content   String   @db.Text
-}
-
-model FilmPost {
-  // Essential Fields
-  id        String   @id @default(uuid())
-  createdAt DateTime @default(now())
-
-  // Specific Fields
-  title         String
-  content       String   @db.Text
-  filmPosterUrl String   @map("film_poster_url")
-  filmDbUrl     String   @map("film_db_url")
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
 }

@@ -14,6 +14,7 @@
     "@prisma/adapter-pg": "^7.1.0",
     "daisyui": "^5.1.12",
     "dotenv": "^17.2.3",
+    "lucide-react": "^0.562.0",
     "motion": "^12.23.22",
     "next": "15.5.3",
     "pg": "^8.16.3",
