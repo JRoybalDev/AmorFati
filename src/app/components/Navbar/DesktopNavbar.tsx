@@ -1,6 +1,5 @@
 'use client'
 
-import ContentFilters from '@/app/components/Navbar/ContentFilters';
 import Link from 'next/link';
 import { FaRegCopyright } from "react-icons/fa";
 
@@ -16,22 +15,22 @@ type NavItems = {
 function DesktopNavbar({ navItems }: NavItems) {
 
   return (
-    <nav className='bg-BGnav px-4 py-6 text-white w-full'>
+    <nav className='bg-BGnav px-4 py-6 text-TEXTmain w-full'>
       {/* Hero */}
       <div className="pb-4">
-        <Link className="text-h1 font-semibold" href={"/"}>AMOR FATI</Link>
+        <Link className="text-h1 font-semibold font-kingthingsSpikeless" href={"/"}>AMOR FATI</Link>
         <h3 className="text-h3 font-semibold">Tagline</h3>
       </div>
 
       <div className='border-b-6 rounded-lg border-BGdivider' />
 
       {/* Filter */}
-      <div className="py-4 flex flex-col gap-2">
+      {/* <div className="py-4 flex flex-col gap-2">
         <h4 className='text-h2 font-semibold'>FILTER BY TYPE:</h4>
         <ContentFilters />
       </div>
 
-      <div className='border-b-6 rounded-lg border-BGdivider' />
+      <div className='border-b-6 rounded-lg border-BGdivider' /> */}
 
       {/* Links */}
       <div className="py-4 flex flex-col gap-4">
