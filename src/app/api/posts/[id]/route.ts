@@ -19,7 +19,7 @@ export async function GET(
     }
 
     return NextResponse.json(post);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Error fetching post' }, { status: 500 });
   }
 }
@@ -45,7 +45,7 @@ export async function PATCH(
     });
 
     return NextResponse.json(updatedPost);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Error updating post' }, { status: 500 });
   }
 }
@@ -61,7 +61,7 @@ export async function DELETE(
     });
 
     return NextResponse.json({ message: 'Post deleted successfully' });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Error deleting post' }, { status: 500 });
   }
 }

@@ -1,7 +1,17 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { PostsApi, PostType, CreatePostRequest, UpdatePostRequest, Post } from '@/lib/posts'
+
+interface TmdbMovie {
+  id: number
+  title?: string
+  name?: string
+  poster_path?: string | null
+  release_date?: string
+  first_air_date?: string
+  media_type?: string
+}
 
 export function usePostsManager(authorId: string) {
   const [posts, setPosts] = useState<Post[]>([])
@@ -9,7 +19,7 @@ export function usePostsManager(authorId: string) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [tmdbQuery, setTmdbQuery] = useState('')
-  const [tmdbResults, setTmdbResults] = useState<any[]>([])
+  const [tmdbResults, setTmdbResults] = useState<TmdbMovie[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const searchContainerRef = useRef<HTMLDivElement>(null)
 
@@ -23,7 +33,7 @@ export function usePostsManager(authorId: string) {
     link: '',
   })
 
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     setLoading(true)
     try {
       const type = filterType === 'ALL' ? undefined : filterType
@@ -31,16 +41,16 @@ export function usePostsManager(authorId: string) {
       // Filter by authorId on client since API returns all posts
       const myPosts = data.filter((p) => p.authorId === authorId)
       setPosts(myPosts)
-    } catch (err) {
+    } catch {
       setError('Failed to fetch posts')
     } finally {
       setLoading(false)
     }
-  }
+  }, [filterType, authorId])
 
   useEffect(() => {
     fetchPosts()
-  }, [filterType])
+  }, [fetchPosts])
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -72,8 +82,8 @@ export function usePostsManager(authorId: string) {
       setTmdbResults([])
       setIsEditing(null)
       fetchPosts()
-    } catch (err: any) {
-      setError(err.message || 'Operation failed')
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Operation failed')
     } finally {
       setLoading(false)
     }
@@ -124,11 +134,10 @@ export function usePostsManager(authorId: string) {
         )
         const data = await res.json()
         setTmdbResults(
-          (data.results || []).filter((item: any) => item.media_type === 'movie' || item.media_type === 'tv')
+          (data.results || []).filter((item: TmdbMovie) => item.media_type === 'movie' || item.media_type === 'tv')
         )
-      } catch (err) {
-        console.error(err)
-        setError('Failed to search TMDB')
+      } catch {
+        console.error('Failed to search TMDB')
       } finally {
         setIsSearching(false)
       }
@@ -150,7 +159,7 @@ export function usePostsManager(authorId: string) {
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const selectMovie = (movie: any) => {
+  const selectMovie = (movie: TmdbMovie) => {
     setFormData({
       ...formData,
       link: movie.title || movie.name,
@@ -166,7 +175,7 @@ export function usePostsManager(authorId: string) {
     try {
       await PostsApi.delete(id)
       fetchPosts()
-    } catch (err) {
+    } catch {
       setError('Failed to delete')
     } finally {
       setLoading(false)

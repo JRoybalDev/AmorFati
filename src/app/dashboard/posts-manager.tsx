@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { PostType, Post } from '@/lib/posts'
+import { PostType } from '@/lib/posts'
 import { usePostsManager } from '@/hooks/use-posts-manager'
 
 interface PostsManagerProps {
@@ -140,6 +140,7 @@ export default function PostsManager({ authorId }: PostsManagerProps) {
                         className="cursor-pointer border-b p-2 hover:bg-gray-100 flex items-center gap-2"
                       >
                         {movie.poster_path && (
+                          // eslint-disable-next-line @next/next/no-img-element
                           <img
                             src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`}
                             alt={movie.title || movie.name}
@@ -226,6 +227,7 @@ export default function PostsManager({ authorId }: PostsManagerProps) {
               <h4 className="mb-2 text-lg font-bold">{post.title}</h4>
             )}
             {post.imageUrl && (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={post.imageUrl}
                 alt={post.title || 'Post image'}

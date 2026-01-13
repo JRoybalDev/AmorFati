@@ -37,10 +37,10 @@ export default function SignInForm() {
           'Multi-factor authentication is not yet supported in this custom form.',
         )
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(JSON.stringify(err, null, 2))
       setError(
-        err.errors?.[0]?.longMessage || 'An error occurred. Please try again.',
+        (err as { errors?: { longMessage?: string }[] })?.errors?.[0]?.longMessage || 'An error occurred. Please try again.',
       )
     } finally {
       setIsLoading(false)

@@ -1,4 +1,3 @@
-import MobileContentFilters from './components/Mobile/MobileContentFilters';
 import './globals.css'
 
 export default function Home() {
