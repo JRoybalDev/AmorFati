@@ -1,4 +1,4 @@
-import { type Post, PostType } from '@/generated/prisma/client';
+import { type Post, PostType } from '@/generated/prisma';
 
 export { PostType };
 export type { Post };
