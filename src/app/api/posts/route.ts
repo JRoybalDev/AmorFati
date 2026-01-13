@@ -26,7 +26,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { type, title, content, imageUrl, link, authorId } = body;
+    const { type, title, content, imageUrl, link, authorId, createdAt } = body;
 
     // Basic validation based on PostType
     if (!type || !Object.values(PostType).includes(type)) {
@@ -37,18 +37,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Image URL is required for Image posts' }, { status: 400 });
     }
 
-    if (type === 'FILM' && (!title || !link)) {
-      return NextResponse.json({ error: 'Title and Link are required for Film posts' }, { status: 400 });
+    if (type === 'TEXT' && (!title || !content)) {
+      return NextResponse.json({ error: 'Title and Content are required for Text posts' }, { status: 400 });
+    }
+
+    if (type === 'FILM' && (!title || !content || !link || !imageUrl)) {
+      return NextResponse.json({ error: 'Post Title, Content, Movie Title, and Poster URL are required for Film posts' }, { status: 400 });
     }
 
     const post = await prisma.post.create({
       data: {
         type,
-        title,
-        content,
-        imageUrl,
-        link,
+        title: type === 'IMAGE' ? undefined : title,
+        content: type === 'IMAGE' ? undefined : content,
+        imageUrl: type === 'TEXT' ? undefined : imageUrl,
+        link: type === 'TEXT' || type === 'IMAGE' ? undefined : link,
         authorId, // In a real app, you would get this from the authenticated session
+        createdAt: createdAt ? new Date(createdAt) : undefined,
       },
     });
 

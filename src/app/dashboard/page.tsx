@@ -2,6 +2,7 @@ import React from 'react'
 import { currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { getOrCreateUser } from '@/lib/data'
+import PostsManager from './posts-manager'
 
 async function Dashboard() {
   const user = await currentUser()
@@ -34,7 +35,8 @@ async function Dashboard() {
 
   return (
     <div>
-      <h1>Admin Dashboard</h1>
+      {/* <h1 className="mb-4 text-2xl font-bold text-black">Admin Dashboard</h1> */}
+      <PostsManager authorId={dbUser.id} />
     </div>
   )
 }
