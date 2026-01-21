@@ -20,6 +20,7 @@
   --color-HOVERbutton: #9B4000;
 
   --color-TEXTmain: #FFFAEB;
+  --color-TEXTform: #000000;
 
   --color-MOBILEnav: #BE5103;
 
@@ -36,4 +37,16 @@
   --text-h2Mob: 14px;
   --text-h3Mob: 12px;
   --text-h4Mob: 10px;
+}
+
+@layer base {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-kingthingsSpikeless);
+  }
 }

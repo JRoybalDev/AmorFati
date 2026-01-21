@@ -34,11 +34,20 @@ async function Dashboard() {
   }
 
   return (
-    <div className="p-4 text-black">
-      {/* <h1 className="mb-4 text-2xl font-bold text-black">Admin Dashboard</h1> */}
+    <div className="min-h-screen bg-[var(--color-BGpage)] p-8 font-[family-name:var(--font-old-standard-tt)]">
       <PostsProvider authorId={dbUser.id}>
-        <PostsForm />
-        <PostsList />
+        <div className="mx-auto max-w-7xl space-y-12">
+          <section>
+            <PostsForm />
+          </section>
+
+          <section className="border-t border-[var(--color-BGdivider)] pt-8">
+            <h2 className="mb-6 text-3xl text-[var(--color-BGnav)] font-[family-name:var(--font-kingthingsSpikeless)]">
+              Your Posts
+            </h2>
+            <PostsList />
+          </section>
+        </div>
       </PostsProvider>
     </div>
   )

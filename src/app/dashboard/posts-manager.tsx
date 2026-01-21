@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext } from 'react'
+import React, { createContext, useContext, useState, useRef, useEffect } from 'react'
 import { PostType } from '@/lib/posts'
 import { usePostsManager } from '@/hooks/use-posts-manager'
 
@@ -51,16 +51,82 @@ export function PostsForm() {
     cancelEdit,
   } = usePosts()
 
+  const [uploading, setUploading] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const shouldSubmit = useRef(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (shouldSubmit.current) {
+      shouldSubmit.current = false
+      handleSubmit({ preventDefault: () => { } } as React.FormEvent)
+    }
+  }, [formData.imageUrl, handleSubmit])
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return
+
+    const file = e.target.files[0]
+
+    if (file.size > 50 * 1024 * 1024) {
+      alert('File size exceeds 50MB limit.')
+      e.target.value = ''
+      return
+    }
+
+    setSelectedFile(file)
+    const url = URL.createObjectURL(file)
+    handleInputChange({ target: { name: 'imageUrl', value: url } } as any)
+  }
+
+  const handleRemoveImage = () => {
+    setSelectedFile(null)
+    handleInputChange({ target: { name: 'imageUrl', value: '' } } as any)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const onFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (selectedFile) {
+      setUploading(true)
+      const data = new FormData()
+      data.append('file', selectedFile)
+
+      try {
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: data,
+        })
+
+        if (!response.ok) throw new Error('Upload failed')
+
+        const { url } = await response.json()
+        setSelectedFile(null)
+        shouldSubmit.current = true
+        handleInputChange({ target: { name: 'imageUrl', value: url } } as any)
+      } catch (error) {
+        console.error('Error uploading image:', error)
+      } finally {
+        setUploading(false)
+      }
+    } else {
+      handleSubmit(e)
+    }
+  }
+
   return (
     <>
       <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-xl font-bold">Manage Posts</h2>
+        <h2 className="text-2xl font-bold text-(--color-BGnav) font-kingthingsSpikeless">Manage Posts</h2>
         <div>
-          <label className="mr-2 font-medium">Filter:</label>
+          <label className="mr-2 font-medium font-old-standard-tt text-TEXTform opacity-70">Filter:</label>
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value as PostType | 'ALL')}
-            className="rounded border p-1"
+            className="rounded border border-(--color-BGdivider) p-1 font-old-standard-tt bg-white text-TEXTform"
           >
             <option value="ALL">All</option>
             <option value="TEXT">Text</option>
@@ -69,162 +135,290 @@ export function PostsForm() {
           </select>
         </div>
       </div>
+      <div className='flex w-full gap-4'>
+        <form
+          onSubmit={onFormSubmit}
+          className="mb-8 rounded border border-(--color-BGdivider) bg-BGpage p-4 shadow-sm w-1/2 font-old-standard-tt"
+        >
+          <h3 className="mb-4 text-lg font-bold text-(--color-BGnav) font-kingthingsSpikeless">
+            {isEditing ? 'Edit Post' : 'Create New Post'}
+          </h3>
+          {error && <div className="mb-2 text-red-500">{error}</div>}
 
-      <form
-        onSubmit={handleSubmit}
-        className="mb-8 rounded border bg-white p-4 shadow-sm"
-      >
-        <h3 className="mb-4 text-lg font-bold">
-          {isEditing ? 'Edit Post' : 'Create New Post'}
-        </h3>
-        {error && <div className="mb-2 text-red-500">{error}</div>}
-
-        <div className="grid grid-cols-1 gap-4">
-          <div>
-            <label className="block text-sm font-medium">Type</label>
-            <select
-              name="type"
-              value={formData.type}
-              onChange={handleInputChange}
-              className="w-full rounded border p-2"
-              disabled={!!isEditing}
-            >
-              <option value="TEXT">Text</option>
-              <option value="IMAGE">Image</option>
-              <option value="FILM">Film</option>
-            </select>
-          </div>
-
-          {formData.type !== 'IMAGE' && (
+          <div className="grid grid-cols-1 gap-4">
             <div>
-              <label className="block text-sm font-medium">Title</label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
+              <label className="block text-sm font-medium text-TEXTform opacity-70">Type</label>
+              <select
+                name="type"
+                value={formData.type}
                 onChange={handleInputChange}
-                className="w-full rounded border p-2"
-              />
-            </div>
-          )}
-
-          {(formData.type === 'TEXT' || formData.type === 'FILM') && (
-            <div>
-              <label className="block text-sm font-medium">Content</label>
-              <textarea
-                name="content"
-                value={formData.content}
-                onChange={handleInputChange}
-                className="w-full rounded border p-2"
-                rows={4}
-              />
-            </div>
-          )}
-
-          {(formData.type === 'IMAGE' || formData.type === 'FILM') && (
-            <div>
-              <label className="block text-sm font-medium">
-                {formData.type === 'FILM' ? 'Movie Poster URL' : 'Image URL'}
-              </label>
-              <input
-                type="text"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleInputChange}
-                className="w-full rounded border p-2"
-              />
-            </div>
-          )}
-
-          {formData.type === 'FILM' && (
-            <div>
-              <div
-                className="mb-4 rounded border bg-gray-50 p-4"
-                ref={searchContainerRef}
+                className="w-full rounded border border-(--color-BGdivider) p-2 bg-white text-TEXTform"
+                disabled={!!isEditing}
               >
-                <label className="mb-2 block text-sm font-medium">
-                  Search TMDB
-                </label>
-                <div className="flex gap-2">
+                <option value="TEXT">Text</option>
+                <option value="IMAGE">Image</option>
+                <option value="FILM">Film</option>
+              </select>
+            </div>
+
+            {formData.type !== 'IMAGE' && (
+              <div>
+                <label className="block text-sm font-medium text-TEXTform opacity-70">Title</label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleInputChange}
+                  className="w-full rounded border border-(--color-BGdivider) p-2 bg-white text-TEXTform placeholder:text-TEXTform placeholder:opacity-50"
+                />
+              </div>
+            )}
+
+            {(formData.type === 'TEXT' || formData.type === 'FILM') && (
+              <div>
+                <label className="block text-sm font-medium text-TEXTform opacity-70">Content</label>
+                <textarea
+                  name="content"
+                  value={formData.content}
+                  onChange={handleInputChange}
+                  className="w-full rounded border border-(--color-BGdivider) p-2 bg-white text-TEXTform placeholder:text-TEXTform placeholder:opacity-50"
+                  rows={4}
+                />
+              </div>
+            )}
+
+            {formData.type === 'FILM' && (
+              <div>
+                <div
+                  className="mb-4 rounded border border-(--color-BGdivider) bg-white/50 p-4"
+                  ref={searchContainerRef}
+                >
+                  <label className="mb-2 block text-sm font-medium text-TEXTform opacity-70">
+                    Search TMDB
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={tmdbQuery}
+                      onChange={(e) => setTmdbQuery(e.target.value)}
+                      placeholder="Search for a movie..."
+                      className="w-full rounded border border-(--color-BGdivider) p-2 bg-white text-TEXTform placeholder:text-TEXTform placeholder:opacity-50"
+                    />
+                  </div>
+                  {isSearching && (
+                    <div className="mt-2 text-sm text-gray-500">Searching...</div>
+                  )}
+                  {tmdbResults.length > 0 && (
+                    <ul className="mt-2 max-h-60 overflow-y-auto rounded border bg-white text-TEXTform">
+                      {tmdbResults.map((movie) => (
+                        <li
+                          key={movie.id}
+                          onClick={() => selectMovie(movie)}
+                          className="flex cursor-pointer items-center gap-2 border-b border-(--color-BGdivider) p-2 hover:bg-BGpage"
+                        >
+                          {movie.poster_path && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`}
+                              alt={movie.title || movie.name}
+                              className="h-12 w-8 rounded object-cover"
+                            />
+                          )}
+                          <div>
+                            <div className="font-bold">
+                              {movie.title || movie.name}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {(movie.release_date || movie.first_air_date)?.split(
+                                '-',
+                              )[0]}
+                              {movie.media_type === 'tv' ? ' (TV)' : ''}
+                            </div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-TEXTform opacity-70">Movie Title</label>
                   <input
                     type="text"
-                    value={tmdbQuery}
-                    onChange={(e) => setTmdbQuery(e.target.value)}
-                    placeholder="Search for a movie..."
-                    className="w-full rounded border p-2"
+                    name="link"
+                    value={formData.link}
+                    onChange={handleInputChange}
+                    placeholder={`${formData.type === 'FILM' && "Autofilled from 'Search TMDB' field..."}`}
+                    className="w-full rounded border border-(--color-BGdivider) bg-gray-100 p-2 text-TEXTform placeholder:text-TEXTform placeholder:opacity-50"
                   />
                 </div>
-                {isSearching && (
-                  <div className="mt-2 text-sm text-gray-500">Searching...</div>
-                )}
-                {tmdbResults.length > 0 && (
-                  <ul className="mt-2 max-h-60 overflow-y-auto rounded border bg-white">
-                    {tmdbResults.map((movie) => (
-                      <li
-                        key={movie.id}
-                        onClick={() => selectMovie(movie)}
-                        className="flex cursor-pointer items-center gap-2 border-b p-2 hover:bg-gray-100"
-                      >
-                        {movie.poster_path && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`}
-                            alt={movie.title || movie.name}
-                            className="h-12 w-8 rounded object-cover"
-                          />
+              </div>
+            )}
+
+            {(formData.type === 'IMAGE' || formData.type === 'FILM') && (
+              <div>
+                <label className="block text-sm font-medium text-TEXTform opacity-70">
+                  {formData.type === 'FILM' ? 'Movie Poster URL' : 'Image URL'}
+                </label>
+                {formData.type === 'IMAGE' ? (
+                  <div className="flex flex-col gap-2">
+                    {!isEditing && (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <input
+                          type="file"
+                          id="imageUpload"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          disabled={uploading || (!!formData.imageUrl && !selectedFile)}
+                          className="hidden"
+                          ref={fileInputRef}
+                        />
+                        <label
+                          htmlFor="imageUpload"
+                          className={`cursor-pointer rounded bg-(--color-BGbutton) px-4 py-2 text-TEXTmain hover:bg-(--color-HOVERbutton) font-kingthingsSpikeless whitespace-nowrap ${(uploading || (!!formData.imageUrl && !selectedFile)) ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                        >
+                          Choose Image
+                        </label>
+                        {(selectedFile || formData.imageUrl) && (
+                          <button
+                            type="button"
+                            onClick={handleRemoveImage}
+                            className="rounded bg-red-500 px-3 py-2 text-sm text-white hover:bg-red-600 font-kingthingsSpikeless"
+                          >
+                            Remove Image
+                          </button>
                         )}
-                        <div>
-                          <div className="font-bold">
-                            {movie.title || movie.name}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {(movie.release_date || movie.first_air_date)?.split(
-                              '-',
-                            )[0]}
-                            {movie.media_type === 'tv' ? ' (TV)' : ''}
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
+                        {selectedFile && <span className="min-w-0 truncate text-sm text-gray-600">{selectedFile.name}</span>}
+                      </div>
+                    )}
+                    {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
+                    {!selectedFile && (
+                      <input
+                        type="text"
+                        name="imageUrl"
+                        value={formData.imageUrl}
+                        onChange={handleInputChange}
+                        placeholder="Or paste image URL..."
+                        className="w-full rounded border border-(--color-BGdivider) p-2 bg-white text-TEXTform placeholder:text-TEXTform placeholder:opacity-50"
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <input
+                    type="text"
+                    name="imageUrl"
+                    value={formData.imageUrl}
+                    onChange={handleInputChange}
+                    placeholder={`${formData.type === 'FILM' && "Autofilled from 'Search TMDB' field..."}`}
+                    className={`w-full rounded border border-(--color-BGdivider) p-2 ${formData.type === 'FILM' && 'bg-gray-100'} text-TEXTform placeholder:text-TEXTform placeholder:opacity-50`}
+                  />
                 )}
               </div>
-              <label className="block text-sm font-medium">Movie Title</label>
-              <input
-                type="text"
-                name="link"
-                value={formData.link}
-                onChange={handleInputChange}
-                className="w-full rounded border p-2"
-              />
-            </div>
-          )}
-
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={loading}
-              className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
-            >
-              {loading
-                ? 'Processing...'
-                : isEditing
-                  ? 'Update Post'
-                  : 'Create Post'}
-            </button>
-            {isEditing && (
-              <button
-                type="button"
-                onClick={cancelEdit}
-                className="rounded bg-gray-300 px-4 py-2 text-black hover:bg-gray-400"
-              >
-                Cancel
-              </button>
             )}
+
+            <div className="flex gap-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="rounded bg-(--color-BGbutton) px-4 py-2 text-TEXTmain hover:bg-(--color-HOVERbutton) disabled:opacity-50 font-kingthingsSpikeless"
+              >
+                {loading
+                  ? 'Processing...'
+                  : isEditing
+                    ? 'Update Post'
+                    : 'Create Post'}
+              </button>
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="rounded bg-(--color-BGdivider) px-4 py-2 text-TEXTmain hover:bg-(--color-BGnav) font-kingthingsSpikeless"
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      </form>
+        </form>
+        <PostPreview />
+      </div>
     </>
+  )
+}
+
+export function PostPreview() {
+  const { formData } = usePosts()
+
+  return (
+    <div className="w-1/2 font-old-standard-tt">
+      <h3 className="mb-4 text-lg font-bold text-(--color-BGnav) font-kingthingsSpikeless">Preview</h3>
+      <div className="rounded border border-(--color-BGdivider) bg-BGpage p-4 shadow">
+        {formData.type !== 'IMAGE' && (
+          <div className="mb-2 flex items-start justify-between">
+            <div className="flex flex-col gap-1">
+              <span className="w-fit rounded bg-(--color-BGdivider) px-2 py-1 text-xs font-semibold text-TEXTmain">
+                {formData.type}
+              </span>
+              <span className="text-xs text-gray-500">
+                {new Date().toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {formData.type === 'TEXT' && (
+          <>
+            {formData.title && (
+              <h4 className="mb-2 text-lg font-bold">{formData.title}</h4>
+            )}
+            {formData.content && (
+              <p className="whitespace-pre-wrap text-sm text-gray-700">
+                {formData.content}
+              </p>
+            )}
+          </>
+        )}
+
+        {formData.type === 'IMAGE' && formData.imageUrl && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={formData.imageUrl}
+            alt="Post image"
+            className="w-full rounded object-cover"
+          />
+        )}
+
+        {formData.type === 'FILM' && (
+          <>
+            {formData.title && (
+              <h4 className="mb-2 text-lg font-bold">{formData.title}</h4>
+            )}
+            <div className="flex gap-4">
+              {formData.imageUrl && (
+                <a
+                  href={formData.link || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={formData.imageUrl}
+                    alt={formData.title || 'Movie Poster'}
+                    className="w-32 rounded object-cover hover:opacity-90"
+                  />
+                </a>
+              )}
+              {formData.content && (
+                <p className="whitespace-pre-wrap text-sm text-gray-700">
+                  {formData.content}
+                </p>
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -232,25 +426,29 @@ export function PostsList() {
   const { posts, loading, handleEdit, handleDelete } = usePosts()
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 font-old-standard-tt">
       {posts.map((post) => (
         <div
           key={post.id}
-          className="rounded border bg-white p-4 shadow transition hover:shadow-md"
+          className="rounded border border-(--color-BGdivider) bg-BGpage p-4 shadow transition hover:shadow-md"
         >
           <div className="mb-2 flex items-start justify-between">
-            <div className="flex flex-col gap-1">
-              <span className="w-fit rounded bg-gray-200 px-2 py-1 text-xs font-semibold">
-                {post.type}
-              </span>
-              <span className="text-xs text-gray-500">
-                {new Date(post.createdAt).toLocaleDateString()}
-              </span>
-            </div>
+            {post.type !== 'IMAGE' ? (
+              <div className="flex flex-col gap-1">
+                <span className="w-fit rounded bg-(--color-BGdivider) px-2 py-1 text-xs font-semibold text-TEXTmain">
+                  {post.type}
+                </span>
+                <span className="text-xs text-gray-500">
+                  {new Date(post.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+            ) : (
+              <div></div>
+            )}
             <div className="flex gap-2">
               <button
                 onClick={() => handleEdit(post)}
-                className="text-sm text-blue-600 hover:underline"
+                className="text-sm text-(--color-BGnav) hover:underline"
               >
                 Edit
               </button>
@@ -262,29 +460,57 @@ export function PostsList() {
               </button>
             </div>
           </div>
-          {post.title && (
-            <h4 className="mb-2 text-lg font-bold">{post.title}</h4>
+
+          {post.type === 'TEXT' && (
+            <>
+              {post.title && (
+                <h4 className="mb-2 text-lg font-bold">{post.title}</h4>
+              )}
+              {post.content && (
+                <p className="line-clamp-4 whitespace-pre-wrap text-sm text-gray-700">
+                  {post.content}
+                </p>
+              )}
+            </>
           )}
-          {post.imageUrl && (
+
+          {post.type === 'IMAGE' && post.imageUrl && (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={post.imageUrl}
-              alt={post.title || 'Post image'}
-              className="my-2 h-32 w-full rounded object-cover"
+              alt="Post image"
+              className="w-full rounded object-cover"
             />
           )}
-          {post.content && (
-            <p className="line-clamp-2 text-sm text-gray-700">{post.content}</p>
-          )}
-          {post.link && (
-            <a
-              href={post.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 block text-sm text-blue-500 underline"
-            >
-              View Link
-            </a>
+
+          {post.type === 'FILM' && (
+            <>
+              {post.title && (
+                <h4 className="mb-2 text-lg font-bold">{post.title}</h4>
+              )}
+              <div className="flex gap-4">
+                {post.imageUrl && (
+                  <a
+                    href={post.link || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={post.imageUrl}
+                      alt={post.title || 'Poster'}
+                      className="w-24 rounded object-cover hover:opacity-90"
+                    />
+                  </a>
+                )}
+                {post.content && (
+                  <p className="line-clamp-4 whitespace-pre-wrap text-sm text-gray-700">
+                    {post.content}
+                  </p>
+                )}
+              </div>
+            </>
           )}
         </div>
       ))}

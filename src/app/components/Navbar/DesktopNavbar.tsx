@@ -1,5 +1,7 @@
 'use client'
 
+import { SignedIn } from '@clerk/clerk-react';
+import { SignOutButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import { FaRegCopyright } from "react-icons/fa";
 
@@ -40,6 +42,13 @@ function DesktopNavbar({ navItems }: NavItems) {
       </div>
 
       <div className='border-b-6 rounded-lg border-BGdivider' />
+
+      <SignedIn>
+        <SignOutButton>
+          <button className='font-semibold text-h3 hover:cursor-pointer hover:text-HOVERlink duration-250 py-4'>Sign out</button>
+        </SignOutButton>
+        <div className='border-b-6 rounded-lg border-BGdivider' />
+      </SignedIn>
 
       {/* Copyright */}
       <div className='py-4 flex items-center gap-1 text-main'>
