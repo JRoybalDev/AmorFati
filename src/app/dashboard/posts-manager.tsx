@@ -1,16 +1,39 @@
 'use client'
 
-import React from 'react'
+import React, { createContext, useContext } from 'react'
 import { PostType } from '@/lib/posts'
 import { usePostsManager } from '@/hooks/use-posts-manager'
 
-interface PostsManagerProps {
+// Create a context to share the state
+const PostsContext = createContext<ReturnType<typeof usePostsManager> | null>(
+  null,
+)
+
+export const usePosts = () => {
+  const context = useContext(PostsContext)
+  if (!context) {
+    throw new Error('usePosts must be used within a PostsProvider')
+  }
+  return context
+}
+
+interface PostsProviderProps {
+  children: React.ReactNode
   authorId: string
 }
 
-export default function PostsManager({ authorId }: PostsManagerProps) {
+export function PostsProvider({ children, authorId }: PostsProviderProps) {
+  const postsManager = usePostsManager(authorId)
+
+  return (
+    <PostsContext.Provider value={postsManager}>
+      {children}
+    </PostsContext.Provider>
+  )
+}
+
+export function PostsForm() {
   const {
-    posts,
     filterType,
     setFilterType,
     loading,
@@ -24,24 +47,20 @@ export default function PostsManager({ authorId }: PostsManagerProps) {
     formData,
     handleInputChange,
     handleSubmit,
-    handleEdit,
-    handleDelete,
     selectMovie,
     cancelEdit,
-  } = usePostsManager(authorId)
+  } = usePosts()
 
   return (
-    <div className="p-4 text-black">
+    <>
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-bold">Manage Posts</h2>
         <div>
           <label className="mr-2 font-medium">Filter:</label>
           <select
             value={filterType}
-            onChange={(e) =>
-              setFilterType(e.target.value as PostType | 'ALL')
-            }
-            className="border p-1 rounded"
+            onChange={(e) => setFilterType(e.target.value as PostType | 'ALL')}
+            className="rounded border p-1"
           >
             <option value="ALL">All</option>
             <option value="TEXT">Text</option>
@@ -119,8 +138,13 @@ export default function PostsManager({ authorId }: PostsManagerProps) {
 
           {formData.type === 'FILM' && (
             <div>
-              <div className="mb-4 rounded border bg-gray-50 p-4" ref={searchContainerRef}>
-                <label className="block text-sm font-medium mb-2">Search TMDB</label>
+              <div
+                className="mb-4 rounded border bg-gray-50 p-4"
+                ref={searchContainerRef}
+              >
+                <label className="mb-2 block text-sm font-medium">
+                  Search TMDB
+                </label>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -130,14 +154,16 @@ export default function PostsManager({ authorId }: PostsManagerProps) {
                     className="w-full rounded border p-2"
                   />
                 </div>
-                {isSearching && <div className="mt-2 text-sm text-gray-500">Searching...</div>}
+                {isSearching && (
+                  <div className="mt-2 text-sm text-gray-500">Searching...</div>
+                )}
                 {tmdbResults.length > 0 && (
                   <ul className="mt-2 max-h-60 overflow-y-auto rounded border bg-white">
                     {tmdbResults.map((movie) => (
                       <li
                         key={movie.id}
                         onClick={() => selectMovie(movie)}
-                        className="cursor-pointer border-b p-2 hover:bg-gray-100 flex items-center gap-2"
+                        className="flex cursor-pointer items-center gap-2 border-b p-2 hover:bg-gray-100"
                       >
                         {movie.poster_path && (
                           // eslint-disable-next-line @next/next/no-img-element
@@ -148,9 +174,13 @@ export default function PostsManager({ authorId }: PostsManagerProps) {
                           />
                         )}
                         <div>
-                          <div className="font-bold">{movie.title || movie.name}</div>
+                          <div className="font-bold">
+                            {movie.title || movie.name}
+                          </div>
                           <div className="text-xs text-gray-500">
-                            {(movie.release_date || movie.first_air_date)?.split('-')[0]}
+                            {(movie.release_date || movie.first_air_date)?.split(
+                              '-',
+                            )[0]}
                             {movie.media_type === 'tv' ? ' (TV)' : ''}
                           </div>
                         </div>
@@ -194,69 +224,75 @@ export default function PostsManager({ authorId }: PostsManagerProps) {
           </div>
         </div>
       </form>
+    </>
+  )
+}
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {posts.map((post) => (
-          <div
-            key={post.id}
-            className="rounded border bg-white p-4 shadow transition hover:shadow-md"
-          >
-            <div className="mb-2 flex items-start justify-between">
-              <div className="flex flex-col gap-1">
-                <span className="w-fit rounded bg-gray-200 px-2 py-1 text-xs font-semibold">
-                  {post.type}
-                </span>
-                <span className="text-xs text-gray-500">{new Date(post.createdAt).toLocaleDateString()}</span>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleEdit(post)}
-                  className="text-sm text-blue-600 hover:underline"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => handleDelete(post.id)}
-                  className="text-sm text-red-600 hover:underline"
-                >
-                  Delete
-                </button>
-              </div>
+export function PostsList() {
+  const { posts, loading, handleEdit, handleDelete } = usePosts()
+
+  return (
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {posts.map((post) => (
+        <div
+          key={post.id}
+          className="rounded border bg-white p-4 shadow transition hover:shadow-md"
+        >
+          <div className="mb-2 flex items-start justify-between">
+            <div className="flex flex-col gap-1">
+              <span className="w-fit rounded bg-gray-200 px-2 py-1 text-xs font-semibold">
+                {post.type}
+              </span>
+              <span className="text-xs text-gray-500">
+                {new Date(post.createdAt).toLocaleDateString()}
+              </span>
             </div>
-            {post.title && (
-              <h4 className="mb-2 text-lg font-bold">{post.title}</h4>
-            )}
-            {post.imageUrl && (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={post.imageUrl}
-                alt={post.title || 'Post image'}
-                className="my-2 h-32 w-full rounded object-cover"
-              />
-            )}
-            {post.content && (
-              <p className="line-clamp-2 text-sm text-gray-700">
-                {post.content}
-              </p>
-            )}
-            {post.link && (
-              <a
-                href={post.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 block text-sm text-blue-500 underline"
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleEdit(post)}
+                className="text-sm text-blue-600 hover:underline"
               >
-                View Link
-              </a>
-            )}
+                Edit
+              </button>
+              <button
+                onClick={() => handleDelete(post.id)}
+                className="text-sm text-red-600 hover:underline"
+              >
+                Delete
+              </button>
+            </div>
           </div>
-        ))}
-        {posts.length === 0 && !loading && (
-          <div className="col-span-full text-center text-gray-500">
-            No posts found.
-          </div>
-        )}
-      </div>
+          {post.title && (
+            <h4 className="mb-2 text-lg font-bold">{post.title}</h4>
+          )}
+          {post.imageUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={post.imageUrl}
+              alt={post.title || 'Post image'}
+              className="my-2 h-32 w-full rounded object-cover"
+            />
+          )}
+          {post.content && (
+            <p className="line-clamp-2 text-sm text-gray-700">{post.content}</p>
+          )}
+          {post.link && (
+            <a
+              href={post.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 block text-sm text-blue-500 underline"
+            >
+              View Link
+            </a>
+          )}
+        </div>
+      ))}
+      {posts.length === 0 && !loading && (
+        <div className="col-span-full text-center text-gray-500">
+          No posts found.
+        </div>
+      )}
     </div>
   )
 }
