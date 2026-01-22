@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react'
 import { PostType } from '@/lib/posts'
 import { usePostsManager } from '@/hooks/use-posts-manager'
+import { Post } from '../components/Post'
 
 // Create a context to share the state
 const PostsContext = createContext<ReturnType<typeof usePostsManager> | null>(
@@ -352,72 +353,14 @@ export function PostPreview() {
   return (
     <div className="w-1/2 font-old-standard-tt">
       <h3 className="mb-4 text-lg font-bold text-(--color-BGnav) font-kingthingsSpikeless">Preview</h3>
-      <div className="rounded border border-(--color-BGdivider) bg-BGpage p-4 shadow">
-        {formData.type !== 'IMAGE' && (
-          <div className="mb-2 flex items-start justify-between">
-            <div className="flex flex-col gap-1">
-              <span className="w-fit rounded bg-(--color-BGdivider) px-2 py-1 text-xs font-semibold text-TEXTmain">
-                {formData.type}
-              </span>
-              <span className="text-xs text-gray-500">
-                {new Date().toLocaleDateString()}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {formData.type === 'TEXT' && (
-          <>
-            {formData.title && (
-              <h4 className="mb-2 text-lg font-bold">{formData.title}</h4>
-            )}
-            {formData.content && (
-              <p className="whitespace-pre-wrap text-sm text-gray-700">
-                {formData.content}
-              </p>
-            )}
-          </>
-        )}
-
-        {formData.type === 'IMAGE' && formData.imageUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={formData.imageUrl}
-            alt="Post image"
-            className="w-full rounded object-cover"
-          />
-        )}
-
-        {formData.type === 'FILM' && (
-          <>
-            {formData.title && (
-              <h4 className="mb-2 text-lg font-bold">{formData.title}</h4>
-            )}
-            <div className="flex gap-4">
-              {formData.imageUrl && (
-                <a
-                  href={formData.link || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="shrink-0"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={formData.imageUrl}
-                    alt={formData.title || 'Movie Poster'}
-                    className="w-32 rounded object-cover hover:opacity-90"
-                  />
-                </a>
-              )}
-              {formData.content && (
-                <p className="whitespace-pre-wrap text-sm text-gray-700">
-                  {formData.content}
-                </p>
-              )}
-            </div>
-          </>
-        )}
-      </div>
+      <Post
+        type={formData.type || 'TEXT'}
+        title={formData.title}
+        content={formData.content}
+        imageUrl={formData.imageUrl}
+        link={formData.link}
+        createdAt={new Date()}
+      />
     </div>
   )
 }
@@ -428,91 +371,28 @@ export function PostsList() {
   return (
     <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 font-old-standard-tt">
       {posts.map((post) => (
-        <div
+        <Post
           key={post.id}
-          className="rounded border border-(--color-BGdivider) bg-BGpage p-4 shadow transition hover:shadow-md"
+          type={post.type || 'TEXT'}
+          title={post.title || undefined}
+          content={post.content || undefined}
+          imageUrl={post.imageUrl || undefined}
+          link={post.link || undefined}
+          createdAt={post.createdAt}
         >
-          <div className="mb-2 flex items-start justify-between">
-            {post.type !== 'IMAGE' ? (
-              <div className="flex flex-col gap-1">
-                <span className="w-fit rounded bg-(--color-BGdivider) px-2 py-1 text-xs font-semibold text-TEXTmain">
-                  {post.type}
-                </span>
-                <span className="text-xs text-gray-500">
-                  {new Date(post.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-            ) : (
-              <div></div>
-            )}
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleEdit(post)}
-                className="text-sm text-(--color-BGnav) hover:underline"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => handleDelete(post.id)}
-                className="text-sm text-red-600 hover:underline"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-
-          {post.type === 'TEXT' && (
-            <>
-              {post.title && (
-                <h4 className="mb-2 text-lg font-bold">{post.title}</h4>
-              )}
-              {post.content && (
-                <p className="line-clamp-4 whitespace-pre-wrap text-sm text-gray-700">
-                  {post.content}
-                </p>
-              )}
-            </>
-          )}
-
-          {post.type === 'IMAGE' && post.imageUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={post.imageUrl}
-              alt="Post image"
-              className="w-full rounded object-cover"
-            />
-          )}
-
-          {post.type === 'FILM' && (
-            <>
-              {post.title && (
-                <h4 className="mb-2 text-lg font-bold">{post.title}</h4>
-              )}
-              <div className="flex gap-4">
-                {post.imageUrl && (
-                  <a
-                    href={post.link || '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="shrink-0"
-                  >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={post.imageUrl}
-                      alt={post.title || 'Poster'}
-                      className="w-24 rounded object-cover hover:opacity-90"
-                    />
-                  </a>
-                )}
-                {post.content && (
-                  <p className="line-clamp-4 whitespace-pre-wrap text-sm text-gray-700">
-                    {post.content}
-                  </p>
-                )}
-              </div>
-            </>
-          )}
-        </div>
+          <button
+            onClick={() => handleEdit(post)}
+            className="text-sm text-(--color-BGnav) hover:underline"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => handleDelete(post.id)}
+            className="text-sm text-red-600 hover:underline"
+          >
+            Delete
+          </button>
+        </Post>
       ))}
       {posts.length === 0 && !loading && (
         <div className="col-span-full text-center text-gray-500">

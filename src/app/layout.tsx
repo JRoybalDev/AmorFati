@@ -21,7 +21,7 @@ export default function RootLayout({
           <FilterProvider>
             <div className={`w-screen h-screen flex flex-col md:flex-row`}>
               <Navbar />
-              <main className={`w-full h-screen bg-BGpage `}>
+              <main className={`w-full h-screen bg-BGpage overflow-y-scroll`}>
                 {children}
               </main>
             </div>

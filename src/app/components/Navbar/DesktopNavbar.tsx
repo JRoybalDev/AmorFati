@@ -44,10 +44,16 @@ function DesktopNavbar({ navItems }: NavItems) {
       <div className='border-b-6 rounded-lg border-BGdivider' />
 
       <SignedIn>
-        <SignOutButton>
-          <button className='font-semibold text-h3 hover:cursor-pointer hover:text-HOVERlink duration-250 py-4'>Sign out</button>
-        </SignOutButton>
-        <div className='border-b-6 rounded-lg border-BGdivider' />
+        <div className='flex flex-col gap-4 py-4'>
+          <Link className='font-semibold text-h3 hover:text-HOVERlink duration-250' href={'/dashboard'}>Dashboard</Link>
+          <SignOutButton>
+            <p className='font-semibold text-h3 hover:cursor-pointer hover:text-HOVERlink duration-250'>Sign out</p>
+          </SignOutButton>
+          <div className='border-b-6 rounded-lg border-BGdivider' />
+        </div>
+
+
+
       </SignedIn>
 
       {/* Copyright */}

@@ -8,7 +8,7 @@ async function Dashboard() {
   const user = await currentUser()
 
   if (!user) {
-    redirect('/sign-in')
+    redirect('/signin')
   }
   const email = user.emailAddresses[0]?.emailAddress
 
@@ -34,15 +34,15 @@ async function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--color-BGpage)] p-8 font-[family-name:var(--font-old-standard-tt)]">
+    <div className="min-h-screen bg-BGpage p-8 font-old-standard-tt">
       <PostsProvider authorId={dbUser.id}>
         <div className="mx-auto max-w-7xl space-y-12">
           <section>
             <PostsForm />
           </section>
 
-          <section className="border-t border-[var(--color-BGdivider)] pt-8">
-            <h2 className="mb-6 text-3xl text-[var(--color-BGnav)] font-[family-name:var(--font-kingthingsSpikeless)]">
+          <section className="border-t border-(--color-BGdivider) pt-8">
+            <h2 className="mb-6 text-3xl text-(--color-BGnav) font-kingthingsSpikeless">
               Your Posts
             </h2>
             <PostsList />
