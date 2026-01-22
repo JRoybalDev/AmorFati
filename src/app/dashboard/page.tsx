@@ -40,11 +40,7 @@ async function Dashboard() {
           <section>
             <PostsForm />
           </section>
-
           <section className="border-t border-(--color-BGdivider) pt-8">
-            <h2 className="mb-6 text-3xl text-(--color-BGnav) font-kingthingsSpikeless">
-              Your Posts
-            </h2>
             <PostsList />
           </section>
         </div>

@@ -35,8 +35,6 @@ export function PostsProvider({ children, authorId }: PostsProviderProps) {
 
 export function PostsForm() {
   const {
-    filterType,
-    setFilterType,
     loading,
     error,
     tmdbQuery,
@@ -122,19 +120,6 @@ export function PostsForm() {
     <>
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-bold text-(--color-BGnav) font-kingthingsSpikeless">Manage Posts</h2>
-        <div>
-          <label className="mr-2 font-medium font-old-standard-tt text-TEXTform opacity-70">Filter:</label>
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value as PostType | 'ALL')}
-            className="rounded border border-(--color-BGdivider) p-1 font-old-standard-tt bg-white text-TEXTform"
-          >
-            <option value="ALL">All</option>
-            <option value="TEXT">Text</option>
-            <option value="IMAGE">Image</option>
-            <option value="FILM">Film</option>
-          </select>
-        </div>
       </div>
       <div className='flex w-full gap-4'>
         <form
@@ -366,39 +351,61 @@ export function PostPreview() {
 }
 
 export function PostsList() {
-  const { posts, loading, handleEdit, handleDelete } = usePosts()
+  const { posts, loading, handleEdit, handleDelete, filterType, setFilterType } = usePosts()
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 font-old-standard-tt">
-      {posts.map((post) => (
-        <Post
-          key={post.id}
-          type={post.type || 'TEXT'}
-          title={post.title || undefined}
-          content={post.content || undefined}
-          imageUrl={post.imageUrl || undefined}
-          link={post.link || undefined}
-          createdAt={post.createdAt}
-        >
-          <button
-            onClick={() => handleEdit(post)}
-            className="text-sm text-(--color-BGnav) hover:underline"
+    <>
+      <div className='flex justify-between'>
+        <h2 className="mb-6 text-3xl text-(--color-BGnav) font-kingthingsSpikeless">
+          Your Posts
+        </h2>
+        <div className="mb-4">
+          <label className="mr-2 font-medium font-old-standard-tt text-TEXTform opacity-70">
+            Filter:
+          </label>
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value as PostType | 'ALL')}
+            className="rounded border border-(--color-BGdivider) p-1 font-old-standard-tt bg-white text-TEXTform"
           >
-            Edit
-          </button>
-          <button
-            onClick={() => handleDelete(post.id)}
-            className="text-sm text-red-600 hover:underline"
-          >
-            Delete
-          </button>
-        </Post>
-      ))}
-      {posts.length === 0 && !loading && (
-        <div className="col-span-full text-center text-gray-500">
-          No posts found.
+            <option value="ALL">All</option>
+            <option value="TEXT">Text</option>
+            <option value="IMAGE">Image</option>
+            <option value="FILM">Film</option>
+          </select>
         </div>
-      )}
-    </div>
+      </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 font-old-standard-tt">
+        {posts.map((post) => (
+          <Post
+            key={post.id}
+            type={post.type || 'TEXT'}
+            title={post.title || undefined}
+            content={post.content || undefined}
+            imageUrl={post.imageUrl || undefined}
+            link={post.link || undefined}
+            createdAt={post.createdAt}
+          >
+            <button
+              onClick={() => handleEdit(post)}
+              className="text-sm text-(--color-BGnav) hover:underline"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => handleDelete(post.id)}
+              className="text-sm text-red-600 hover:underline"
+            >
+              Delete
+            </button>
+          </Post>
+        ))}
+        {posts.length === 0 && !loading && (
+          <div className="col-span-full text-center text-gray-500">
+            No posts found.
+          </div>
+        )}
+      </div>
+    </>
   )
 }
