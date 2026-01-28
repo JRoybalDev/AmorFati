@@ -42,6 +42,7 @@ export function PostsForm() {
     tmdbResults,
     isSearching,
     searchContainerRef,
+    movieTitle,
     isEditing,
     formData,
     handleInputChange,
@@ -226,79 +227,90 @@ export function PostsForm() {
                     </ul>
                   )}
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-TEXTform opacity-70">Movie Title</label>
-                  <input
-                    type="text"
-                    name="link"
-                    value={formData.link}
-                    onChange={handleInputChange}
-                    placeholder={`${formData.type === 'FILM' && "Autofilled from 'Search TMDB' field..."}`}
-                    className="w-full rounded border border-(--color-BGdivider) bg-gray-100 p-2 text-TEXTform placeholder:text-TEXTform placeholder:opacity-50"
-                  />
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-TEXTform opacity-70">Movie Title</label>
+                    <input
+                      type="text"
+                      value={movieTitle}
+                      readOnly
+                      className="w-full rounded border border-(--color-BGdivider) bg-gray-100 p-2 text-TEXTform opacity-70"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-TEXTform opacity-70">TMDB Movie Poster URL</label>
+                    <input
+                      type="text"
+                      name="imageUrl"
+                      value={formData.imageUrl}
+                      onChange={handleInputChange}
+                      placeholder="Autofilled from 'Search TMDB' field..."
+                      className="w-full rounded border border-(--color-BGdivider) bg-gray-100 p-2 text-TEXTform placeholder:text-TEXTform placeholder:opacity-50"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-TEXTform opacity-70">TMDB Link</label>
+                    <input
+                      type="text"
+                      name="link"
+                      value={formData.link}
+                      onChange={handleInputChange}
+                      placeholder="Autofilled from 'Search TMDB' field..."
+                      className="w-full rounded border border-(--color-BGdivider) bg-gray-100 p-2 text-TEXTform placeholder:text-TEXTform placeholder:opacity-50"
+                    />
+                  </div>
                 </div>
               </div>
             )}
 
-            {(formData.type === 'IMAGE' || formData.type === 'FILM') && (
+            {formData.type === 'IMAGE' && (
               <div>
                 <label className="block text-sm font-medium text-TEXTform opacity-70">
-                  {formData.type === 'FILM' ? 'Movie Poster URL' : 'Image URL'}
+                  Image URL
                 </label>
-                {formData.type === 'IMAGE' ? (
-                  <div className="flex flex-col gap-2">
-                    {!isEditing && (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <input
-                          type="file"
-                          id="imageUpload"
-                          accept="image/*"
-                          onChange={handleImageUpload}
-                          disabled={uploading || (!!formData.imageUrl && !selectedFile)}
-                          className="hidden"
-                          ref={fileInputRef}
-                        />
-                        <label
-                          htmlFor="imageUpload"
-                          className={`cursor-pointer rounded bg-(--color-BGbutton) px-4 py-2 text-TEXTmain hover:bg-(--color-HOVERbutton) font-kingthingsSpikeless whitespace-nowrap ${(uploading || (!!formData.imageUrl && !selectedFile)) ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
-                        >
-                          Choose Image
-                        </label>
-                        {(selectedFile || formData.imageUrl) && (
-                          <button
-                            type="button"
-                            onClick={handleRemoveImage}
-                            className="rounded bg-red-500 px-3 py-2 text-sm text-white hover:bg-red-600 font-kingthingsSpikeless"
-                          >
-                            Remove Image
-                          </button>
-                        )}
-                        {selectedFile && <span className="min-w-0 truncate text-sm text-gray-600">{selectedFile.name}</span>}
-                      </div>
-                    )}
-                    {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
-                    {!selectedFile && (
+                <div className="flex flex-col gap-2">
+                  {!isEditing && (
+                    <div className="flex flex-wrap items-center gap-2">
                       <input
-                        type="text"
-                        name="imageUrl"
-                        value={formData.imageUrl}
-                        onChange={handleInputChange}
-                        placeholder="Or paste image URL..."
-                        className="w-full rounded border border-(--color-BGdivider) p-2 bg-white text-TEXTform placeholder:text-TEXTform placeholder:opacity-50"
+                        type="file"
+                        id="imageUpload"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        disabled={uploading || (!!formData.imageUrl && !selectedFile)}
+                        className="hidden"
+                        ref={fileInputRef}
                       />
-                    )}
-                  </div>
-                ) : (
-                  <input
-                    type="text"
-                    name="imageUrl"
-                    value={formData.imageUrl}
-                    onChange={handleInputChange}
-                    placeholder={`${formData.type === 'FILM' && "Autofilled from 'Search TMDB' field..."}`}
-                    className={`w-full rounded border border-(--color-BGdivider) p-2 ${formData.type === 'FILM' && 'bg-gray-100'} text-TEXTform placeholder:text-TEXTform placeholder:opacity-50`}
-                  />
-                )}
+                      <label
+                        htmlFor="imageUpload"
+                        className={`cursor-pointer rounded bg-(--color-BGbutton) px-4 py-2 text-TEXTmain hover:bg-(--color-HOVERbutton) font-kingthingsSpikeless whitespace-nowrap ${(uploading || (!!formData.imageUrl && !selectedFile)) ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                      >
+                        Choose Image
+                      </label>
+                      {(selectedFile || formData.imageUrl) && (
+                        <button
+                          type="button"
+                          onClick={handleRemoveImage}
+                          className="rounded bg-red-500 px-3 py-2 text-sm text-white hover:bg-red-600 font-kingthingsSpikeless"
+                        >
+                          Remove Image
+                        </button>
+                      )}
+                      {selectedFile && <span className="min-w-0 truncate text-sm text-gray-600">{selectedFile.name}</span>}
+                    </div>
+                  )}
+                  {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
+                  {!selectedFile && (
+                    <input
+                      type="text"
+                      name="imageUrl"
+                      value={formData.imageUrl}
+                      onChange={handleInputChange}
+                      placeholder="Or paste image URL..."
+                      className="w-full rounded border border-(--color-BGdivider) p-2 bg-white text-TEXTform placeholder:text-TEXTform placeholder:opacity-50"
+                    />
+                  )}
+                </div>
               </div>
             )}
 

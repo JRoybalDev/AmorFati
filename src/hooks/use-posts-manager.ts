@@ -22,6 +22,7 @@ export function usePostsManager(authorId: string) {
   const [tmdbResults, setTmdbResults] = useState<TmdbMovie[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const searchContainerRef = useRef<HTMLDivElement>(null)
+  const [movieTitle, setMovieTitle] = useState('')
 
   // Form state
   const [isEditing, setIsEditing] = useState<string | null>(null)
@@ -78,6 +79,7 @@ export function usePostsManager(authorId: string) {
         imageUrl: '',
         link: '',
       })
+      setMovieTitle('')
       setTmdbQuery('')
       setTmdbResults([])
       setIsEditing(null)
@@ -98,6 +100,7 @@ export function usePostsManager(authorId: string) {
       imageUrl: post.imageUrl || '',
       link: post.link || '',
     })
+    setMovieTitle('')
     setTmdbQuery('')
     setTmdbResults([])
   }
@@ -111,6 +114,7 @@ export function usePostsManager(authorId: string) {
       imageUrl: '',
       link: '',
     })
+    setMovieTitle('')
   }
 
   useEffect(() => {
@@ -160,9 +164,10 @@ export function usePostsManager(authorId: string) {
   }, [])
 
   const selectMovie = (movie: TmdbMovie) => {
+    setMovieTitle(movie.title || movie.name || '')
     setFormData({
       ...formData,
-      link: movie.title || movie.name,
+      link: `https://www.themoviedb.org/${movie.media_type === 'tv' ? 'tv' : 'movie'}/${movie.id}`,
       imageUrl: movie.poster_path ? `https://image.tmdb.org/t/p/w500${movie.poster_path}` : '',
     })
     setTmdbResults([])
@@ -193,6 +198,7 @@ export function usePostsManager(authorId: string) {
     tmdbResults,
     isSearching,
     searchContainerRef,
+    movieTitle,
     isEditing,
     formData,
     handleInputChange,

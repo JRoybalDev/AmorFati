@@ -20,8 +20,24 @@ export function Post({
   createdAt,
   children,
 }: PostProps) {
+  // Types: IMAGE, TEXT, FILM
+  /*
+    model Post {
+      id        String   @id @default(uuid())
+      createdAt DateTime @default(now())
+      updatedAt DateTime @updatedAt
+      type      PostType
+      title     String?
+      content   String?  @db.Text
+      imageUrl  String?  @map("image_url")
+      link      String?
+      author    User     @relation(fields: [authorId], references: [id])
+      authorId  String
+    }
+  */
   return (
     <div className="rounded border border-(--color-BGdivider) bg-BGpage p-4 shadow transition hover:shadow-md font-old-standard-tt">
+
       <div className="mb-2 flex items-start justify-between">
         {type !== 'IMAGE' ? (
           <div className="flex flex-col gap-1">
