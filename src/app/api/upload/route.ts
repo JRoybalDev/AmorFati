@@ -19,8 +19,9 @@ export async function POST(request: Request) {
     const apiKey = process.env.ARCON_API_KEY
 
     // Upload to the external backend
-    // We assume the upload endpoint follows the convention /upload/file/{folder}
-    const response = await fetch('http://arcon-api.duckdns.org:7777/api/AmorFati/upload/file/Posts', {
+    // Endpoint: /api/:projectname/upload/images/:folder
+    const folder = 'Posts/Images'
+    const response = await fetch(`http://arcon-api.duckdns.org:7777/api/AmorFati/upload/images/${encodeURIComponent(folder)}`, {
       method: 'POST',
       headers: apiKey ? {
         'x-api-key': apiKey, // Replace with the actual header name required by your backend
@@ -37,9 +38,18 @@ export async function POST(request: Request) {
 
     // Try to get the filename from the response, otherwise use the original name
     let filename = file.name
+    let url = ''
+
     try {
       const data = await response.json()
-      if (data?.filename) {
+      if (data?.file?.url) {
+        url = data.file.url
+      } else if (data?.url) {
+        url = data.url
+      }
+      if (data?.file?.filename) {
+        filename = data.file.filename
+      } else if (data?.filename) {
         filename = data.filename
       }
     } catch (e) {
@@ -47,9 +57,12 @@ export async function POST(request: Request) {
     }
 
     // Construct the public URL
-    const url = `http://arcon-api.duckdns.org:7777/api/AmorFati/images/file/Posts/${filename}`
+    if (!url) {
+      url = `http://arcon-api.duckdns.org:7777/content/AmorFati/Posts/Images/${filename}`
+    }
 
-    return NextResponse.json({ url })
+    // Proxy the URL through our backend to include the API key
+    return NextResponse.json({ url: `/api/proxy?url=${encodeURIComponent(url)}` })
   } catch (error) {
     console.error('Upload error:', error)
     return NextResponse.json(
