@@ -2,6 +2,10 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { PostType } from '@/generated/prisma';
 
+const FILE_API_URL = process.env.FILE_API_URL || 'http://localhost:4000';
+const PROJECT_NAME = process.env.PROJECT_NAME || 'default';
+const ARCON_API_KEY = process.env.ARCON_API_KEY || '';
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const type = searchParams.get('type');
@@ -16,7 +20,32 @@ export async function GET(request: Request) {
         },
       },
     });
-    return NextResponse.json(posts);
+
+    const postsWithImages = await Promise.all(posts.map(async (post) => {
+      if (post.type === 'IMAGE' && post.imageUrl && !post.imageUrl.startsWith('http') && !post.imageUrl.startsWith('/')) {
+        try {
+          const folderName = post.imageUrl;
+          const res = await fetch(`${FILE_API_URL}/api/${PROJECT_NAME}/browse/files/${folderName}`, {
+            headers: {
+              'x-api-key': ARCON_API_KEY
+            }
+          });
+          if (res.ok) {
+            const data = await res.json();
+            // Assuming the API returns a list of files with URLs or just URLs
+            const files = Array.isArray(data) ? data : (data.files || []);
+            const images = files.map((f: any) => typeof f === 'string' ? f : f.url);
+            return { ...post, images };
+          }
+        } catch (e) {
+          // Not a directory or error reading, fallback to single image
+          return { ...post, images: [post.imageUrl] };
+        }
+      }
+      return { ...post, images: post.imageUrl ? [post.imageUrl] : [] };
+    }));
+
+    return NextResponse.json(postsWithImages);
   } catch (error) {
     console.error('Error fetching posts:', error);
     return NextResponse.json({ error: 'Error fetching posts' }, { status: 500 });

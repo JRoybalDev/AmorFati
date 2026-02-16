@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react'
-import { PostType } from '@/lib/posts'
+import { PostsApi, PostType } from '@/lib/posts'
 import { usePostsManager } from '@/hooks/use-posts-manager'
 import { Post } from '../components/Post'
 
@@ -52,9 +52,13 @@ export function PostsForm() {
   } = usePosts()
 
   const [uploading, setUploading] = useState(false)
-  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const shouldSubmit = useRef(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const previewImages = React.useMemo(() => {
+    return selectedFiles.map(file => URL.createObjectURL(file))
+  }, [selectedFiles])
 
   useEffect(() => {
     if (shouldSubmit.current) {
@@ -64,23 +68,29 @@ export function PostsForm() {
   }, [formData.imageUrl, handleSubmit])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.[0]) return
+    if (!e.target.files?.length) return
 
-    const file = e.target.files[0]
+    const files = Array.from(e.target.files)
 
-    if (file.size > 50 * 1024 * 1024) {
-      alert('File size exceeds 50MB limit.')
-      e.target.value = ''
+    if (files.length > 5) {
+      alert('You can only upload up to 5 images.')
       return
     }
 
-    setSelectedFile(file)
-    const url = URL.createObjectURL(file)
+    for (const file of files) {
+      if (file.size > 50 * 1024 * 1024) {
+        alert(`File ${file.name} size exceeds 50MB limit.`)
+        return
+      }
+    }
+
+    setSelectedFiles(files)
+    const url = URL.createObjectURL(files[0])
     handleInputChange({ target: { name: 'imageUrl', value: url } } as any)
   }
 
   const handleRemoveImage = () => {
-    setSelectedFile(null)
+    setSelectedFiles([])
     handleInputChange({ target: { name: 'imageUrl', value: '' } } as any)
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
@@ -90,21 +100,11 @@ export function PostsForm() {
   const onFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (selectedFile) {
+    if (selectedFiles.length > 0) {
       setUploading(true)
-      const data = new FormData()
-      data.append('file', selectedFile)
-
       try {
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: data,
-        })
-
-        if (!response.ok) throw new Error('Upload failed')
-
-        const { url } = await response.json()
-        setSelectedFile(null)
+        const url = await PostsApi.upload(selectedFiles)
+        setSelectedFiles([])
         shouldSubmit.current = true
         handleInputChange({ target: { name: 'imageUrl', value: url } } as any)
       } catch (error) {
@@ -275,19 +275,20 @@ export function PostsForm() {
                         type="file"
                         id="imageUpload"
                         accept="image/*"
+                        multiple
                         onChange={handleImageUpload}
-                        disabled={uploading || (!!formData.imageUrl && !selectedFile)}
+                        disabled={uploading || (!!formData.imageUrl && selectedFiles.length === 0)}
                         className="hidden"
                         ref={fileInputRef}
                       />
                       <label
                         htmlFor="imageUpload"
-                        className={`cursor-pointer rounded bg-(--color-BGbutton) px-4 py-2 text-TEXTmain hover:bg-(--color-HOVERbutton) font-kingthingsSpikeless whitespace-nowrap ${(uploading || (!!formData.imageUrl && !selectedFile)) ? 'opacity-50 cursor-not-allowed' : ''
+                        className={`cursor-pointer rounded bg-(--color-BGbutton) px-4 py-2 text-TEXTmain hover:bg-(--color-HOVERbutton) font-kingthingsSpikeless whitespace-nowrap ${(uploading || (!!formData.imageUrl && selectedFiles.length === 0)) ? 'opacity-50 cursor-not-allowed' : ''
                           }`}
                       >
                         Choose Image
                       </label>
-                      {(selectedFile || formData.imageUrl) && (
+                      {(selectedFiles.length > 0 || formData.imageUrl) && (
                         <button
                           type="button"
                           onClick={handleRemoveImage}
@@ -296,11 +297,11 @@ export function PostsForm() {
                           Remove Image
                         </button>
                       )}
-                      {selectedFile && <span className="min-w-0 truncate text-sm text-gray-600">{selectedFile.name}</span>}
+                      {selectedFiles.length > 0 && <span className="min-w-0 truncate text-sm text-gray-600">{selectedFiles.length} file(s) selected</span>}
                     </div>
                   )}
                   {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
-                  {!selectedFile && (
+                  {selectedFiles.length === 0 && (
                     <input
                       type="text"
                       name="imageUrl"
@@ -338,13 +339,13 @@ export function PostsForm() {
             </div>
           </div>
         </form>
-        <PostPreview />
+        {/* <PostPreview previewImages={previewImages.length > 0 ? previewImages : undefined} /> */}
       </div>
     </>
   )
 }
 
-export function PostPreview() {
+export function PostPreview({ previewImages }: { previewImages?: string[] }) {
   const { formData } = usePosts()
 
   return (
@@ -355,6 +356,7 @@ export function PostPreview() {
         title={formData.title}
         content={formData.content}
         imageUrl={formData.imageUrl}
+        images={previewImages}
         link={formData.link}
         createdAt={new Date()}
       />
@@ -395,6 +397,7 @@ export function PostsList() {
             title={post.title || undefined}
             content={post.content || undefined}
             imageUrl={post.imageUrl || undefined}
+            images={(post as any).images}
             link={post.link || undefined}
             createdAt={post.createdAt}
           >

@@ -1,5 +1,8 @@
-// src/components/Post.tsx
-import React from 'react'
+'use client'
+
+import Image from 'next/image'
+import React, { useState, useRef, useEffect } from 'react'
+import { ChevronUp, ChevronDown } from 'lucide-react'
 
 export interface PostProps {
   type: 'TEXT' | 'IMAGE' | 'FILM'
@@ -7,6 +10,7 @@ export interface PostProps {
   content?: string
   imageUrl?: string
   link?: string
+  images?: string[]
   createdAt?: string | Date
   children?: React.ReactNode
 }
@@ -16,91 +20,111 @@ export function Post({
   title,
   content,
   imageUrl,
+  images,
   link,
   createdAt,
   children,
 }: PostProps) {
-  // Types: IMAGE, TEXT, FILM
-  /*
-    model Post {
-      id        String   @id @default(uuid())
-      createdAt DateTime @default(now())
-      updatedAt DateTime @updatedAt
-      type      PostType
-      title     String?
-      content   String?  @db.Text
-      imageUrl  String?  @map("image_url")
-      link      String?
-      author    User     @relation(fields: [authorId], references: [id])
-      authorId  String
+  const [showUp, setShowUp] = useState(false)
+  const [showDown, setShowDown] = useState(false)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  const displayImages = images && images.length > 0 ? images : (imageUrl ? [imageUrl] : [])
+  const isMulti = displayImages.length > 2
+
+  const handleScroll = () => {
+    if (!scrollRef.current) return
+    const { scrollTop, scrollHeight, clientHeight } = scrollRef.current
+    setShowUp(scrollTop > 0)
+    setShowDown(scrollTop + clientHeight < scrollHeight - 1)
+  }
+
+  useEffect(() => {
+    if (isMulti) {
+      handleScroll()
     }
-  */
+  }, [isMulti, displayImages])
+
+  const scroll = (direction: 'up' | 'down') => {
+    if (!scrollRef.current) return
+    const { clientHeight } = scrollRef.current
+    const amount = clientHeight * 0.7
+    scrollRef.current.scrollBy({
+      top: direction === 'up' ? -amount : amount,
+      behavior: 'smooth'
+    })
+  }
+
   return (
-    <div className="rounded border border-(--color-BGdivider) bg-BGpage p-4 shadow transition hover:shadow-md font-old-standard-tt">
+    <div className="rounded border border-(--color-BGdivider) bg-BGpage p-4 shadow-sm h-fit flex flex-col text-black">
+      {type === "FILM" &&
+        <div>
+          {title && <h3 className="font-bold mb-2">{title}</h3>}
+          <Image
+            src={imageUrl || ""}
+            width={500}
+            height={500}
+            alt={title || ""}
+            className="w-full h-auto object-cover rounded"
+          />
+          {content && <p>{content}</p>}
+        </div>
+      }
 
-      <div className="mb-2 flex items-start justify-between">
-        {type !== 'IMAGE' ? (
-          <div className="flex flex-col gap-1">
-            <span className="w-fit rounded bg-(--color-BGdivider) px-2 py-1 text-xs font-semibold text-TEXTmain">
-              {type}
-            </span>
-            <span className="text-xs text-gray-500">
-              {new Date(createdAt || new Date()).toLocaleDateString()}
-            </span>
-          </div>
-        ) : (
-          <div></div>
-        )}
-        {children && <div className="flex gap-2">{children}</div>}
-      </div>
-
-      {type === 'TEXT' && (
-        <>
-          {title && <h4 className="mb-2 text-lg font-bold">{title}</h4>}
-          {content && (
-            <p className="whitespace-pre-wrap text-sm text-gray-700">
-              {content}
-            </p>
-          )}
-        </>
-      )}
-
-      {type === 'IMAGE' && imageUrl && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={imageUrl}
-          alt="Post image"
-          className="w-full rounded object-cover"
-        />
-      )}
-
-      {type === 'FILM' && (
-        <>
-          {title && <h4 className="mb-2 text-lg font-bold">{title}</h4>}
-          <div className="flex gap-4">
-            {imageUrl && (
-              <a
-                href={link || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="shrink-0"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={imageUrl}
-                  alt={title || 'Poster'}
-                  className="w-24 rounded object-cover hover:opacity-90"
+      {type === "IMAGE" && (
+        <div className="relative group">
+          <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            className={`flex flex-col gap-2 ${isMulti ? 'overflow-y-auto h-[500px]' : ''}`}
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            <style jsx>{`
+              div::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
+            {displayImages.map((img, idx) => (
+              <div key={idx} className="w-full">
+                <Image
+                  src={img}
+                  width={500}
+                  height={500}
+                  alt={title || `Image ${idx + 1}`}
+                  className="w-full h-auto object-cover rounded"
                 />
-              </a>
-            )}
-            {content && (
-              <p className="whitespace-pre-wrap text-sm text-gray-700">
-                {content}
-              </p>
-            )}
+              </div>
+            ))}
           </div>
-        </>
+
+          {isMulti && showUp && (
+            <button
+              onClick={(e) => { e.preventDefault(); scroll('up') }}
+              className="absolute top-0 left-0 w-full h-12 bg-linear-to-b from-black/50 to-transparent flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity rounded-t"
+            >
+              <ChevronUp />
+            </button>
+          )}
+
+          {isMulti && showDown && (
+            <button
+              onClick={(e) => { e.preventDefault(); scroll('down') }}
+              className="absolute bottom-0 left-0 w-full h-12 bg-linear-to-t from-black/50 to-transparent flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity rounded-b"
+            >
+              <ChevronDown />
+            </button>
+          )}
+        </div>
       )}
+
+      {type === "TEXT" &&
+        <div>
+          {title && <h3 className="font-bold mb-2">{title}</h3>}
+          {content && <p>{content}</p>}
+        </div>
+      }
+
+      {children && <div className="mt-auto pt-2 flex gap-2">{children}</div>}
     </div>
   )
 }

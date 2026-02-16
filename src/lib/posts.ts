@@ -77,4 +77,22 @@ export const PostsApi = {
       throw new Error(errorData.error || 'Failed to delete post');
     }
   },
+
+  upload: async (files: File[]): Promise<string> => {
+    const formData = new FormData();
+    files.forEach((file) => formData.append('file', file));
+
+    const res = await fetch('/api/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || 'Failed to upload files');
+    }
+
+    const { url } = await res.json();
+    return url;
+  },
 };
