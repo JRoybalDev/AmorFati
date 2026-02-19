@@ -1,11 +1,11 @@
 generator client {
-  provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+  provider   = "prisma-client-js"
+  output     = "../src/generated/prisma"
+  engineType = "client"
 }
 
 datasource db {
   provider = "postgresql"
-
 }
 
 enum PostType {
@@ -36,4 +36,7 @@ model Post {
   link      String?
   author    User     @relation(fields: [authorId], references: [id])
   authorId  String
+  rating    Float?
+  year      String?
+  filmTitle String?
 }

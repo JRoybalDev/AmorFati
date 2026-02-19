@@ -4,6 +4,9 @@ import React, { createContext, useContext, useState, useRef, useEffect } from 'r
 import { PostsApi, PostType } from '@/lib/posts'
 import { usePostsManager } from '@/hooks/use-posts-manager'
 import { Post } from '../components/Post'
+import {
+  Bold, Italic, List, Link as LinkIcon, Plus, Edit2, Trash2, Film
+} from 'lucide-react'
 
 // Create a context to share the state
 const PostsContext = createContext<ReturnType<typeof usePostsManager> | null>(
@@ -55,10 +58,6 @@ export function PostsForm() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const shouldSubmit = useRef(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const previewImages = React.useMemo(() => {
-    return selectedFiles.map(file => URL.createObjectURL(file))
-  }, [selectedFiles])
 
   useEffect(() => {
     if (shouldSubmit.current) {
@@ -118,108 +117,117 @@ export function PostsForm() {
   }
 
   return (
-    <>
-      <div className="mb-6 flex items-center justify-between">
-        <h2 className="text-2xl font-bold text-(--color-BGnav) font-kingthingsSpikeless">Manage Posts</h2>
+    <div className="space-y-8 font-sans">
+      {/* Header Section */}
+      <div className="flex items-end justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Content Studio</h1>
+          <p className="text-gray-500 mt-1">Create, manage and schedule your content across platforms.</p>
+        </div>
+        <button className="flex items-center gap-2 bg-gray-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm mb-1">
+          <Plus size={18} />
+          <span>New Post</span>
+        </button>
       </div>
-      <div className='flex w-full gap-4'>
-        <form
-          onSubmit={onFormSubmit}
-          className="mb-8 rounded border border-(--color-BGdivider) bg-BGpage p-4 shadow-sm w-1/2 font-old-standard-tt"
-        >
-          <h3 className="mb-4 text-lg font-bold text-(--color-BGnav) font-kingthingsSpikeless">
-            {isEditing ? 'Edit Post' : 'Create New Post'}
-          </h3>
-          {error && <div className="mb-2 text-red-500">{error}</div>}
 
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-TEXTform opacity-70">Type</label>
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleInputChange}
-                className="w-full rounded border border-(--color-BGdivider) p-2 bg-white text-TEXTform"
-                disabled={!!isEditing}
-              >
-                <option value="TEXT">Text</option>
-                <option value="IMAGE">Image</option>
-                <option value="FILM">Film</option>
-              </select>
+      <div className="grid grid-cols-1">
+        {/* Create Post Section - Full Width */}
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 h-full">
+          <div className="flex items-center justify-between mb-8">
+            <h2 className="text-xl font-bold text-gray-900">
+              {isEditing ? 'Edit Post' : 'Create New Post'}
+            </h2>
+            <div className="flex bg-gray-50 p-1 rounded-xl">
+              {['TEXT', 'IMAGE', 'FILM'].map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => handleInputChange({ target: { name: 'type', value: t } } as any)}
+                  className={`px-5 py-2 text-sm font-medium rounded-lg transition-all ${formData.type === t
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                    }`}
+                >
+                  {t.charAt(0) + t.slice(1).toLowerCase()}
+                </button>
+              ))}
             </div>
+          </div>
 
+          {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
+
+          <form onSubmit={onFormSubmit} className="space-y-6">
+            {/* Title Input */}
             {formData.type !== 'IMAGE' && (
               <div>
-                <label className="block text-sm font-medium text-TEXTform opacity-70">Title</label>
+                <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">Title</label>
                 <input
                   type="text"
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  className="w-full rounded border border-(--color-BGdivider) p-2 bg-white text-TEXTform placeholder:text-TEXTform placeholder:opacity-50"
+                  placeholder="Enter post title..."
+                  className="w-full bg-gray-50 border-none rounded-xl px-4 py-3.5 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-black/5 outline-none transition-all"
                 />
               </div>
             )}
 
+            {/* Content Area */}
             {(formData.type === 'TEXT' || formData.type === 'FILM') && (
               <div>
-                <label className="block text-sm font-medium text-TEXTform opacity-70">Content</label>
-                <textarea
-                  name="content"
-                  value={formData.content}
-                  onChange={handleInputChange}
-                  className="w-full rounded border border-(--color-BGdivider) p-2 bg-white text-TEXTform placeholder:text-TEXTform placeholder:opacity-50"
-                  rows={4}
-                />
+                <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">Content</label>
+                <div className="relative group">
+                  <textarea
+                    name="content"
+                    value={formData.content}
+                    onChange={handleInputChange}
+                    placeholder="Write your thoughts here..."
+                    rows={8}
+                    className="w-full bg-gray-50 border-none rounded-xl px-4 py-3.5 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-black/5 outline-none resize-none pb-14 transition-all"
+                  />
+                  {/* Visual Toolbar */}
+                  <div className="absolute bottom-3 left-4 flex gap-4 text-gray-400">
+                    <button type="button" className="hover:text-gray-600 transition-colors"><Bold size={18} /></button>
+                    <button type="button" className="hover:text-gray-600 transition-colors"><Italic size={18} /></button>
+                    <button type="button" className="hover:text-gray-600 transition-colors"><List size={18} /></button>
+                    <button type="button" className="hover:text-gray-600 transition-colors"><LinkIcon size={18} /></button>
+                  </div>
+                </div>
               </div>
             )}
 
+            {/* Film Search */}
             {formData.type === 'FILM' && (
-              <div>
-                <div
-                  className="mb-4 rounded border border-(--color-BGdivider) bg-white/50 p-4"
-                  ref={searchContainerRef}
-                >
-                  <label className="mb-2 block text-sm font-medium text-TEXTform opacity-70">
-                    Search TMDB
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={tmdbQuery}
-                      onChange={(e) => setTmdbQuery(e.target.value)}
-                      placeholder="Search for a movie..."
-                      className="w-full rounded border border-(--color-BGdivider) p-2 bg-white text-TEXTform placeholder:text-TEXTform placeholder:opacity-50"
-                    />
-                  </div>
-                  {isSearching && (
-                    <div className="mt-2 text-sm text-gray-500">Searching...</div>
-                  )}
+              <div className="space-y-4 pt-2">
+                <div className="relative" ref={searchContainerRef}>
+                  <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">Search Movie</label>
+                  <input
+                    type="text"
+                    value={tmdbQuery}
+                    onChange={(e) => setTmdbQuery(e.target.value)}
+                    placeholder="Search TMDB..."
+                    className="w-full bg-gray-50 border-none rounded-xl px-4 py-3.5 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-black/5 outline-none"
+                  />
                   {tmdbResults.length > 0 && (
-                    <ul className="mt-2 max-h-60 overflow-y-auto rounded border bg-white text-TEXTform">
+                    <ul className="absolute z-10 mt-2 w-full max-h-60 overflow-y-auto rounded-xl border border-gray-100 bg-white shadow-lg">
                       {tmdbResults.map((movie) => (
                         <li
                           key={movie.id}
                           onClick={() => selectMovie(movie)}
-                          className="flex cursor-pointer items-center gap-2 border-b border-(--color-BGdivider) p-2 hover:bg-BGpage"
+                          className="flex cursor-pointer items-center gap-3 border-b border-gray-50 p-3 hover:bg-gray-50 transition-colors"
                         >
                           {movie.poster_path && (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={`https://image.tmdb.org/t/p/w92${movie.poster_path}`}
                               alt={movie.title || movie.name}
-                              className="h-12 w-8 rounded object-cover"
+                              className="h-10 w-7 rounded object-cover"
                             />
                           )}
                           <div>
-                            <div className="font-bold">
-                              {movie.title || movie.name}
-                            </div>
+                            <div className="font-bold text-sm text-gray-900">{movie.title || movie.name}</div>
                             <div className="text-xs text-gray-500">
-                              {(movie.release_date || movie.first_air_date)?.split(
-                                '-',
-                              )[0]}
-                              {movie.media_type === 'tv' ? ' (TV)' : ''}
+                              {(movie.release_date || movie.first_air_date)?.split('-')[0]}
                             </div>
                           </div>
                         </li>
@@ -227,50 +235,23 @@ export function PostsForm() {
                     </ul>
                   )}
                 </div>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-TEXTform opacity-70">Movie Title</label>
-                    <input
-                      type="text"
-                      value={movieTitle}
-                      readOnly
-                      className="w-full rounded border border-(--color-BGdivider) bg-gray-100 p-2 text-TEXTform opacity-70"
-                    />
+
+                {movieTitle && (
+                  <div className="p-3 bg-blue-50 text-blue-700 rounded-xl text-sm font-medium flex items-center gap-2">
+                    <Film size={16} />
+                    Selected: {movieTitle}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-TEXTform opacity-70">TMDB Movie Poster URL</label>
-                    <input
-                      type="text"
-                      name="imageUrl"
-                      value={formData.imageUrl}
-                      onChange={handleInputChange}
-                      placeholder="Autofilled from 'Search TMDB' field..."
-                      className="w-full rounded border border-(--color-BGdivider) bg-gray-100 p-2 text-TEXTform placeholder:text-TEXTform placeholder:opacity-50"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-TEXTform opacity-70">TMDB Link</label>
-                    <input
-                      type="text"
-                      name="link"
-                      value={formData.link}
-                      onChange={handleInputChange}
-                      placeholder="Autofilled from 'Search TMDB' field..."
-                      className="w-full rounded border border-(--color-BGdivider) bg-gray-100 p-2 text-TEXTform placeholder:text-TEXTform placeholder:opacity-50"
-                    />
-                  </div>
-                </div>
+                )}
               </div>
             )}
 
+            {/* Image Upload */}
             {formData.type === 'IMAGE' && (
               <div>
-                <label className="block text-sm font-medium text-TEXTform opacity-70">
-                  Image URL
-                </label>
-                <div className="flex flex-col gap-2">
+                <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">Upload Image</label>
+                <div className="flex flex-col gap-4">
                   {!isEditing && (
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <input
                         type="file"
                         id="imageUpload"
@@ -283,24 +264,23 @@ export function PostsForm() {
                       />
                       <label
                         htmlFor="imageUpload"
-                        className={`cursor-pointer rounded bg-(--color-BGbutton) px-4 py-2 text-TEXTmain hover:bg-(--color-HOVERbutton) font-kingthingsSpikeless whitespace-nowrap ${(uploading || (!!formData.imageUrl && selectedFiles.length === 0)) ? 'opacity-50 cursor-not-allowed' : ''
-                          }`}
+                        className={`cursor-pointer rounded-xl bg-gray-900 px-5 py-3 text-sm font-medium text-white hover:bg-gray-800 transition-colors ${(uploading || (!!formData.imageUrl && selectedFiles.length === 0)) ? 'opacity-50 cursor-not-allowed' : ''}`}
                       >
-                        Choose Image
+                        Choose File
                       </label>
+                      {selectedFiles.length > 0 && <span className="text-sm text-gray-600">{selectedFiles.length} file(s) selected</span>}
                       {(selectedFiles.length > 0 || formData.imageUrl) && (
                         <button
                           type="button"
                           onClick={handleRemoveImage}
-                          className="rounded bg-red-500 px-3 py-2 text-sm text-white hover:bg-red-600 font-kingthingsSpikeless"
+                          className="text-sm text-red-500 hover:text-red-700 font-medium"
                         >
-                          Remove Image
+                          Remove
                         </button>
                       )}
-                      {selectedFiles.length > 0 && <span className="min-w-0 truncate text-sm text-gray-600">{selectedFiles.length} file(s) selected</span>}
                     </div>
                   )}
-                  {uploading && <p className="text-sm text-gray-500">Uploading...</p>}
+
                   {selectedFiles.length === 0 && (
                     <input
                       type="text"
@@ -308,119 +288,163 @@ export function PostsForm() {
                       value={formData.imageUrl}
                       onChange={handleInputChange}
                       placeholder="Or paste image URL..."
-                      className="w-full rounded border border-(--color-BGdivider) p-2 bg-white text-TEXTform placeholder:text-TEXTform placeholder:opacity-50"
+                      className="w-full bg-gray-50 border-none rounded-xl px-4 py-3.5 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-black/5 outline-none"
                     />
                   )}
                 </div>
               </div>
             )}
 
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={loading}
-                className="rounded bg-(--color-BGbutton) px-4 py-2 text-TEXTmain hover:bg-(--color-HOVERbutton) disabled:opacity-50 font-kingthingsSpikeless"
-              >
-                {loading
-                  ? 'Processing...'
-                  : isEditing
-                    ? 'Update Post'
-                    : 'Create Post'}
-              </button>
+            {/* Actions */}
+            <div className="flex items-center justify-end gap-3 pt-4">
               {isEditing && (
                 <button
                   type="button"
                   onClick={cancelEdit}
-                  className="rounded bg-(--color-BGdivider) px-4 py-2 text-TEXTmain hover:bg-(--color-BGnav) font-kingthingsSpikeless"
+                  className="px-6 py-3 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
                 >
                   Cancel
                 </button>
               )}
+              {!isEditing && (
+                <button
+                  type="button"
+                  className="px-6 py-3 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
+                >
+                  Save Draft
+                </button>
+              )}
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-8 py-3 text-sm font-bold bg-[#d4f34a] text-black rounded-full hover:bg-[#cce944] transition-colors disabled:opacity-50 shadow-sm hover:shadow-md"
+              >
+                {loading ? 'Processing...' : (isEditing ? 'Update Post' : 'Publish Now')}
+              </button>
             </div>
-          </div>
-        </form>
-        {/* <PostPreview previewImages={previewImages.length > 0 ? previewImages : undefined} /> */}
+          </form>
+        </div>
       </div>
-    </>
-  )
-}
-
-export function PostPreview({ previewImages }: { previewImages?: string[] }) {
-  const { formData } = usePosts()
-
-  return (
-    <div className="w-1/2 font-old-standard-tt">
-      <h3 className="mb-4 text-lg font-bold text-(--color-BGnav) font-kingthingsSpikeless">Preview</h3>
-      <Post
-        type={formData.type || 'TEXT'}
-        title={formData.title}
-        content={formData.content}
-        imageUrl={formData.imageUrl}
-        images={previewImages}
-        link={formData.link}
-        createdAt={new Date()}
-      />
     </div>
   )
 }
 
 export function PostsList() {
-  const { posts, loading, handleEdit, handleDelete, filterType, setFilterType } = usePosts()
+  const { posts, loading, handleEdit, handleDelete, filterType, setFilterType, currentPage, setCurrentPage, totalPages } = usePosts()
+
+  const getPaginationItems = (currentPage: number, totalPages: number) => {
+    const delta = 1
+    const range: (string | number)[] = []
+    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+      range.push(i)
+    }
+
+    if (currentPage - delta > 2) range.unshift('...')
+    if (currentPage + delta < totalPages - 1) range.push('...')
+
+    range.unshift(1)
+    if (totalPages > 1) range.push(totalPages)
+
+    return [...new Set(range)]
+  }
 
   return (
-    <>
-      <div className='flex justify-between'>
-        <h2 className="mb-6 text-3xl text-(--color-BGnav) font-kingthingsSpikeless">
-          Your Posts
-        </h2>
-        <div className="mb-4">
-          <label className="mr-2 font-medium font-old-standard-tt text-TEXTform opacity-70">
-            Filter:
-          </label>
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value as PostType | 'ALL')}
-            className="rounded border border-(--color-BGdivider) p-1 font-old-standard-tt bg-white text-TEXTform"
-          >
-            <option value="ALL">All</option>
-            <option value="TEXT">Text</option>
-            <option value="IMAGE">Image</option>
-            <option value="FILM">Film</option>
-          </select>
+    <div className="mt-12">
+      <div className="flex items-center justify-between mb-8">
+        <h2 className="text-2xl font-bold text-gray-900">Manage Posts</h2>
+
+        {/* Filter Tabs */}
+        <div className="flex bg-white p-1.5 rounded-full shadow-sm border border-gray-100">
+          {['ALL', 'TEXT', 'IMAGE', 'FILM'].map((type) => (
+            <button
+              key={type}
+              onClick={() => setFilterType(type as any)}
+              className={`px-5 py-2 text-xs font-bold rounded-full transition-all ${filterType === type
+                ? 'bg-gray-900 text-white shadow-md'
+                : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+            >
+              {type === 'ALL' ? 'All Posts' : (type === 'IMAGE' ? 'Photos' : (type === 'FILM' ? 'Films' : 'Text'))}
+            </button>
+          ))}
         </div>
       </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 font-old-standard-tt">
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
         {posts.map((post) => (
-          <Post
-            key={post.id}
-            type={post.type || 'TEXT'}
-            title={post.title || undefined}
-            content={post.content || undefined}
-            imageUrl={post.imageUrl || undefined}
-            images={(post as any).images}
-            link={post.link || undefined}
-            createdAt={post.createdAt}
-          >
-            <button
-              onClick={() => handleEdit(post)}
-              className="text-sm text-(--color-BGnav) hover:underline"
+          <div key={post.id} className={`h-full ${post.type === 'TEXT' || post.type === 'FILM' ? 'lg:col-span-2' : ''}`}>
+            <Post
+              type={post.type || 'TEXT'}
+              title={post.title || undefined}
+              content={post.content || undefined}
+              imageUrl={post.imageUrl || undefined}
+              images={(post as any).images}
+              link={post.link || undefined}
+              createdAt={post.createdAt}
+              rating={(post as any).rating ?? undefined}
+              year={(post as any).year ?? undefined}
+              filmTitle={(post as any).filmTitle ?? undefined}
             >
-              Edit
-            </button>
-            <button
-              onClick={() => handleDelete(post.id)}
-              className="text-sm text-red-600 hover:underline"
-            >
-              Delete
-            </button>
-          </Post>
+              <button
+                onClick={() => handleEdit(post)}
+                className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all"
+                title="Edit"
+              >
+                <Edit2 size={16} />
+              </button>
+              <button
+                onClick={() => handleDelete(post.id)}
+                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-all"
+                title="Delete"
+              >
+                <Trash2 size={16} />
+              </button>
+            </Post>
+          </div>
         ))}
         {posts.length === 0 && !loading && (
-          <div className="col-span-full text-center text-gray-500">
-            No posts found.
+          <div className="col-span-full py-12 text-center text-gray-400 bg-white rounded-3xl border border-dashed border-gray-200">
+            No posts found matching your filter.
           </div>
         )}
       </div>
-    </>
+
+      {/* Visual Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-12 gap-2">
+          <button
+            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            disabled={currentPage === 1}
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            &lt;
+          </button>
+          {getPaginationItems(currentPage, totalPages).map((item, index) => {
+            if (item === '...') {
+              return <span key={`${item}-${index}`} className="flex items-end px-2 text-gray-300 pb-2">...</span>
+            }
+            return (
+              <button
+                key={item}
+                onClick={() => setCurrentPage(item as number)}
+                className={`w-10 h-10 flex items-center justify-center rounded-full border transition-colors ${currentPage === item
+                  ? 'bg-gray-900 text-white font-bold shadow-md border-gray-900'
+                  : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+              >
+                {item}
+              </button>
+            )
+          })}
+          <button
+            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            disabled={currentPage === totalPages}
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            &gt;
+          </button>
+        </div>
+      )}
+    </div>
   )
 }
