@@ -111,7 +111,7 @@ export function Post({
                   {rating && (
                     <div className="flex items-center gap-1 text-yellow-400">
                       <Star size={12} fill="currentColor" />
-                      <span>{rating}</span>
+                      <span>{rating.toFixed(1)}</span>
                     </div>
                   )}
                   {year && <span>{year}</span>}
@@ -159,7 +159,7 @@ export function Post({
                       {rating && (
                         <div className="flex items-center gap-1 text-yellow-400">
                           <Star size={12} fill="currentColor" />
-                          <span>{rating}</span>
+                          <span>{rating.toFixed(1)}</span>
                         </div>
                       )}
                       {year && <span>{year}</span>}
