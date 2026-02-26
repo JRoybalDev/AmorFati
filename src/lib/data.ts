@@ -1,32 +1,32 @@
 import { prisma } from '@/lib/prisma'
 
-export const getOrCreateUser = async (
+export async function getOrCreateUser(
   email: string,
   username: string | null | undefined,
   firstName: string | null | undefined,
   lastName: string | null | undefined,
-  userId: string,
-) => {
-
-  if (!email || typeof email !== 'string' || email.trim() === '') {
-    throw new Error('Valid email is required to get or create user')
-  }
-
-  let dbUser = await prisma.user.findUnique({
-    where: {
-      email: email.trim(),
-    },
+  clerkId: string
+) {
+  // Check if user already exists
+  const user = await prisma.user.findUnique({
+    where: { email },
   })
 
-  if (!dbUser) {
-    dbUser = await prisma.user.create({
-      data: {
-        email: email.trim(),
-        username: username ?? userId,
-        name: `${firstName ?? ''} ${lastName ?? ''}`.trim(),
-      },
-    })
+  if (user) {
+    return user
   }
 
-  return dbUser
+  // Prepare data for new user
+  const name = [firstName, lastName].filter(Boolean).join(' ')
+  const fallbackUsername = `${email.split('@')[0]}-${Math.random().toString(36).slice(2, 7)}`
+
+  return await prisma.user.create({
+    data: {
+      id: clerkId,
+      email,
+      username: username || fallbackUsername,
+      name: name || username || fallbackUsername,
+      accountType: 'User',
+    },
+  })
 }

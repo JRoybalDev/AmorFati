@@ -1,18 +1,25 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { PostType } from '@/generated/prisma';
-
-const FILE_API_URL = process.env.FILE_API_URL || 'http://localhost:4000';
-const PROJECT_NAME = process.env.PROJECT_NAME || 'default';
-const ARCON_API_KEY = process.env.ARCON_API_KEY || '';
+import { randomUUID } from 'crypto';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const type = searchParams.get('type');
+  const typeParam = searchParams.get('type');
+  const authorIdParam = searchParams.get('authorId');
 
   try {
+    const where: any = {};
+    if (typeParam && Object.values(PostType).includes(typeParam as PostType)) {
+      where.type = typeParam as PostType;
+    }
+
+    if (authorIdParam) {
+      where.authorId = authorIdParam;
+    }
+
     const posts = await prisma.post.findMany({
-      where: type ? { type: type as PostType } : undefined,
+      where,
       orderBy: { createdAt: 'desc' },
       include: {
         author: {
@@ -21,31 +28,7 @@ export async function GET(request: Request) {
       },
     });
 
-    const postsWithImages = await Promise.all(posts.map(async (post) => {
-      if (post.type === 'IMAGE' && post.imageUrl && !post.imageUrl.startsWith('http') && !post.imageUrl.startsWith('/')) {
-        try {
-          const folderName = post.imageUrl;
-          const res = await fetch(`${FILE_API_URL}/api/${PROJECT_NAME}/browse/files/${folderName}`, {
-            headers: {
-              'x-api-key': ARCON_API_KEY
-            }
-          });
-          if (res.ok) {
-            const data = await res.json();
-            // Assuming the API returns a list of files with URLs or just URLs
-            const files = Array.isArray(data) ? data : (data.files || []);
-            const images = files.map((f: any) => typeof f === 'string' ? f : f.url);
-            return { ...post, images };
-          }
-        } catch (e) {
-          // Not a directory or error reading, fallback to single image
-          return { ...post, images: [post.imageUrl] };
-        }
-      }
-      return { ...post, images: post.imageUrl ? [post.imageUrl] : [] };
-    }));
-
-    return NextResponse.json(postsWithImages);
+    return NextResponse.json(posts);
   } catch (error) {
     console.error('Error fetching posts:', error);
     return NextResponse.json({ error: 'Error fetching posts' }, { status: 500 });
@@ -55,34 +38,40 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { type, title, content, imageUrl, link, authorId, createdAt } = body;
+    const { id, type, title, content, images, link, authorId, createdAt, tags, showDetails, rating, year, filmTitle } = body;
 
     // Basic validation based on PostType
     if (!type || !Object.values(PostType).includes(type)) {
       return NextResponse.json({ error: 'Invalid or missing post type' }, { status: 400 });
     }
 
-    if (type === 'IMAGE' && !imageUrl) {
-      return NextResponse.json({ error: 'Image URL is required for Image posts' }, { status: 400 });
+    if (type === 'IMAGE' && (!images || images.length === 0)) {
+      return NextResponse.json({ error: 'Images are required for Image posts' }, { status: 400 });
     }
 
     if (type === 'TEXT' && (!title || !content)) {
       return NextResponse.json({ error: 'Title and Content are required for Text posts' }, { status: 400 });
     }
 
-    if (type === 'FILM' && (!title || !content || !link || !imageUrl)) {
-      return NextResponse.json({ error: 'Post Title, Content, Movie Title, and Poster URL are required for Film posts' }, { status: 400 });
+    if (type === 'FILM' && (!title || !content || !link || !images || images.length === 0)) {
+      return NextResponse.json({ error: 'Post Title, Content, Movie Title, and Poster are required for Film posts' }, { status: 400 });
     }
 
     const post = await prisma.post.create({
       data: {
+        id: id || randomUUID(),
         type,
-        title: type === 'IMAGE' ? undefined : title,
-        content: type === 'IMAGE' ? undefined : content,
-        imageUrl: type === 'TEXT' ? undefined : imageUrl,
+        title,
+        content,
+        images: images || [],
         link: type === 'TEXT' || type === 'IMAGE' ? undefined : link,
         authorId, // In a real app, you would get this from the authenticated session
         createdAt: createdAt ? new Date(createdAt) : undefined,
+        tags,
+        showDetails,
+        rating,
+        year,
+        filmTitle,
       },
     });
 

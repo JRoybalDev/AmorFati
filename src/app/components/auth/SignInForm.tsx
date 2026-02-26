@@ -3,6 +3,7 @@
 import { useSignIn } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
+import Link from 'next/link'
 
 export default function SignInForm() {
   const { isLoaded, signIn, setActive } = useSignIn()
@@ -94,6 +95,12 @@ export default function SignInForm() {
         >
           {isLoading ? 'Signing in...' : 'Sign in'}
         </button>
+      </div>
+      <div className="text-center text-sm">
+        <span className="text-gray-600">Don&apos;t have an account? </span>
+        <Link href="/signup" className="font-medium text-black hover:text-gray-800 underline underline-offset-4">
+          Sign up
+        </Link>
       </div>
     </form>
   )

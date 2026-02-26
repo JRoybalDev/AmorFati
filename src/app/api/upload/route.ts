@@ -9,6 +9,11 @@ export async function POST(request: Request) {
   try {
     const data = await request.formData()
     const files: File[] | null = data.getAll('file') as unknown as File[]
+    const path = data.get('path') as string | null // Get the path from the form data
+
+    if (path) {
+      console.log(`[Upload API] Target path from client: ${path}`)
+    }
 
     console.log(`[Upload API] Received ${files?.length || 0} files`)
 
@@ -22,10 +27,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Too many files (max 5)' }, { status: 400 })
     }
 
-    const folderName = `${Date.now()}-${Math.random().toString(36).substring(7)}`
-    console.log(`[Upload API] Generated folder name: ${folderName}`)
+    // The path from the client is the full folder path (e.g., /Posts/Images/some-id).
+    // We use it directly. If it's not provided, we generate a new one.
+    let folderPath = path || `Posts/Images/${Date.now()}-${Math.random().toString(36).substring(7)}`
+    // Defensively trim any leading slash to prevent double slashes in the final URL.
+    if (folderPath.startsWith('/')) {
+      folderPath = folderPath.substring(1)
+    }
+    console.log(`[Upload API] Using folder path: ${folderPath}`)
 
-    // 1. Create folder in external API
+    // 1. Create folder in external API. We'll pass the full desired path.
     const createFolderUrl = `${FILE_API_URL}/api/${PROJECT_NAME}/upload/folder`
     console.log(`[Upload API] Creating folder at external API: ${createFolderUrl}`)
 
@@ -35,44 +46,55 @@ export async function POST(request: Request) {
         'Content-Type': 'application/json',
         'x-api-key': ARCON_API_KEY
       },
-      body: JSON.stringify({ folder: folderName }),
+      body: JSON.stringify({ folder: folderPath }), // Use folderPath here
     })
 
     console.log(`[Upload API] Create folder response status: ${folderRes.status}`)
 
     if (!folderRes.ok) {
       const errorText = await folderRes.text()
-      console.error(`[Upload API] Failed to create folder. Response: ${errorText}`)
-      throw new Error('Failed to create folder in external API')
-    }
-
-    // 2. Upload files to that folder
-    console.log('[Upload API] Starting file uploads to folder...')
-    for (const file of files) {
-      console.log(`[Upload API] Uploading file: ${file.name} (${file.size} bytes)`)
-      const formData = new FormData()
-      formData.append('file', file)
-
-      const uploadUrl = `${FILE_API_URL}/api/${PROJECT_NAME}/upload/images/${folderName}`
-      const uploadRes = await fetch(uploadUrl, {
-        method: 'POST',
-        headers: {
-          'x-api-key': ARCON_API_KEY
-        },
-        body: formData,
-      })
-
-      console.log(`[Upload API] Upload response for ${file.name}: ${uploadRes.status}`)
-      if (!uploadRes.ok) {
-        const errorText = await uploadRes.text()
-        console.error(`[Upload API] Failed to upload ${file.name}. Response: ${errorText}`)
+      // A 409 Conflict status likely means the folder already exists, which is fine.
+      if (folderRes.status !== 409) {
+        console.error(`[Upload API] Failed to create folder. Response: ${errorText}`)
+        throw new Error(`Failed to create folder in external API: ${errorText}`)
+      } else {
+        console.log(`[Upload API] Folder already exists or conflict occurred, proceeding with upload.`)
       }
     }
 
-    console.log(`[Upload API] Successfully processed uploads. Returning folder: ${folderName}`)
-    return NextResponse.json({ url: folderName })
+    // 2. Upload files to that folder using mass upload endpoint
+    console.log('[Upload API] Starting file uploads to folder...')
+
+    const formData = new FormData()
+    files.forEach((file) => formData.append('files', file))
+
+    // The external API expects the destination path in the form data.
+    formData.append('folder', folderPath)
+
+    const uploadUrl = `${FILE_API_URL}/api/${PROJECT_NAME}/upload/mass`
+    const uploadRes = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: {
+        'x-api-key': ARCON_API_KEY
+      },
+      body: formData,
+    })
+
+    if (!uploadRes.ok) {
+      const errorText = await uploadRes.text()
+      console.error(`[Upload API] Failed to upload files. Response: ${errorText}`)
+      throw new Error(`Failed to upload files: ${errorText}`)
+    }
+
+    // The external API is the source of truth for the final URLs after its own sanitization.
+    // We parse its response and forward it to the client.
+    const uploadedUrls = await uploadRes.json()
+
+    console.log(`[Upload API] Successfully processed uploads. Returning URLs from external API:`, uploadedUrls)
+    // Return the array of full URLs provided by the external API.
+    return NextResponse.json(uploadedUrls)
   } catch (error) {
     console.error('[Upload API] Critical error uploading files:', error)
-    return NextResponse.json({ success: false, message: 'Upload failed' }, { status: 500 })
+    return NextResponse.json({ success: false, message: (error as Error).message || 'Upload failed' }, { status: 500 })
   }
 }

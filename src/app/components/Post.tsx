@@ -7,31 +7,57 @@ export interface PostProps {
   type: 'TEXT' | 'IMAGE' | 'FILM'
   title?: string
   content?: string
-  imageUrl?: string
   link?: string
   images?: string[]
   createdAt?: string | Date
   rating?: number
   year?: string | number
   filmTitle?: string
+  tags?: string
+  showDetails?: boolean
   children?: React.ReactNode
+}
+
+const POST_VARIANTS = {
+  TEXT: {
+    container: 'flex flex-col rounded-2xl',
+    imageContainer: '',
+    image: '',
+    content: 'flex flex-1 flex-col',
+    footer: '',
+  },
+  IMAGE: {
+    container: 'flex flex-col rounded-2xl',
+    imageContainer: 'w-full min-h-[250px] py-6 px-3 flex items-center',
+    image: 'h-full object-contain',
+    content: 'flex flex-1 flex-col',
+    footer: '',
+  },
+  FILM: {
+    container: 'block rounded-2xl',
+    imageContainer: 'float-left w-2/5 aspect-9/16 mr-5 mb-2',
+    image: 'h-full object-cover',
+    content: '',
+    footer: 'clear-both',
+  },
 }
 
 export function Post({
   type,
   title,
   content,
-  imageUrl,
   images,
   link,
   createdAt,
   rating,
   year,
   filmTitle,
+  tags,
+  showDetails = true,
   children,
 }: PostProps) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const displayImages = images && images.length > 0 ? images : (imageUrl ? [imageUrl] : [])
+  const displayImages = images || []
 
   const handleNextImage = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -65,11 +91,13 @@ export function Post({
     return `${days}d ago`
   }
 
+  const styles = POST_VARIANTS[type]
+
   return (
-    <div className={`group relative overflow-hidden rounded-2xl bg-white shadow-sm transition-all hover:shadow-md border border-gray-100 ${type === 'FILM' ? 'block' : 'flex flex-col'}`}>
+    <div className={`group relative overflow-hidden bg-white shadow-sm transition-all hover:shadow-md border border-gray-100 ${styles.container}`}>
       {/* Image Section */}
       {currentImage && type !== 'TEXT' ? (
-        <div className={`relative bg-gray-100 group/image ${type === 'FILM' ? 'float-left w-2/5 aspect-9/16 mr-5 mb-2 ' : 'w-full h-[350px]'}`}>
+        <div className={`relative bg-gray-100 group/image ${styles.imageContainer}`}>
           {type === 'FILM' && link ? (
             <a href={link} target="_blank" rel="noopener noreferrer" className="block w-full h-full relative ">
               <img
@@ -95,7 +123,7 @@ export function Post({
               <img
                 src={currentImage}
                 alt={title || "Post image"}
-                className={`w-full block ${type === 'FILM' ? 'h-full object-cover ' : 'h-full object-contain'}`}
+                  className={`w-full block ${styles.image}`}
               />
               {/* Gallery Arrows */}
               {type === 'IMAGE' && displayImages.length > 1 && (
@@ -144,7 +172,7 @@ export function Post({
       ) : null}
 
       {/* Content Section */}
-      <div className={`p-5 ${type === 'FILM' ? '' : 'flex flex-1 flex-col'}`}>
+      <div className={`p-5 ${styles.content}`}>
         <div className="mb-2 flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
           {/* Text label moved here */}
           <span className="text-gray-500">{typeLabel}</span>
@@ -153,20 +181,29 @@ export function Post({
         </div>
 
         {/* Title */}
-        {title && (
+        {title && (type !== 'IMAGE' || showDetails) && (
           <h3 className="mb-2 text-lg font-bold text-gray-900 line-clamp-2 leading-tight">
             {title}
           </h3>
         )}
 
-        {content && (
+        {content && (type !== 'IMAGE' || showDetails) && (
           <p className="mb-4 text-sm text-gray-500 leading-relaxed flex-1">
             {content}
           </p>
         )}
 
+        {/* Tags */}
+        {tags && (
+          <div className="flex flex-wrap gap-1 mb-4">
+            {tags.split(',').map((tag, i) => (
+              <span key={i} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded-full">#{tag.trim()}</span>
+            ))}
+          </div>
+        )}
+
         {/* Footer - Actions only */}
-        <div className={`mt-auto flex items-center justify-end border-t border-gray-50 pt-4 ${type === 'FILM' ? 'clear-both' : ''}`}>
+        <div className={`mt-auto flex items-center justify-end border-t border-gray-50 pt-4 ${styles.footer}`}>
           <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
             {children}
           </div>
