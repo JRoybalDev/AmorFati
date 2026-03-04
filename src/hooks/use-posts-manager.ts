@@ -1,5 +1,3 @@
-'use client'
-
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { PostsApi, PostType, CreatePostRequest, UpdatePostRequest, Post } from '@/lib/posts'
 
@@ -119,7 +117,7 @@ export function usePostsManager(authorId: string) {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent): Promise<boolean> => {
     e.preventDefault()
     setError('')
     setLoading(true)
@@ -151,8 +149,10 @@ export function usePostsManager(authorId: string) {
       setTmdbResults([])
       setIsEditing(null)
       fetchPosts()
+      return true
     } catch (err: unknown) {
       setError((err as Error).message || 'Operation failed')
+      return false
     } finally {
       setLoading(false)
     }

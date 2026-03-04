@@ -2,7 +2,7 @@ import React from 'react'
 import { currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { getOrCreateUser } from '@/lib/data'
-import { PostsProvider, PostsForm, PostsList } from './posts-manager'
+import { PostsProvider, PostsList, PostsHeader, PostsWorkspace } from './posts-manager'
 
 async function Dashboard() {
   const user = await currentUser()
@@ -37,10 +37,9 @@ async function Dashboard() {
     <div className="min-h-screen bg-BGpage p-8 font-old-standard-tt">
       <PostsProvider authorId={dbUser.id}>
         <div className="mx-auto max-w-7xl space-y-12">
-          <section>
-            <PostsForm />
-          </section>
-          <section className="border-t border-(--color-BGdivider) pt-8">
+          <PostsHeader />
+          <PostsWorkspace />
+          <section className="border-t border-(--color-BGdivider)">
             <PostsList />
           </section>
         </div>

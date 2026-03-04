@@ -10,7 +10,16 @@ import {
 import { Reorder } from 'framer-motion'
 
 // Create a context to share the state
-const PostsContext = createContext<ReturnType<typeof usePostsManager> | null>(
+type GalleryItem = { id: string; url: string; file?: File }
+
+type PostsContextType = ReturnType<typeof usePostsManager> & {
+  galleryItems: GalleryItem[]
+  setGalleryItems: React.Dispatch<React.SetStateAction<GalleryItem[]>>
+  isFormVisible: boolean
+  setIsFormVisible: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const PostsContext = createContext<PostsContextType | null>(
   null,
 )
 
@@ -29,11 +38,76 @@ interface PostsProviderProps {
 
 export function PostsProvider({ children, authorId }: PostsProviderProps) {
   const postsManager = usePostsManager(authorId)
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([])
+  const [isFormVisible, setIsFormVisible] = useState(false)
+  const { isEditing, formData } = postsManager
+
+  useEffect(() => {
+    if (isEditing) {
+      const imgs = formData.images && formData.images.length > 0 ? formData.images : []
+      setGalleryItems(imgs.map((url: string, index: number) => ({ id: `${url}-${index}`, url })))
+      setIsFormVisible(true)
+    } else {
+      setGalleryItems([])
+    }
+  }, [isEditing, formData.images])
+
+  useEffect(() => {
+    if (!isEditing && (!formData.images || formData.images.length === 0)) {
+      setGalleryItems([])
+    }
+  }, [formData, isEditing])
+
+  const value = {
+    ...postsManager,
+    galleryItems,
+    setGalleryItems,
+    isFormVisible,
+    setIsFormVisible,
+  }
 
   return (
-    <PostsContext.Provider value={postsManager}>
+    <PostsContext.Provider value={value}>
       {children}
     </PostsContext.Provider>
+  )
+}
+
+export function PostsHeader() {
+  const { setIsFormVisible, cancelEdit } = usePosts()
+
+  const handleNewPost = () => {
+    cancelEdit()
+    setIsFormVisible((prev) => !prev)
+  }
+
+  return (
+    <div className="flex items-end justify-between">
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">Content Studio</h1>
+        <p className="text-gray-500 mt-1">Create, manage and schedule your content across platforms.</p>
+      </div>
+      <button
+        onClick={handleNewPost}
+        className="flex items-center gap-2 bg-gray-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm mb-1"
+      >
+        <Plus size={18} />
+        <span>New Post</span>
+      </button>
+    </div>
+  )
+}
+
+export function PostsWorkspace() {
+  const { isFormVisible } = usePosts()
+
+  if (!isFormVisible) return null
+
+  return (
+    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start animate-in fade-in slide-in-from-top-4 duration-300">
+      <PostsForm />
+      <PostPreview />
+    </div>
   )
 }
 
@@ -54,34 +128,23 @@ export function PostsForm() {
     selectMovie,
     cancelEdit,
     setError,
+    galleryItems,
+    setGalleryItems,
+    setIsFormVisible,
   } = usePosts()
 
   const [uploading, setUploading] = useState(false)
-  const [galleryItems, setGalleryItems] = useState<{ id: string; url: string; file?: File }[]>([])
   const shouldSubmit = useRef(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (shouldSubmit.current) {
       shouldSubmit.current = false
-      handleSubmit({ preventDefault: () => { } } as React.FormEvent)
+      handleSubmit({ preventDefault: () => { } } as React.FormEvent).then((success) => {
+        if (success) setIsFormVisible(false)
+      })
     }
-  }, [formData.images, formData.id, handleSubmit])
-
-  useEffect(() => {
-    if (isEditing) {
-      const imgs = formData.images && formData.images.length > 0 ? formData.images : []
-      setGalleryItems(imgs.map((url, index) => ({ id: `${url}-${index}`, url })))
-    } else {
-      setGalleryItems([])
-    }
-  }, [isEditing])
-
-  useEffect(() => {
-    if (!isEditing && (!formData.images || formData.images.length === 0)) {
-      setGalleryItems([])
-    }
-  }, [formData, isEditing])
+  }, [formData.images, formData.id, handleSubmit, setIsFormVisible])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return
@@ -109,6 +172,11 @@ export function PostsForm() {
 
   const handleRemoveItem = (id: string) => {
     setGalleryItems(prev => prev.filter(item => item.id !== id))
+  }
+
+  const handleCancel = () => {
+    cancelEdit()
+    setIsFormVisible(false)
   }
 
   const onFormSubmit = async (e: React.FormEvent) => {
@@ -175,24 +243,14 @@ export function PostsForm() {
         setUploading(false)
       }
     } else {
-      handleSubmit(e)
+      const success = await handleSubmit(e)
+      if (success) setIsFormVisible(false)
     }
   }
 
   return (
     <div className="space-y-8 font-sans">
       {/* Header Section */}
-      <div className="flex items-end justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Content Studio</h1>
-          <p className="text-gray-500 mt-1">Create, manage and schedule your content across platforms.</p>
-        </div>
-        <button className="flex items-center gap-2 bg-gray-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm mb-1">
-          <Plus size={18} />
-          <span>New Post</span>
-        </button>
-      </div>
-
       <div className="grid grid-cols-1">
         {/* Create Post Section - Full Width */}
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 h-full">
@@ -385,15 +443,13 @@ export function PostsForm() {
 
             {/* Actions */}
             <div className="flex items-center justify-end gap-3 pt-4">
-              {isEditing && (
-                <button
-                  type="button"
-                  onClick={cancelEdit}
-                  className="px-6 py-3 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
-                >
-                  Cancel
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="px-6 py-3 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                Cancel
+              </button>
               {!isEditing && (
                 <button
                   type="button"
@@ -412,6 +468,35 @@ export function PostsForm() {
             </div>
           </form>
         </div>
+      </div>
+    </div>
+  )
+}
+
+export function PostPreview() {
+  const { formData, movieTitle, galleryItems } = usePosts()
+
+  const previewImages = formData.type === 'IMAGE'
+    ? galleryItems.map((item) => item.url)
+    : formData.images || []
+
+  return (
+    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 h-full sticky top-8 font-sans">
+      <h2 className="text-xl font-bold text-gray-900 mb-8">Preview</h2>
+      <div className="flex justify-center">
+        <Post
+          type={formData.type || 'TEXT'}
+          title={formData.title}
+          content={formData.content}
+          images={previewImages}
+          link={(formData as any).link}
+          createdAt={new Date()}
+          rating={(formData as any).rating}
+          year={(formData as any).year}
+          filmTitle={movieTitle || (formData as any).filmTitle}
+          tags={formData.tags}
+          showDetails={formData.showDetails}
+        />
       </div>
     </div>
   )

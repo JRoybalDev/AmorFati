@@ -21,7 +21,7 @@ export interface PostProps {
 
 const POST_VARIANTS = {
   TEXT: {
-    container: 'flex flex-col rounded-2xl w-fit min-w-32 max-w-96',
+    container: 'flex flex-col rounded-2xl min-w-32 max-w-96',
     imageContainer: '',
     image: '',
     content: 'flex flex-1 flex-col',
@@ -211,7 +211,7 @@ export function Post({
 
       {/* Content Section */}
       <div className={`p-5 ${styles.content}`}>
-        <div className="mb-2 flex items-center gap-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+        <div className="mb-2 flex items-center gap-2 text-h4Mob font-bold text-gray-400 uppercase tracking-wider">
           {/* Text label moved here */}
           <span className="text-gray-500">{typeLabel}</span>
           <span className="h-1 w-1 rounded-full bg-gray-300"></span>
@@ -266,7 +266,7 @@ export function Post({
         {tags && (
           <div className="flex flex-wrap gap-1 mb-4">
             {tags.split(',').map((tag, i) => (
-              <span key={i} className="text-[10px] bg-gray-100 text-gray-600 px-2 py-1 rounded-full">#{tag.trim()}</span>
+              <span key={i} className="text-h4Mob bg-gray-100 text-gray-600 px-2 py-1 rounded-full">#{tag.trim()}</span>
             ))}
           </div>
         )}
