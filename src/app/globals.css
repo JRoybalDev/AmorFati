@@ -50,3 +50,7 @@
     font-family: var(--font-kingthingsSpikeless);
   }
 }
+
+button {
+  cursor: pointer;
+}

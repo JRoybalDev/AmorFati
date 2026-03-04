@@ -7,7 +7,7 @@ import { Post } from '../components/Post'
 import {
   Bold, Italic, List, Link as LinkIcon, Plus, Edit2, Trash2, Film, LayoutGrid, Search, Image as ImageIcon, Type, X, AlertTriangle, FileText
 } from 'lucide-react'
-import { Reorder } from 'framer-motion'
+import { Reorder, AnimatePresence, motion } from 'framer-motion'
 
 // Create a context to share the state
 type GalleryItem = { id: string; url: string; file?: File }
@@ -82,14 +82,14 @@ export function PostsHeader() {
   }
 
   return (
-    <div className="flex items-end justify-between">
+    <div className="flex flex-col md:flex-row md:items-end justify-between">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Content Studio</h1>
         <p className="text-gray-500 mt-1">Create, manage and schedule your content across platforms.</p>
       </div>
       <button
         onClick={handleNewPost}
-        className="flex items-center gap-2 bg-gray-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm mb-1"
+        className="flex items-center gap-2 bg-gray-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm mb-1 mt-4 md:mt-0 w-fit"
       >
         <Plus size={18} />
         <span>New Post</span>
@@ -101,13 +101,22 @@ export function PostsHeader() {
 export function PostsWorkspace() {
   const { isFormVisible } = usePosts()
 
-  if (!isFormVisible) return null
-
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start animate-in fade-in slide-in-from-top-4 duration-300">
-      <PostsForm />
-      <PostPreview />
-    </div>
+    <AnimatePresence>
+      {isFormVisible && (
+        <motion.div
+          initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
+          animate={{ opacity: 1, height: 'auto', transitionEnd: { overflow: 'visible' } }}
+          exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
+          transition={{ duration: 0.3, ease: 'easeInOut' }}
+        >
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 items-start">
+            <PostsForm />
+            <PostPreview />
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   )
 }
 
@@ -481,24 +490,29 @@ export function PostPreview() {
     : formData.images || []
 
   return (
-    <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 h-full sticky top-8 font-sans">
-      <h2 className="text-xl font-bold text-gray-900 mb-8">Preview</h2>
-      <div className="flex justify-center">
-        <Post
-          type={formData.type || 'TEXT'}
-          title={formData.title}
-          content={formData.content}
-          images={previewImages}
-          link={(formData as any).link}
-          createdAt={new Date()}
-          rating={(formData as any).rating}
-          year={(formData as any).year}
-          filmTitle={movieTitle || (formData as any).filmTitle}
-          tags={formData.tags}
-          showDetails={formData.showDetails}
-        />
+    <>
+
+      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 h-full sticky top-8 font-sans">
+        <h2 className="text-xl font-bold text-gray-900 mb-8">Preview</h2>
+        {(!formData.title || !formData.content || (formData.images?.length ?? 0) < 1) &&
+          <div className="flex justify-center">
+            <Post
+              type={formData.type || 'TEXT'}
+              title={formData.title}
+              content={formData.content}
+              images={previewImages}
+              link={(formData as any).link}
+              createdAt={new Date()}
+              rating={(formData as any).rating}
+              year={(formData as any).year}
+              filmTitle={movieTitle || (formData as any).filmTitle}
+              tags={formData.tags}
+              showDetails={formData.showDetails}
+            />
+          </div>}
       </div>
-    </div>
+
+    </>
   )
 }
 
@@ -694,10 +708,10 @@ export function PostsList() {
         </div>
       )}
 
-        {posts.length === 0 && !loading && (
-          <div className="col-span-full py-12 text-center text-gray-400 bg-white rounded-3xl border border-dashed border-gray-200">
-            No posts found matching your filter.
-          </div>
+      {posts.length === 0 && !loading && (
+        <div className="col-span-full py-12 text-center text-gray-400 bg-white rounded-3xl border border-dashed border-gray-200">
+          No posts found matching your filter.
+        </div>
       )}
 
       {/* Visual Pagination */}
