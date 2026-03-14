@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Image as ImageIcon, Film, Type, ChevronLeft, ChevronRight, Star } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 
@@ -21,25 +21,25 @@ export interface PostProps {
 
 const POST_VARIANTS = {
   TEXT: {
-    container: 'flex flex-col rounded-2xl min-w-32 max-w-96',
+    container: 'flex flex-col rounded-2xl',
     imageContainer: '',
     image: '',
     content: 'flex flex-1 flex-col',
     footer: '',
   },
   IMAGE: {
-    container: 'flex flex-col rounded-2xl w-fit',
+    container: 'flex flex-col rounded-2xl',
     imageContainer: 'w-full relative overflow-hidden',
     image: '',
     content: 'flex flex-1 flex-col',
     footer: '',
   },
   FILM: {
-    container: 'block rounded-2xl',
-    imageContainer: 'float-left w-2/5 aspect-9/16 mr-5 mb-2 rounded-br-2xl overflow-hidden',
+    container: 'flex flex-col md:flex-row rounded-2xl',
+    imageContainer: 'w-full md:w-2/5 relative overflow-hidden rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none shrink-0',
     image: 'h-full object-cover',
-    content: '',
-    footer: 'clear-both',
+    content: 'flex flex-1 flex-col',
+    footer: '',
   },
 }
 
@@ -79,7 +79,11 @@ export function Post({
   const [direction, setDirection] = useState(0)
   const isGallery = type === 'IMAGE' && displayImages.length > 1
   const [isExpanded, setIsExpanded] = useState(false)
-  const CHARACTER_LIMIT = type === 'IMAGE' ? 200 : 500
+  const CHARACTER_LIMIT = (type === 'IMAGE' ? 250 : 450)
+
+  useEffect(() => {
+    window.dispatchEvent(new Event('resize'))
+  }, [isExpanded])
 
   const handleNextImage = (e: React.MouseEvent) => {
     e.preventDefault()
@@ -118,10 +122,9 @@ export function Post({
   const styles = POST_VARIANTS[type]
 
   const shouldTruncate = content && content.length > CHARACTER_LIMIT
-  const expandedClass = type === 'IMAGE' && isExpanded ? 'min-w-[24rem]' : ''
 
   return (
-    <motion.div layout transition={{ type: 'spring', duration: 0.3, ease: 'easeInOut', bounce: 0 }} className={`group relative overflow-hidden bg-white shadow-sm transition-all hover:shadow-md border border-gray-100 ${styles.container} ${expandedClass}`}>
+    <motion.div layout transition={{ type: 'spring', duration: 0.3, ease: 'easeInOut', bounce: 0 }} className={`group relative overflow-hidden bg-white shadow-sm transition-all hover:shadow-md border border-gray-100 ${styles.container}`}>
       {/* Image Section */}
       {currentImage && type !== 'TEXT' ? (
         <div className={`relative bg-gray-100 group/image ${styles.imageContainer}`}>
@@ -130,7 +133,7 @@ export function Post({
               <img
                 src={currentImage}
                 alt={title || "Post image"}
-                className="w-full block h-full object-cover"
+                className={`w-full block ${styles.image}`}
               />
               <div className="absolute inset-0 bg-linear-to-t from-black/90 via-transparent to-transparent flex flex-col justify-end p-5 text-white">
                 <h3 className="text-lg font-bold leading-tight shadow-black drop-shadow-md">{filmTitle}</h3>

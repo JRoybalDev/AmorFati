@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { PostType } from '@/generated/prisma'
 
 export async function getOrCreateUser(
   email: string,
@@ -29,4 +30,23 @@ export async function getOrCreateUser(
       accountType: 'User',
     },
   })
+}
+
+export async function getPosts(type?: PostType) {
+  const where: { type?: PostType } = {}
+  if (type) {
+    where.type = type
+  }
+
+  const posts = await prisma.post.findMany({
+    where,
+    orderBy: { createdAt: 'desc' },
+    include: {
+      author: {
+        select: { name: true, username: true, email: true },
+      },
+    },
+  })
+
+  return posts
 }

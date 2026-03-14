@@ -616,7 +616,7 @@ export function PostsList() {
                 year={(post as any).year ?? undefined}
                 filmTitle={(post as any).filmTitle ?? undefined}
                 tags={(post as any).tags}
-                showDetails={(post as any).showDetails}
+                showDetails={(post as any).showDetails ?? undefined}
               >
                 <button
                   onClick={() => handleEdit(post)}
