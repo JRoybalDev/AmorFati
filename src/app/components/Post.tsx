@@ -1,8 +1,8 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { Image as ImageIcon, Film, Type, ChevronLeft, ChevronRight, Star } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { Image as ImageIcon, Film, Type, Star } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 export interface PostProps {
   type: 'TEXT' | 'IMAGE' | 'FILM'
@@ -43,23 +43,6 @@ const POST_VARIANTS = {
   },
 }
 
-const slideVariants = {
-  enter: (direction: number) => ({
-    x: direction > 0 ? '100%' : '-100%',
-    opacity: 0,
-  }),
-  center: {
-    zIndex: 1,
-    x: 0,
-    opacity: 1,
-  },
-  exit: (direction: number) => ({
-    zIndex: 0,
-    x: direction < 0 ? '100%' : '-100%',
-    opacity: 0,
-  }),
-}
-
 export function Post({
   type,
   title,
@@ -74,36 +57,19 @@ export function Post({
   showDetails = true,
   children,
 }: PostProps) {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const displayImages = images || []
-  const [direction, setDirection] = useState(0)
   const isGallery = type === 'IMAGE' && displayImages.length > 1
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isGalleryExpanded, setIsGalleryExpanded] = useState(false)
+  const [isFirstImageSquare, setIsFirstImageSquare] = useState(false)
   const CHARACTER_LIMIT = (type === 'IMAGE' ? 250 : 450)
 
   useEffect(() => {
     window.dispatchEvent(new Event('resize'))
-  }, [isExpanded])
+  }, [isExpanded, isGalleryExpanded, isFirstImageSquare])
 
-  const handleNextImage = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (displayImages.length > 0) {
-      setDirection(1)
-      setCurrentImageIndex((prev) => (prev + 1) % displayImages.length)
-    }
-  }
-
-  const handlePrevImage = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (displayImages.length > 0) {
-      setDirection(-1)
-      setCurrentImageIndex((prev) => (prev - 1 + displayImages.length) % displayImages.length)
-    }
-  }
-
-  const currentImage = displayImages[currentImageIndex]
+  // Use the first image for single view or cover checks
+  const firstImage = displayImages[0]
 
   const typeLabel = type === 'IMAGE' ? 'Gallery' : (type === 'FILM' ? 'Film' : 'Text')
   const typeIcon = type === 'IMAGE' ? <ImageIcon size={14} /> : (type === 'FILM' ? <Film size={14} /> : <Type size={14} />)
@@ -126,12 +92,12 @@ export function Post({
   return (
     <motion.div layout transition={{ type: 'spring', duration: 0.3, ease: 'easeInOut', bounce: 0 }} className={`group relative overflow-hidden bg-white shadow-sm transition-all hover:shadow-md border border-gray-100 ${styles.container}`}>
       {/* Image Section */}
-      {currentImage && type !== 'TEXT' ? (
+      {firstImage && type !== 'TEXT' ? (
         <div className={`relative bg-gray-100 group/image ${styles.imageContainer}`}>
           {type === 'FILM' && link ? (
             <a href={link} target="_blank" rel="noopener noreferrer" className="block w-full h-full relative ">
               <img
-                src={currentImage}
+                src={firstImage}
                 alt={title || "Post image"}
                 className={`w-full block ${styles.image}`}
               />
@@ -150,65 +116,50 @@ export function Post({
             </a>
           ) : type === 'IMAGE' ? (
             <>
-                {isGallery && (
-                  <img
-                    src={currentImage}
-                    alt=""
-                    className="w-full h-auto opacity-0 relative z-0 pointer-events-none"
-                    aria-hidden="true"
-                  />
-                )}
-                <AnimatePresence initial={false} custom={direction}>
-                  <motion.img
-                    key={currentImageIndex}
-                    src={currentImage}
-                    alt={title || "Post image"}
-                    className={`w-full block ${isGallery ? 'absolute inset-0 h-full object-cover' : 'h-auto relative'}`}
-                    custom={direction}
-                    variants={slideVariants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    transition={{
-                      x: { type: "spring", stiffness: 300, damping: 30 },
-                      opacity: { duration: 0.2 }
-                    }}
-                  />
-                </AnimatePresence>
-              {/* Gallery Arrows */}
-                {displayImages.length > 1 && (
-                <>
-                  <button
-                      onClick={handlePrevImage}
-                      className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/50 text-white opacity-0 group-hover/image:opacity-100 transition-opacity hover:bg-black/70 z-10"
-                    >
-                      <ChevronLeft size={16} />
-                    </button>
-                    <button
-                      onClick={handleNextImage}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/50 text-white opacity-0 group-hover/image:opacity-100 transition-opacity hover:bg-black/70 z-10"
-                    >
-                      <ChevronRight size={16} />
-                    </button>
-                    {/* Dots indicator */}
-                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-10">
-                      {displayImages.map((_, idx) => (
-                        <div
-                          key={idx}
-                          className={`w-1.5 h-1.5 rounded-full shadow-sm ${idx === currentImageIndex ? 'bg-white' : 'bg-white/50'}`}
-                        />
-                      ))}
+                {isGallery ? (
+                  <div className={`relative w-full ${!isGalleryExpanded ? 'max-h-[500px] overflow-hidden' : ''}`}>
+                    <div className="grid grid-cols-1 gap-0.5">
+                      {displayImages.map((img, idx) => (
+                        <img
+                        key={idx}
+                        src={img}
+                        alt={title || `Gallery image ${idx + 1}`}
+                        className={`w-full h-auto object-cover block ${idx === 0 && isFirstImageSquare ? 'col-span-2' : ''}`}
+                        onLoad={idx === 0 ? (e) => {
+                          const target = e.currentTarget
+                          if (target.naturalWidth && target.naturalHeight) {
+                            const ratio = target.naturalWidth / target.naturalHeight
+                            // Check if image is square (allow small tolerance)
+                            if (ratio >= 0.99 && ratio <= 1.01) {
+                              setIsFirstImageSquare(true)
+                            }
+                          }
+                        } : undefined}
+                      />
+                    ))}
                     </div>
-                  </>
+                    {!isGalleryExpanded && (
+                      <div
+                        className="absolute bottom-0 inset-x-0 h-24 bg-linear-to-t from-black/90 to-transparent flex items-end justify-center pb-4 cursor-pointer hover:from-black transition-colors"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          setIsGalleryExpanded(true)
+                        }}
+                    >
+                        <span className="text-white font-bold text-lg drop-shadow-md">Expand</span>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <img
+                    src={firstImage}
+                    alt={title || "Post image"}
+                    className={`w-full block ${styles.image}`}
+                  />
                 )}
             </>
-            ) : (
-              <img
-                src={currentImage}
-                alt={title || "Post image"}
-                className={`w-full block ${styles.image}`}
-              />
-          )}
+          ) : null}
         </div>
       ) : null}
 
