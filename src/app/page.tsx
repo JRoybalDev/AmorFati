@@ -9,7 +9,7 @@ export default function Home() {
 
   useEffect(() => {
     router.push('/archive')
-  }, [])
+  }, [router])
   return (
     <div className="w-screen md:w-9/12 bg-BGpage z-0 text-black p-6">
 

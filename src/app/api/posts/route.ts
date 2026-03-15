@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   const authorIdParam = searchParams.get('authorId');
 
   try {
-    const where: any = {};
+    const where: Record<string, unknown> = {};
     if (typeParam && Object.values(PostType).includes(typeParam as PostType)) {
       where.type = typeParam as PostType;
     }

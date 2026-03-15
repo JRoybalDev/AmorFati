@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
@@ -99,7 +100,6 @@ export function Post({
   const firstImage = displayImages[0]
 
   const typeLabel = type === 'IMAGE' ? 'Gallery' : (type === 'FILM' ? 'Film' : 'Text')
-  const typeIcon = type === 'IMAGE' ? <ImageIcon size={14} /> : (type === 'FILM' ? <Film size={14} /> : <Type size={14} />)
 
   const timeAgo = (date: string | Date | undefined) => {
     if (!date) return ''

@@ -60,12 +60,12 @@ async function handleApiError(response: Response, defaultError: string): Promise
     const errorBody = await response.json();
     // Check for common error properties from an API response
     errorMessage = errorBody.error || errorBody.message || errorBody.detail || defaultError;
-  } catch (jsonError) {
+  } catch {
     // If the body isn't JSON, try to use the raw text response.
     try {
       const errorText = await response.text();
       if (errorText) errorMessage = errorText;
-    } catch (textError) { /* Ignore and use default */ }
+    } catch { /* Ignore and use default */ }
   }
   throw new Error(errorMessage);
 }

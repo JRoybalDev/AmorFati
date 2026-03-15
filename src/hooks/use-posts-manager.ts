@@ -71,6 +71,7 @@ export function usePostsManager(authorId: string) {
       const lowerQuery = searchQuery.toLowerCase()
       filteredPosts = allPosts.filter(post =>
         (post.title?.toLowerCase() || '').includes(lowerQuery) ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ((post as any).tags?.toLowerCase() || '').includes(lowerQuery)
       )
     }
@@ -164,12 +165,18 @@ export function usePostsManager(authorId: string) {
       type: post.type,
       title: post.title || '',
       content: post.content || '',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       images: (post as any).images || [],
       link: post.link || '',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       rating: (post as any).rating ?? undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       year: (post as any).year ?? undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       filmTitle: (post as any).filmTitle ?? undefined,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       tags: (post as any).tags || '',
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       showDetails: (post as any).showDetails ?? true,
     })
     setMovieTitle('')
@@ -255,8 +262,8 @@ export function usePostsManager(authorId: string) {
         )
         if (response.ok) {
           const credits = await response.json()
-          const directors = credits.crew?.filter((p: any) => p.job === 'Director').map((p: any) => p.name) || []
-          const actors = credits.cast?.slice(0, 3).map((p: any) => p.name) || []
+          const directors = credits.crew?.filter((p: { job: string }) => p.job === 'Director').map((p: { name: string }) => p.name) || []
+          const actors = credits.cast?.slice(0, 3).map((p: { name: string }) => p.name) || []
           tagsList = [...tagsList, ...directors, ...actors]
         }
       }
