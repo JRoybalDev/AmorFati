@@ -1,6 +1,9 @@
 import { prisma } from '@/lib/prisma'
 import { PostType } from '@/generated/prisma'
 
+const FILE_API_URL = process.env.FILE_API_URL || ''
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || ''
+
 export async function getOrCreateUser(
   email: string,
   username: string | null | undefined,
@@ -32,6 +35,16 @@ export async function getOrCreateUser(
   })
 }
 
+function rewriteImageUrls(images: unknown): string[] {
+  if (!Array.isArray(images)) return []
+  return images.map((url) => {
+    if (typeof url === 'string' && url.includes('arcon-api.duckdns.org')) {
+      return `${APP_URL}/api/proxy?url=${encodeURIComponent(url)}`
+    }
+    return url
+  })
+}
+
 export async function getPosts(type?: PostType) {
   const where: { type?: PostType } = {}
   if (type) {
@@ -48,5 +61,8 @@ export async function getPosts(type?: PostType) {
     },
   })
 
-  return posts
+  return posts.map((post) => ({
+    ...post,
+    images: rewriteImageUrls(post.images),
+  }))
 }
