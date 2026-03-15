@@ -35,7 +35,7 @@ export function PostGrid({ posts }: PostGridProps) {
   }, [posts])
 
   return (
-    <div ref={gridRef} className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-6 items-start grid-flow-dense" style={{ gridAutoRows: '1px' }}>
+    <div ref={gridRef} className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 items-start grid-flow-dense" style={{ gridAutoRows: '1px' }}>
       {posts.map((post) => (
         <div key={post.id}
           className={`

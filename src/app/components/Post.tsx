@@ -1,8 +1,7 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { Image as ImageIcon, Film, Type, Star } from 'lucide-react'
-import { motion } from 'framer-motion'
 
 export interface PostProps {
   type: 'TEXT' | 'IMAGE' | 'FILM'
@@ -21,21 +20,21 @@ export interface PostProps {
 
 const POST_VARIANTS = {
   TEXT: {
-    container: 'flex flex-col rounded-2xl',
+    container: 'flex flex-col items-start rounded-2xl',
     imageContainer: '',
     image: '',
-    content: 'flex flex-1 flex-col',
+    content: 'flex flex-col',
     footer: '',
   },
   IMAGE: {
-    container: 'flex flex-col rounded-2xl',
+    container: 'flex flex-col items-start rounded-2xl',
     imageContainer: 'w-full relative overflow-hidden',
     image: '',
-    content: 'flex flex-1 flex-col',
+    content: 'flex flex-col',
     footer: '',
   },
   FILM: {
-    container: 'flex flex-col md:flex-row rounded-2xl',
+    container: 'flex flex-col md:flex-row items-start md:items-stretch rounded-2xl',
     imageContainer: 'w-full md:w-2/5 relative overflow-hidden rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none shrink-0',
     image: 'h-full object-cover',
     content: 'flex flex-1 flex-col',
@@ -63,10 +62,38 @@ export function Post({
   const [isGalleryExpanded, setIsGalleryExpanded] = useState(false)
   const [isFirstImageSquare, setIsFirstImageSquare] = useState(false)
   const CHARACTER_LIMIT = (type === 'IMAGE' ? 250 : 450)
+  const postRef = useRef<HTMLDivElement>(null)
+  const isInitialMount = useRef(true)
+  const prevHeight = useRef<number | null>(null)
 
   useEffect(() => {
     window.dispatchEvent(new Event('resize'))
   }, [isExpanded, isGalleryExpanded, isFirstImageSquare])
+
+  useLayoutEffect(() => {
+    const element = postRef.current
+    if (!element || isInitialMount.current) {
+      if (element) prevHeight.current = element.offsetHeight
+      return
+    }
+
+    const currentHeight = element.offsetHeight
+
+    if (prevHeight.current !== null && prevHeight.current !== currentHeight) {
+      element.animate(
+        [
+          { height: `${prevHeight.current}px` },
+          { height: `${currentHeight}px` }
+        ],
+        {
+          duration: 400,
+          easing: 'cubic-bezier(0.4, 0, 0.1, 1)'
+        }
+      )
+    }
+
+    prevHeight.current = currentHeight
+  }, [isGalleryExpanded])
 
   // Use the first image for single view or cover checks
   const firstImage = displayImages[0]
@@ -89,8 +116,23 @@ export function Post({
 
   const shouldTruncate = content && content.length > CHARACTER_LIMIT
 
+  const contentRef = useRef<HTMLParagraphElement>(null)
+  const [contentHeight, setContentHeight] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (contentRef.current && shouldTruncate) {
+      const fullHeight = contentRef.current.scrollHeight
+      setContentHeight(fullHeight)
+    }
+  }, [content, shouldTruncate])
+
+  const galleryRef = useRef<HTMLDivElement>(null)
+  const [galleryHeight, setGalleryHeight] = useState<number | null>(null)
+
+
+
   return (
-    <motion.div layout transition={{ type: 'spring', duration: 0.3, ease: 'easeInOut', bounce: 0 }} className={`group relative overflow-hidden bg-white shadow-sm transition-all hover:shadow-md border border-gray-100 ${styles.container}`}>
+    <div ref={postRef} className={`group relative overflow-hidden bg-white shadow-sm transition-all hover:shadow-md border border-gray-100 ${styles.container}`}>
       {/* Image Section */}
       {firstImage && type !== 'TEXT' ? (
         <div className={`relative bg-gray-100 group/image ${styles.imageContainer}`}>
@@ -117,7 +159,16 @@ export function Post({
           ) : type === 'IMAGE' ? (
             <>
                 {isGallery ? (
-                  <div className={`relative w-full ${!isGalleryExpanded ? 'max-h-[500px] overflow-hidden' : ''}`}>
+                  <div
+                    ref={galleryRef}
+                    style={{
+                      overflow: 'hidden',
+                      transition: 'max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                      maxHeight: isGalleryExpanded
+                        ? `${galleryHeight ?? 9999}px`
+                        : '500px',
+                    }}
+                  >
                     <div className="grid grid-cols-1 gap-0.5">
                       {displayImages.map((img, idx) => (
                         <img
@@ -144,6 +195,9 @@ export function Post({
                         onClick={(e) => {
                           e.preventDefault()
                           e.stopPropagation()
+                          if (galleryRef.current) {
+                            setGalleryHeight(galleryRef.current.scrollHeight)
+                          }
                           setIsGalleryExpanded(true)
                         }}
                     >
@@ -180,32 +234,40 @@ export function Post({
         )}
 
         {content && (type !== 'IMAGE' || showDetails) && (
-          <div className="mb-4 flex-1">
-            <p className="text-sm text-gray-500 leading-relaxed">
-              {shouldTruncate ? (
-                <>
-                  {content.slice(0, CHARACTER_LIMIT)}
-                  {isExpanded ? (
-                    <motion.span
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3, bounce: 0 }}
-                    >
-                      {content.slice(CHARACTER_LIMIT)}
-                    </motion.span>
-                  ) : (
-                    <span>...</span>
-                  )}
-                </>
-              ) : (
-                content
-              )}
-            </p>
+          <div className="mb-4 relative">
+            <div
+              style={{
+                overflow: 'hidden',
+                transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                maxHeight: shouldTruncate
+                  ? isExpanded
+                    ? `${contentHeight ?? 9999}px`
+                    : type === 'FILM' ? '17rem'
+                      : type === 'TEXT' ? '17rem'
+                        : type === 'IMAGE' ? '13rem'
+                          : 'none'
+                  : 'none'
+              }}
+            >
+              <p ref={contentRef} className="text-sm text-gray-500 leading-relaxed">
+                {content}
+              </p>
+            </div>
+
+            {/* Fade overlay — only when collapsed */}
+            {shouldTruncate && !isExpanded && (
+              <div className="absolute bottom-6 left-0 right-0 h-12 bg-linear-to-t from-white to-transparent pointer-events-none" />
+            )}
+
             {shouldTruncate && (
               <button
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
+                  // Capture current scrollHeight right before expanding
+                  if (!isExpanded && contentRef.current) {
+                    setContentHeight(contentRef.current.scrollHeight)
+                  }
                   setIsExpanded(!isExpanded)
                 }}
                 className="mt-1 ml-auto block w-fit text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors underline"
@@ -215,7 +277,6 @@ export function Post({
             )}
           </div>
         )}
-
         {/* Tags */}
         {tags && (
           <div className="flex flex-wrap gap-1 mb-4">
@@ -232,6 +293,6 @@ export function Post({
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
