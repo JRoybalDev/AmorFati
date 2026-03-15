@@ -49,10 +49,16 @@ export async function GET(request: Request) {
       },
     });
 
+    console.log('[DEBUG] First post images:', posts[0]?.images)
+    console.log('[DEBUG] FILE_API_URL:', FILE_API_URL)
+    console.log('[DEBUG] APP_URL:', APP_URL)
+
     const rewritten = posts.map((post) => ({
       ...post,
       images: rewriteImageUrls(post.images),
     }))
+
+    console.log('[DEBUG] First post rewritten images:', rewritten[0]?.images)
 
     return NextResponse.json(rewritten);
   } catch (error) {
