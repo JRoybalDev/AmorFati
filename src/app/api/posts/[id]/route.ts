@@ -9,19 +9,8 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || ''
 function rewriteImageUrls(images: unknown): string[] {
   if (!Array.isArray(images)) return []
   return images.map((url) => {
-    if (typeof url === 'string') {
-      try {
-        const urlObj = new URL(url)
-        const fileApiObj = new URL(FILE_API_URL)
-        console.log('[REWRITE] url hostname:', urlObj.hostname, urlObj.port)
-        console.log('[REWRITE] FILE_API_URL hostname:', fileApiObj.hostname, fileApiObj.port)
-        console.log('[REWRITE] match:', urlObj.hostname === fileApiObj.hostname && urlObj.port === fileApiObj.port)
-        if (urlObj.hostname === fileApiObj.hostname && urlObj.port === fileApiObj.port) {
-          return `${APP_URL}/api/proxy?url=${encodeURIComponent(url)}`
-        }
-      } catch {
-        console.log('[REWRITE] failed to parse URL:', url)
-      }
+    if (typeof url === 'string' && url.includes('arcon-api.duckdns.org')) {
+      return `${APP_URL}/api/proxy?url=${encodeURIComponent(url)}`
     }
     return url
   })
