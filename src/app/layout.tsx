@@ -19,9 +19,9 @@ export default function RootLayout({
       <html lang="en">
         <body className="font-texturina">
           <FilterProvider>
-            <div className={`w-screen h-screen flex flex-col md:flex-row`}>
+            <div className="flex h-screen w-screen flex-col md:flex-row">
               <Navbar />
-              <main className={`w-full h-screen bg-BGpage overflow-y-scroll`}>
+              <main className="h-screen w-full overflow-y-scroll bg-BGpage pt-[60px] md:pt-0">
                 {children}
               </main>
             </div>
