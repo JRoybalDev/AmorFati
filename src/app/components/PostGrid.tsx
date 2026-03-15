@@ -35,14 +35,14 @@ export function PostGrid({ posts }: PostGridProps) {
   }, [posts])
 
   return (
-    <div ref={gridRef} className="grid grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 items-start grid-flow-dense" style={{ gridAutoRows: '1px' }}>
+    <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 items-start grid-flow-dense" style={{ gridAutoRows: '1px' }}>
       {posts.map((post) => (
         <div key={post.id}
           className={`
-        ${post.type === 'FILM' && 'col-span-2'}
-        ${post.type === 'TEXT' && 'col-span-1'}
-        ${post.type === 'IMAGE' && 'col-span-1'}
-        ${(post.type === 'IMAGE' && post.images.length > 1) && 'col-span-1'}
+        ${post.type === 'FILM' && 'md:col-span-2'}
+        ${post.type === 'TEXT' && 'md:col-span-1'}
+        ${post.type === 'IMAGE' && 'md:col-span-1'}
+        ${(post.type === 'IMAGE' && post.images.length > 1) && 'md:col-span-1'}
         `}>
           <PostComponent
             type={post.type}

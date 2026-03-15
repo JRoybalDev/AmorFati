@@ -44,11 +44,20 @@ function MobileNavbar({ navItems }: NavItems) {
 
   const [isOpen, setOpen] = useState(false);
 
+  const handleLinkClick = () => {
+    if (isOpen) {
+      window.scrollTo(0, 0);
+      setTimeout(() => {
+        setOpen(false);
+      }, 1000);
+    }
+  };
+
   return (
     <nav className='sticky top-0 bg-BGnav px-4 py-4 text-TEXTmain w-screen z-50'>
       {/* Closed Nav (Header) */}
       <div className='flex justify-between items-center'>
-        <Link className="text-3xl font-normal font-manufacturingConsent" href={"/archive"} onClick={() => setOpen(false)}>Amor Fati</Link>
+        <Link className="text-3xl font-normal font-manufacturingConsent" href={"/archive"} onClick={handleLinkClick}>Amor Fati</Link>
         <AiOutlineMenu className='h-5 w-5 cursor-pointer' onClick={() => setOpen((prev) => !prev)} />
       </div>
 
@@ -66,7 +75,7 @@ function MobileNavbar({ navItems }: NavItems) {
             {/* Links */}
             <div className="py-4 flex flex-col gap-4">
               {navItems.map((item, idx) => (
-                <Link key={idx} className={`font-semibold text-h3 hover:text-HOVERlink duration-250`} href={item.link} onClick={() => setOpen(false)}>{item.title}</Link>
+                <Link key={idx} className={`font-semibold text-h3 hover:text-HOVERlink duration-250`} href={item.link} onClick={handleLinkClick}>{item.title}</Link>
               ))}
             </div>
 
@@ -74,9 +83,9 @@ function MobileNavbar({ navItems }: NavItems) {
 
             <SignedIn>
               <div className='flex flex-col gap-4 py-4'>
-                <Link className='text-h3 font-semibold hover:text-HOVERlink duration-250' href={'/dashboard'} onClick={() => setOpen(false)}>Dashboard</Link>
+                <Link className='text-h3 font-semibold hover:text-HOVERlink duration-250' href={'/dashboard'} onClick={handleLinkClick}>Dashboard</Link>
                 <SignOutButton>
-                  <p className='text-h3 font-semibold hover:cursor-pointer hover:text-HOVERlink duration-250' onClick={() => setOpen(false)}>Sign out</p>
+                  <p className='text-h3 font-semibold hover:cursor-pointer hover:text-HOVERlink duration-250' onClick={handleLinkClick}>Sign out</p>
                 </SignOutButton>
                 <div className='border-b-6 rounded-lg border-BGdivider' />
               </div>
