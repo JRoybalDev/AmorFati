@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body className="font-old-standard-tt">
+        <body className="font-texturina">
           <FilterProvider>
             <div className={`w-screen h-screen flex flex-col md:flex-row`}>
               <Navbar />

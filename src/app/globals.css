@@ -1,18 +1,13 @@
-@import url('https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Manufacturing+Consent&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pirata+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Texturina:ital,opsz,wght@0,12..72,100..900;1,12..72,100..900&display=swap');
 @import "tailwindcss";
 @plugin "daisyui";
-
-@font-face {
-  font-family: 'KingthingsSpikeless';
-  src: url('/fonts/KingthingsSpikeless-lKPZ.ttf') format('ttf');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
 @theme {
   --color-BGnav: #BE5103;
   --color-BGdivider: #9B4000;
-    --color-BGbutton: #BE5103;
+  --color-BGbutton: #BE5103;
     --color-BGbuttonSelected: #712F00;
   --color-BGpage: #FFF5D6;
   --color-BGpageDark: #180f00;
@@ -24,15 +19,17 @@
 
   --color-MOBILEnav: #BE5103;
 
-  --font-old-standard-tt: "Old Standard TT", serif;
-  --font-kingthingsSpikeless: "KingthingsSpikeless", sans-serif;
+  --font-manufacturingConsent: "Manufacturing Consent", serif;
+    --font-pirataOne: "Pirata One", serif;
+    --font-datatype: "Datatype", serif;
+    --font-texturina: "Texturina", serif;
 
   --text-h1: 24px;
   --text-h2: 16px;
   --text-h3: 14px;
   --text-h4: 12px;
   --text-main: 12px;
-    --text-note: 12px;
+  --text-note: 12px;
     --text-h1Mob: 20px;
   --text-h2Mob: 14px;
   --text-h3Mob: 12px;
@@ -41,14 +38,6 @@
 
 @layer base {
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    font-family: var(--font-kingthingsSpikeless);
-  }
 }
 
 button {

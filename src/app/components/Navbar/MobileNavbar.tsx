@@ -5,6 +5,7 @@ import { useState } from 'react';
 import { AiOutlineMenu } from 'react-icons/ai';
 import { FaRegCopyright } from "react-icons/fa";
 import { motion, AnimatePresence, easeInOut } from "framer-motion";
+import { SignedIn, SignOutButton } from '@clerk/nextjs';
 
 
 type NavItem = {
@@ -47,7 +48,7 @@ function MobileNavbar({ navItems }: NavItems) {
     <nav className='sticky top-0 bg-BGnav px-4 py-4 text-TEXTmain w-screen z-50'>
       {/* Closed Nav (Header) */}
       <div className='flex justify-between items-center'>
-        <Link className="text-h1Mob font-semibold font-kingthingsSpikeless" href={"/"} onClick={() => setOpen(false)}>AMOR FATI</Link>
+        <Link className="text-3xl font-normal font-manufacturingConsent" href={"/archive"} onClick={() => setOpen(false)}>Amor Fati</Link>
         <AiOutlineMenu className='h-5 w-5 cursor-pointer' onClick={() => setOpen((prev) => !prev)} />
       </div>
 
@@ -70,6 +71,16 @@ function MobileNavbar({ navItems }: NavItems) {
             </div>
 
             <div className='border-b-6 rounded-lg border-BGdivider' />
+
+            <SignedIn>
+              <div className='flex flex-col gap-4 py-4'>
+                <Link className='text-h3 font-semibold hover:text-HOVERlink duration-250' href={'/dashboard'} onClick={() => setOpen(false)}>Dashboard</Link>
+                <SignOutButton>
+                  <p className='text-h3 font-semibold hover:cursor-pointer hover:text-HOVERlink duration-250' onClick={() => setOpen(false)}>Sign out</p>
+                </SignOutButton>
+                <div className='border-b-6 rounded-lg border-BGdivider' />
+              </div>
+            </SignedIn>
 
             {/* Copyright */}
             <div className='py-4 flex items-center gap-1 text-main'>

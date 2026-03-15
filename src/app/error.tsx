@@ -16,11 +16,11 @@ export default function Error({
   }, [error])
 
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center p-4 text-center font-old-standard-tt">
-      <h1 className="mb-2 text-6xl text-(--color-BGnav) font-kingthingsSpikeless">
+    <div className="flex h-full w-full flex-col items-center justify-center p-4 text-center">
+      <h1 className="mb-2 text-6xl text-(--color-BGnav) font-manufacturingConsent">
         Error
       </h1>
-      <h2 className="mb-6 text-2xl text-(--color-BGnav) font-kingthingsSpikeless">
+      <h2 className="mb-6 text-2xl text-(--color-BGnav) font-manufacturingConsent">
         Something went wrong!
       </h2>
       <p className="mb-8 text-lg">
@@ -29,13 +29,13 @@ export default function Error({
       <div className="flex gap-4">
         <button
           onClick={() => reset()}
-          className="rounded bg-(--color-BGbutton) px-6 py-2 text-TEXTmain hover:bg-(--color-HOVERbutton) font-kingthingsSpikeless transition-colors"
+          className="rounded bg-(--color-BGbutton) px-6 py-2 text-TEXTmain hover:bg-(--color-HOVERbutton) font-manufacturingConsent transition-colors"
         >
           Try again
         </button>
         <Link
           href="/"
-          className="rounded bg-(--color-BGdivider) px-6 py-2 text-TEXTmain hover:bg-(--color-BGnav) font-kingthingsSpikeless transition-colors"
+          className="rounded bg-(--color-BGdivider) px-6 py-2 text-TEXTmain hover:bg-(--color-BGnav) font-manufacturingConsent transition-colors"
         >
           Return Home
         </Link>

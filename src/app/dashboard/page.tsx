@@ -34,7 +34,7 @@ async function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-BGpage p-8 font-old-standard-tt">
+    <div className="min-h-screen bg-BGpage p-8">
       <PostsProvider authorId={dbUser.id}>
         <div className="mx-auto max-w-7xl space-y-12">
           <PostsHeader />

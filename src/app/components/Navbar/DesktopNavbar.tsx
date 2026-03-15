@@ -20,8 +20,8 @@ function DesktopNavbar({ navItems }: NavItems) {
     <nav className='bg-BGnav px-4 py-6 text-TEXTmain w-full'>
       {/* Hero */}
       <div className="pb-4">
-        <Link className="text-h1 font-semibold font-kingthingsSpikeless" href={"/"}>AMOR FATI</Link>
-        <h3 className="text-h3 font-semibold">Tagline</h3>
+        <Link className="text-4xl font-medium font-manufacturingConsent" href={"/archive"}>Amor Fati</Link>
+        <h3 className="text-h2 font-pirataOne font-normal">28 | I enjoy staring at the sky and singing to the ocean.</h3>
       </div>
 
       <div className='border-b-6 rounded-lg border-BGdivider' />
@@ -37,7 +37,7 @@ function DesktopNavbar({ navItems }: NavItems) {
       {/* Links */}
       <div className="py-4 flex flex-col gap-4">
         {navItems.map((item, idx) => (
-          <Link key={idx} className={`font-semibold text-h3 hover:text-HOVERlink duration-250`} href={item.link}>{item.title}</Link>
+          <Link key={idx} className={`text-h3 font-semibold hover:text-HOVERlink duration-250`} href={item.link}>{item.title}</Link>
         ))}
       </div>
 
@@ -45,15 +45,12 @@ function DesktopNavbar({ navItems }: NavItems) {
 
       <SignedIn>
         <div className='flex flex-col gap-4 py-4'>
-          <Link className='font-semibold text-h3 hover:text-HOVERlink duration-250' href={'/dashboard'}>Dashboard</Link>
+          <Link className='text-h3 font-semibold hover:text-HOVERlink duration-250' href={'/dashboard'}>Dashboard</Link>
           <SignOutButton>
-            <p className='font-semibold text-h3 hover:cursor-pointer hover:text-HOVERlink duration-250'>Sign out</p>
+            <p className='text-h3 font-semibold hover:cursor-pointer hover:text-HOVERlink duration-250'>Sign out</p>
           </SignOutButton>
           <div className='border-b-6 rounded-lg border-BGdivider' />
         </div>
-
-
-
       </SignedIn>
 
       {/* Copyright */}

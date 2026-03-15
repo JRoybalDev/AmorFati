@@ -204,6 +204,18 @@ export function Post({
                         <span className="text-white font-bold text-lg drop-shadow-md">Expand</span>
                       </div>
                     )}
+                    {isGalleryExpanded && (
+                      <div
+                        className="absolute bottom-0 inset-x-0 h-24 bg-linear-to-t from-black/90 to-transparent flex items-end justify-center pb-4 cursor-pointer hover:from-black transition-colors"
+                        onClick={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          setIsGalleryExpanded(false)
+                        }}
+                      >
+                        <span className="text-white font-bold text-lg drop-shadow-md">Shrink</span>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <img

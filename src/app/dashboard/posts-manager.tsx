@@ -494,8 +494,7 @@ export function PostPreview() {
 
       <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 h-full sticky top-8 font-sans">
         <h2 className="text-xl font-bold text-gray-900 mb-8">Preview</h2>
-        {(!formData.title || !formData.content || (formData.images?.length ?? 0) < 1) &&
-          <div className="flex justify-center">
+        <div className="flex justify-center">
             <Post
               type={formData.type || 'TEXT'}
               title={formData.title}
@@ -509,7 +508,7 @@ export function PostPreview() {
               tags={formData.tags}
               showDetails={formData.showDetails}
             />
-          </div>}
+        </div>
       </div>
 
     </>

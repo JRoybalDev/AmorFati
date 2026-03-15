@@ -8,9 +8,9 @@ async function Navbar() {
   console.log(user)
 
   const defaultNavItems = [
-    { title: "Dear Diary (text)", link: "/dear-diary" },
-    { title: "Sweet Disposition (images)", link: "/sweet-disposition" },
-    { title: "Cinematic Feels (films)", link: "/cinematic-feels" },
+    { title: "Dear Diary", link: "/dear-diary" },
+    { title: "Sweet Disposition", link: "/sweet-disposition" },
+    { title: "Cinematic Feels", link: "/cinematic-feels" },
     { title: "Archive", link: "/archive" },
   ]
 
@@ -25,7 +25,7 @@ async function Navbar() {
 
   return (
     <>
-      <div className='md:flex hidden w-3/12'>
+      <div className='md:flex hidden w-3/12 min-w-[250px]'>
         <DesktopNavbar navItems={defaultNavItems} />
       </div>
       <div className='md:hidden w-screen'>
