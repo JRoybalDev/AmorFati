@@ -4,6 +4,17 @@ import { prisma } from '@/lib/prisma'
 const FILE_API_URL = process.env.FILE_API_URL || 'http://localhost:3000'
 const PROJECT_NAME = process.env.PROJECT_NAME || 'default'
 const ARCON_API_KEY = process.env.ARCON_API_KEY || ''
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || ''
+
+function rewriteImageUrls(images: unknown): string[] {
+  if (!Array.isArray(images)) return []
+  return images.map((url) => {
+    if (typeof url === 'string' && FILE_API_URL && url.startsWith(FILE_API_URL)) {
+      return `${APP_URL}/api/proxy?url=${encodeURIComponent(url)}`
+    }
+    return url
+  })
+}
 
 async function deleteFiles(urls: string[]) {
   if (!urls || urls.length === 0) {
@@ -99,7 +110,8 @@ export async function GET(
       return NextResponse.json({ error: 'Post not found' }, { status: 404 })
     }
 
-    return NextResponse.json(post)
+    return NextResponse.json({ ...post, images: rewriteImageUrls(post.images) })
+
   } catch (error) {
     return NextResponse.json({ error: 'Error fetching post' }, { status: 500 })
   }
@@ -160,7 +172,8 @@ export async function PUT(
       }
     }
 
-    return NextResponse.json(post)
+    return NextResponse.json({ ...post, images: rewriteImageUrls(post.images) })
+
   } catch (error) {
     console.error('Error updating post:', error)
     return NextResponse.json({ error: 'Error updating post' }, { status: 500 })

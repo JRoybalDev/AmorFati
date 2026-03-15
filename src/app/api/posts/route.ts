@@ -3,6 +3,19 @@ import { prisma } from '@/lib/prisma';
 import { PostType } from '@/generated/prisma';
 import { randomUUID } from 'crypto';
 
+const FILE_API_URL = process.env.FILE_API_URL || ''
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL || ''
+
+function rewriteImageUrls(images: unknown): string[] {
+  if (!Array.isArray(images)) return []
+  return images.map((url) => {
+    if (typeof url === 'string' && FILE_API_URL && url.startsWith(FILE_API_URL)) {
+      return `${APP_URL}/api/proxy?url=${encodeURIComponent(url)}`
+    }
+    return url
+  })
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const typeParam = searchParams.get('type');
@@ -28,7 +41,12 @@ export async function GET(request: Request) {
       },
     });
 
-    return NextResponse.json(posts);
+    const rewritten = posts.map((post) => ({
+      ...post,
+      images: rewriteImageUrls(post.images),
+    }))
+
+    return NextResponse.json(rewritten);
   } catch (error) {
     console.error('Error fetching posts:', error);
     return NextResponse.json({ error: 'Error fetching posts' }, { status: 500 });
