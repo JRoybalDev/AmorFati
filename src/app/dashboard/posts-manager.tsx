@@ -5,7 +5,7 @@ import { PostsApi, UploadResult } from '@/lib/posts'
 import { usePostsManager } from '@/hooks/use-posts-manager'
 import { Post } from '../components/Post'
 import {
-  Bold, Italic, List, Link as LinkIcon, Plus, Edit2, Trash2, Film, LayoutGrid, Search, Image as ImageIcon, Type, X, AlertTriangle, ListOrdered, Underline as UnderlineIcon
+  List, Plus, Edit2, Trash2, Film, LayoutGrid, Search, Image as ImageIcon, Type, X, AlertTriangle
 } from 'lucide-react'
 import { Reorder, AnimatePresence, motion } from 'framer-motion'
 import RichTextEditor from '../components/RichTextEditor'
@@ -205,8 +205,7 @@ export function PostsForm() {
             postId = isEditing
           } else {
             postId = crypto.randomUUID()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            handleInputChange({ target: { name: 'id', value: postId } } as any)
+            handleInputChange({ target: { name: 'id', value: postId } } as unknown as React.ChangeEvent<HTMLInputElement>)
           }
         }
 
@@ -310,7 +309,9 @@ export function PostsForm() {
                 <RichTextEditor
                   value={formData.content}
                   onChange={(html) =>
-                    handleInputChange({ target: { name: 'content', value: html } } as any)
+                    handleInputChange({
+                      target: { name: 'content', value: html },
+                    } as unknown as React.ChangeEvent<HTMLTextAreaElement>)
                   }
                 />
               </div>

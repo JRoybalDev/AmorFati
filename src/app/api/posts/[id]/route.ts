@@ -33,7 +33,7 @@ async function deleteFiles(urls: string[]) {
           // The external API expects this specific object structure.
           return { source: 'local', id: filePath }
         }
-      } catch (e) {
+      } catch {
         console.error(
           `[File Cleanup] Invalid URL format, cannot parse for deletion: ${url}`
         )
@@ -112,7 +112,7 @@ export async function GET(
 
     return NextResponse.json({ ...post, images: rewriteImageUrls(post.images) })
 
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Error fetching post' }, { status: 500 })
   }
 }

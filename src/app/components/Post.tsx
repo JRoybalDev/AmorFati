@@ -2,7 +2,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
-import { Image as ImageIcon, Film, Type, Star } from 'lucide-react'
+import { Star } from 'lucide-react'
 import { renderRichContent } from '@/lib/render-rich-content'
 
 export interface PostProps {

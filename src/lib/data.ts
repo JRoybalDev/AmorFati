@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { PostType } from '@/generated/prisma'
 
-const FILE_API_URL = process.env.FILE_API_URL || ''
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || ''
 
 export async function getOrCreateUser(
