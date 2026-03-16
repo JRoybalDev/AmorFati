@@ -2,48 +2,27 @@
 
 import { Post as PostComponent } from '@/app/components/Post'
 import type { Post } from '@/lib/posts'
-import React, { useLayoutEffect, useRef } from 'react'
 
 interface PostGridProps {
   posts: Post[]
 }
 
 export function PostGrid({ posts }: PostGridProps) {
-  const gridRef = useRef<HTMLDivElement>(null)
-
-  useLayoutEffect(() => {
-    const grid = gridRef.current
-    if (!grid || posts.length === 0) return
-
-    const rowHeight = 1
-    const rowGap = parseInt(window.getComputedStyle(grid).getPropertyValue('row-gap'))
-
-    const resizeObserver = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        const item = entry.target as HTMLElement
-        const rowSpan = Math.ceil((entry.contentRect.height + rowGap) / (rowHeight + rowGap))
-        item.style.gridRowEnd = `span ${rowSpan}`
-      }
-    })
-
-    const items = Array.from(grid.children)
-    items.forEach(item => resizeObserver.observe(item as HTMLElement))
-
-    return () => {
-      resizeObserver.disconnect()
-    }
-  }, [posts])
-
   return (
-    <div ref={gridRef} className="grid grid-cols-1 md:grid-cols-[repeat(auto-fill,minmax(300px,1fr))] gap-4 items-start grid-flow-dense" style={{ gridAutoRows: '1px' }}>
+    <div
+      className="w-full"
+      style={{
+        columnCount: 'auto' as never,
+        columnWidth: '300px',
+        columnGap: '16px',
+      }}
+    >
       {posts.map((post) => (
-        <div key={post.id}
-          className={`
-        ${post.type === 'FILM' && 'md:col-span-2'}
-        ${post.type === 'TEXT' && 'md:col-span-1'}
-        ${post.type === 'IMAGE' && 'md:col-span-1'}
-        ${(post.type === 'IMAGE' && post.images.length > 1) && 'md:col-span-1'}
-        `}>
+        <div
+          key={post.id}
+          style={{ breakInside: 'avoid', marginBottom: '16px' }}
+          className={post.type === 'FILM' ? 'column-span-all md:column-span-none' : ''}
+        >
           <PostComponent
             type={post.type}
             title={post.title ?? undefined}

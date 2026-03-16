@@ -36,9 +36,9 @@ const POST_VARIANTS = {
     footer: '',
   },
   FILM: {
-    container: 'flex flex-col md:flex-row items-start md:items-stretch rounded-2xl',
-    imageContainer: 'w-full md:w-2/5 relative overflow-hidden rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none shrink-0',
-    image: 'h-full object-cover',
+    container: 'flex flex-col items-start rounded-2xl',
+    imageContainer: 'w-full relative overflow-hidden rounded-t-2xl',
+    image: 'w-full object-cover',
     content: 'flex flex-1 flex-col',
     footer: '',
   },
@@ -137,15 +137,15 @@ export function Post({
       {/* Image Section */}
       {firstImage && type !== 'TEXT' ? (
         <div className={`relative bg-gray-100 group/image ${styles.imageContainer}`}>
-          {type === 'FILM' && link ? (
-            <a href={link} target="_blank" rel="noopener noreferrer" className="block w-full h-full relative ">
+          {type === 'FILM' ? (
+            <a href={link} target="_blank" rel="noopener noreferrer" className="block w-full relative">
               <img
                 src={firstImage}
-                alt={title || "Post image"}
-                className={`w-full block ${styles.image}`}
+                alt={filmTitle || title || 'Film poster'}
+                className="w-full block object-cover"
               />
-              <div className="absolute inset-0 bg-linear-to-t from-black/90 via-transparent to-transparent flex flex-col justify-end p-5 text-white">
-                <h3 className="text-lg font-bold leading-tight shadow-black drop-shadow-md">{filmTitle}</h3>
+              <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-5 text-white">
+                <h3 className="text-lg font-bold leading-tight drop-shadow-md">{filmTitle}</h3>
                 <div className="flex items-center gap-3 mt-1 text-xs font-medium text-white/90">
                   {rating && (
                     <div className="flex items-center gap-1 text-yellow-400">
