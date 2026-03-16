@@ -1,14 +1,9 @@
-import { currentUser } from '@clerk/nextjs/server';
 import DesktopNavbar from './DesktopNavbar';
 import MobileNavbar from './MobileNavbar';
 
 async function Navbar() {
-  const user = await currentUser()
-
-  console.log(user)
-
   const defaultNavItems = [
-    { title: "Dear Diary", link: "/dear-diary" },
+    { title: "Bittersweet", link: "/bittersweet" },
     { title: "Sweet Disposition", link: "/sweet-disposition" },
     { title: "Cinematic Feels", link: "/cinematic-feels" },
     { title: "Archive", link: "/archive" },

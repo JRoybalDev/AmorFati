@@ -57,7 +57,7 @@ function MobileNavbar({ navItems }: NavItems) {
     <nav className='fixed top-0 bg-BGnav px-4 py-4 text-TEXTmain w-screen z-50'>
       {/* Closed Nav (Header) */}
       <div className='flex justify-between items-center'>
-        <Link className="text-3xl font-normal font-manufacturingConsent" href={"/archive"} onClick={handleLinkClick}>Amor Fati</Link>
+        <Link className="text-3xl font-normal font-manufacturingConsent" href={"/"} onClick={handleLinkClick}>Amor Fati</Link>
         <AiOutlineMenu className='h-5 w-5 cursor-pointer' onClick={() => setOpen((prev) => !prev)} />
       </div>
 

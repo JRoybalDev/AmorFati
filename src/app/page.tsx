@@ -1,18 +1,15 @@
-'use client'
-
-import { useEffect } from 'react';
 import './globals.css'
-import { useRouter } from 'next/navigation';
+import { PostGrid } from './components/PostGrid';
+import { getPosts } from '@/lib/data'
 
-export default function Home() {
-  const router = useRouter();
+export default async function Home() {
+  const posts = await getPosts()
 
-  useEffect(() => {
-    router.push('/archive')
-  }, [router])
   return (
-    <div className="w-screen md:w-9/12 bg-BGpage z-0 text-black p-6">
-
+    <div className="min-h-screen  bg-BGpage p-8">
+      <div className="mx-auto max-w-7xl space-y-12">
+        <PostGrid posts={posts} />
+      </div>
     </div>
   );
 }

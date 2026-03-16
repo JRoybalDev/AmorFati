@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { Image as ImageIcon, Film, Type, Star } from 'lucide-react'
+import { renderRichContent } from '@/lib/render-rich-content'
 
 export interface PostProps {
   type: 'TEXT' | 'IMAGE' | 'FILM'
@@ -261,9 +262,11 @@ export function Post({
                   : 'none'
               }}
             >
-              <p ref={contentRef} className="text-sm text-gray-500 leading-relaxed">
-                {content}
-              </p>
+              <div
+                ref={contentRef as React.RefObject<HTMLDivElement>}
+                className="text-sm text-gray-500 leading-relaxed rich-content"
+                dangerouslySetInnerHTML={{ __html: renderRichContent(content) }}
+              />
             </div>
 
             {/* Fade overlay — only when collapsed */}

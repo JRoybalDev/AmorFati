@@ -5,9 +5,10 @@ import { PostsApi, UploadResult } from '@/lib/posts'
 import { usePostsManager } from '@/hooks/use-posts-manager'
 import { Post } from '../components/Post'
 import {
-  Bold, Italic, List, Link as LinkIcon, Plus, Edit2, Trash2, Film, LayoutGrid, Search, Image as ImageIcon, Type, X, AlertTriangle
+  Bold, Italic, List, Link as LinkIcon, Plus, Edit2, Trash2, Film, LayoutGrid, Search, Image as ImageIcon, Type, X, AlertTriangle, ListOrdered, Underline as UnderlineIcon
 } from 'lucide-react'
 import { Reorder, AnimatePresence, motion } from 'framer-motion'
+import RichTextEditor from '../components/RichTextEditor'
 
 // Create a context to share the state
 type GalleryItem = { id: string; url: string; file?: File }
@@ -89,10 +90,10 @@ export function PostsHeader() {
       </div>
       <button
         onClick={handleNewPost}
-        className="flex items-center gap-2 bg-gray-900 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-gray-800 transition-colors shadow-sm mb-1 mt-4 md:mt-0 w-fit"
+        className="flex items-center gap-2 bg-BGbutton text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-HOVERbutton transition-colors shadow-sm mb-1 mt-4 md:mt-0 w-fit"
       >
         <Plus size={18} />
-        <span>New Post</span>
+        <span className='mb-1'>New Post</span>
       </button>
     </div>
   )
@@ -306,23 +307,12 @@ export function PostsForm() {
             {(formData.type === 'TEXT' || formData.type === 'FILM' || formData.type === 'IMAGE') && (
               <div>
                 <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">Content</label>
-                <div className="relative group">
-                  <textarea
-                    name="content"
-                    value={formData.content}
-                    onChange={handleInputChange}
-                    placeholder="Write your thoughts here..."
-                    rows={8}
-                    className="w-full bg-gray-50 border-none rounded-xl px-4 py-3.5 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-black/5 outline-none resize-none pb-14 transition-all"
-                  />
-                  {/* Visual Toolbar */}
-                  <div className="absolute bottom-3 left-4 flex gap-4 text-gray-400">
-                    <button type="button" className="hover:text-gray-600 transition-colors"><Bold size={18} /></button>
-                    <button type="button" className="hover:text-gray-600 transition-colors"><Italic size={18} /></button>
-                    <button type="button" className="hover:text-gray-600 transition-colors"><List size={18} /></button>
-                    <button type="button" className="hover:text-gray-600 transition-colors"><LinkIcon size={18} /></button>
-                  </div>
-                </div>
+                <RichTextEditor
+                  value={formData.content}
+                  onChange={(html) =>
+                    handleInputChange({ target: { name: 'content', value: html } } as any)
+                  }
+                />
               </div>
             )}
 
@@ -409,7 +399,7 @@ export function PostsForm() {
                     />
                     <label
                       htmlFor="imageUpload"
-                      className={`cursor-pointer rounded-xl bg-gray-900 px-5 py-3 text-sm font-medium text-white hover:bg-gray-800 transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`cursor-pointer rounded-xl bg-BGbutton px-5 py-3 text-sm font-medium text-white hover:bg-BGbuttonSelected transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
                     >
                       Add Images
                     </label>
@@ -462,18 +452,11 @@ export function PostsForm() {
               >
                 Cancel
               </button>
-              {!isEditing && (
-                <button
-                  type="button"
-                  className="px-6 py-3 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
-                >
-                  Save Draft
-                </button>
-              )}
+
               <button
                 type="submit"
                 disabled={loading}
-                className="px-8 py-3 text-sm font-bold bg-[#d4f34a] text-black rounded-full hover:bg-[#cce944] transition-colors disabled:opacity-50 shadow-sm hover:shadow-md"
+                className="px-8 py-3 text-sm font-bold bg-BGbutton text-white rounded-full hover:bg-BGbuttonSelected transition-colors disabled:opacity-50 shadow-sm hover:shadow-md"
               >
                 {loading ? 'Processing...' : (isEditing ? 'Update Post' : 'Publish Now')}
               </button>
@@ -492,28 +475,33 @@ export function PostPreview() {
     ? galleryItems.map((item) => item.url)
     : formData.images || []
 
+  const hasContent =
+    !!formData.title?.trim() ||
+    !!formData.content?.trim() && formData.content.trim() !== '<p></p>' ||
+    previewImages.length > 0 ||
+    !!movieTitle
+
+  if (!hasContent) return null
+
   return (
     <>
-
-      <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 h-full sticky top-8 font-sans">
-        <h2 className="text-xl font-bold text-gray-900 mb-8">Preview</h2>
+      <div className="rounded-3xl p-8 h-full sticky top-8 font-sans">
         <div className="flex justify-center">
-            <Post
-              type={formData.type || 'TEXT'}
-              title={formData.title}
-              content={formData.content}
-              images={previewImages}
+          <Post
+            type={formData.type || 'TEXT'}
+            title={formData.title}
+            content={formData.content}
+            images={previewImages}
             link={formData.link}
-              createdAt={new Date()}
+            createdAt={new Date()}
             rating={formData.rating}
             year={formData.year}
             filmTitle={movieTitle || formData.filmTitle}
-              tags={formData.tags}
-              showDetails={formData.showDetails}
-            />
+            tags={formData.tags}
+            showDetails={formData.showDetails}
+          />
         </div>
       </div>
-
     </>
   )
 }
@@ -574,8 +562,8 @@ export function PostsList() {
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onClick={() => setFilterType(type as any)}
                   className={`px-5 py-2 text-xs font-bold rounded-full transition-all ${filterType === type
-                    ? 'bg-gray-900 text-white shadow-md'
-                    : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                    ? 'bg-BGbutton text-white shadow-md'
+                    : 'text-gray-500 hover:text-BGbuttonSelected hover:bg-gray-50'
                     }`}
                 >
                   {type === 'ALL' ? 'All Posts' : (type === 'IMAGE' ? 'Photos' : (type === 'FILM' ? 'Films' : 'Text'))}
@@ -587,14 +575,14 @@ export function PostsList() {
             <div className="flex bg-white p-1.5 rounded-full shadow-sm border border-gray-100">
               <button
                 onClick={() => setViewMode('mosaic')}
-                className={`p-2 rounded-full transition-all ${viewMode === 'mosaic' ? 'bg-gray-900 text-white shadow-md' : 'text-gray-400 hover:text-gray-900'}`}
+                className={`p-2 rounded-full transition-all ${viewMode === 'mosaic' ? 'bg-BGbutton text-white shadow-md' : 'text-gray-400 hover:text-gray-900'}`}
                 title="Mosaic View"
               >
                 <LayoutGrid size={16} />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 rounded-full transition-all ${viewMode === 'list' ? 'bg-gray-900 text-white shadow-md' : 'text-gray-400 hover:text-gray-900'}`}
+                className={`p-2 rounded-full transition-all ${viewMode === 'list' ? 'bg-BGbutton text-white shadow-md' : 'text-gray-400 hover:text-gray-900'}`}
                 title="List View"
               >
                 <List size={16} />
