@@ -92,7 +92,7 @@ async function deleteFiles(urls: string[]) {
     console.error(
       `[File Cleanup] API failed to delete files. Status: ${res.status}, Body: ${errorText}`
     )
-    throw new Error(`Failed to delete files from storage. Status: ${res.status}`)
+    throw new Error(`Failed to delete files from storage. Status: ${res.status}`) 
   }
 
   console.log(
