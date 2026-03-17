@@ -24,6 +24,22 @@ function rewriteImageUrls(images: unknown): string[] {
   })
 }
 
+function restoreImageUrls(images: unknown): string[] {
+  if (!Array.isArray(images)) return []
+  return images.map((url) => {
+    if (typeof url === 'string' && url.includes('/api/proxy?url=')) {
+      try {
+        const parsed = new URL(url, 'http://localhost')
+        const original = parsed.searchParams.get('url')
+        if (original) return original
+      } catch {
+        // ignore
+      }
+    }
+    return url
+  })
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const typeParam = searchParams.get('type');
@@ -70,7 +86,10 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { id, type, title, content, images, link, authorId, createdAt, tags, showDetails, rating, year, filmTitle } = body;
+    let { id, type, title, content, images, link, authorId, createdAt, tags, showDetails, rating, year, filmTitle } = body;
+
+    // Restore original URLs from proxy URLs
+    images = restoreImageUrls(images)
 
     // Basic validation based on PostType
     if (!type || !Object.values(PostType).includes(type)) {

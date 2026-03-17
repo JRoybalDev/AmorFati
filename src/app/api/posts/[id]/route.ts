@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { fileApiFetch } from '@/lib/fileApiAuth'
 
-const FILE_API_URL = process.env.FILE_API_URL || 'http://localhost:3000'
+const FILE_API_URL = process.env.FILE_API_URL || ''
 const PROJECT_NAME = process.env.PROJECT_NAME || 'default'
 const ARCON_API_KEY = process.env.ARCON_API_KEY || ''
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || ''
@@ -10,8 +10,32 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL || ''
 function rewriteImageUrls(images: unknown): string[] {
   if (!Array.isArray(images)) return []
   return images.map((url) => {
-    if (typeof url === 'string' && url.includes('arcon-api.duckdns.org')) {
-      return `${APP_URL}/api/proxy?url=${encodeURIComponent(url)}`
+    if (typeof url === 'string') {
+      try {
+        const urlObj = new URL(url)
+        const fileApiObj = new URL(FILE_API_URL)
+        if (urlObj.hostname === fileApiObj.hostname && urlObj.port === fileApiObj.port) {
+          return `${APP_URL}/api/proxy?url=${encodeURIComponent(url)}`
+        }
+      } catch {
+        // not a valid URL, return as-is
+      }
+    }
+    return url
+  })
+}
+
+function restoreImageUrls(images: unknown): string[] {
+  if (!Array.isArray(images)) return []
+  return images.map((url) => {
+    if (typeof url === 'string' && url.includes('/api/proxy?url=')) {
+      try {
+        const parsed = new URL(url, 'http://localhost')
+        const original = parsed.searchParams.get('url')
+        if (original) return original
+      } catch {
+        // ignore
+      }
     }
     return url
   })
@@ -138,7 +162,7 @@ export async function PUT(
 
   try {
     const body = await request.json()
-    const {
+    let {
       type,
       title,
       content,
@@ -150,6 +174,9 @@ export async function PUT(
       tags,
       showDetails,
     } = body
+
+    // Restore original URLs from proxy URLs
+    images = restoreImageUrls(images)
 
     // Fetch existing post to compare images
     const existingPost = await prisma.post.findUnique({
@@ -215,8 +242,27 @@ export async function DELETE(
     // If file deletion fails, the whole request fails and can be retried.
     if (post.type === 'IMAGE') {
       // For IMAGE posts, the convention is that all images are in a dedicated folder.
-      await deleteFolder(`Posts/Images/${id}`)
-    } else if (post.images && post.images.length > 0) {
+      // We try to detect the folder path from the images if available, otherwise fallback to default.
+      let folderPath = `Posts/Images/${id}`
+
+      if (Array.isArray(post.images) && post.images.length > 0) {
+        const firstImage = post.images[0]
+        if (typeof firstImage === 'string') {
+          try {
+            const urlObj = new URL(firstImage)
+            const basePath = `/content/${PROJECT_NAME}/`
+            if (urlObj.pathname.startsWith(basePath)) {
+              const fullPath = decodeURIComponent(urlObj.pathname.substring(basePath.length))
+              const lastSlashIdx = fullPath.lastIndexOf('/')
+              if (lastSlashIdx > 0) {
+                folderPath = fullPath.substring(0, lastSlashIdx)
+              }
+            }
+          } catch { }
+        }
+      }
+      await deleteFolder(folderPath)
+    } else if (post.images && Array.isArray(post.images) && post.images.length > 0) {
       // For other post types (like FILM), delete the specific files listed.
       await deleteFiles(post.images as string[])
     }

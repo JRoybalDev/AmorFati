@@ -202,10 +202,37 @@ export function PostsForm() {
         let postId = formData.id
         if (!postId) {
           if (isEditing) {
-            postId = isEditing
+            postId = typeof isEditing === 'string' ? isEditing : crypto.randomUUID()
           } else {
             postId = crypto.randomUUID()
             handleInputChange({ target: { name: 'id', value: postId } } as unknown as React.ChangeEvent<HTMLInputElement>)
+          }
+        }
+
+        // Determine upload path
+        let uploadPath = `Posts/Images/${postId}`
+
+        // Try to detect existing folder from existing images to keep them together
+        const existingItem = galleryItems.find((item) => !item.file && item.url)
+        if (existingItem) {
+          try {
+            let url = existingItem.url
+            if (url.includes('/api/proxy?url=')) {
+              const urlObj = new URL(url, window.location.origin)
+              const original = urlObj.searchParams.get('url')
+              if (original) url = original
+            }
+
+            const lastSlashIndex = url.lastIndexOf('/')
+            if (lastSlashIndex !== -1) {
+              const parentDir = url.substring(0, lastSlashIndex)
+              const postsIndex = parentDir.indexOf('Posts/Images')
+              if (postsIndex !== -1) {
+                uploadPath = parentDir.substring(postsIndex)
+              }
+            }
+          } catch (e) {
+            console.warn('Could not determine existing folder path', e)
           }
         }
 
@@ -218,7 +245,7 @@ export function PostsForm() {
 
         let uploadedResults: UploadResult[] = [];
         if (filesToUpload.length > 0) {
-          uploadedResults = await PostsApi.upload(filesToUpload, `Posts/Images/${postId}`);
+          uploadedResults = await PostsApi.upload(filesToUpload, uploadPath);
         }
 
         // Create a map of originalName -> url for robust matching.
@@ -536,12 +563,12 @@ export function PostsList() {
 
   return (
     <div className="mt-12">
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-8 gap-4">
         <h2 className="text-2xl font-bold text-gray-900">Manage Posts</h2>
 
-        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+        <div className="flex flex-col xl:flex-row items-center gap-4 w-full xl:w-auto">
           {/* Search Bar */}
-          <div className="relative w-full md:w-64">
+          <div className="relative w-full xl:w-64">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search size={16} className="text-gray-400" />
             </div>
@@ -554,7 +581,7 @@ export function PostsList() {
             />
           </div>
 
-          <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
+          <div className="flex items-center gap-4 w-full xl:w-auto justify-between xl:justify-end">
             {/* Filter Tabs */}
             <div className="flex bg-white p-1.5 rounded-full shadow-sm border border-gray-100">
               {['ALL', 'TEXT', 'IMAGE', 'FILM'].map((type) => (
