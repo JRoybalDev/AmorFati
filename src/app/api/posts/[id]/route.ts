@@ -92,7 +92,7 @@ async function deleteFiles(urls: string[]) {
     console.error(
       `[File Cleanup] API failed to delete files. Status: ${res.status}, Body: ${errorText}`
     )
-    throw new Error(`Failed to delete files from storage. Status: ${res.status}`) 
+    throw new Error(`Failed to delete files from storage. Status: ${res.status}`)
   }
 
   console.log(
@@ -162,11 +162,10 @@ export async function PUT(
 
   try {
     const body = await request.json()
-    let {
+    const {
       type,
       title,
       content,
-      images,
       link,
       rating,
       year,
@@ -174,6 +173,7 @@ export async function PUT(
       tags,
       showDetails,
     } = body
+    let { images } = body
 
     // Restore original URLs from proxy URLs
     images = restoreImageUrls(images)
