@@ -1,15 +1,46 @@
 import { NextResponse } from 'next/server'
+import { getFileApiToken, invalidateToken } from '@/lib/fileApiAuth'
 
 const FILE_API_URL = process.env.FILE_API_URL || 'http://localhost:4000'
 const PROJECT_NAME = process.env.PROJECT_NAME || 'default'
 const ARCON_API_KEY = process.env.ARCON_API_KEY || ''
+
+async function fetchWithAuth(url: string, options: RequestInit): Promise<Response> {
+  const token = await getFileApiToken()
+
+  const res = await fetch(url, {
+    ...options,
+    headers: {
+      ...options.headers,
+      'x-api-key': ARCON_API_KEY,
+      Authorization: `Bearer ${token}`,
+    },
+  })
+
+  // Token expired — invalidate, refresh, and retry once
+  if (res.status === 403) {
+    invalidateToken()
+    const freshToken = await getFileApiToken()
+
+    return fetch(url, {
+      ...options,
+      headers: {
+        ...options.headers,
+        'x-api-key': ARCON_API_KEY,
+        Authorization: `Bearer ${freshToken}`,
+      },
+    })
+  }
+
+  return res
+}
 
 export async function POST(request: Request) {
   console.log('[Upload API] Starting upload request processing')
   try {
     const data = await request.formData()
     const files: File[] | null = data.getAll('file') as unknown as File[]
-    const path = data.get('path') as string | null // Get the path from the form data
+    const path = data.get('path') as string | null
 
     if (path) {
       console.log(`[Upload API] Target path from client: ${path}`)
@@ -27,56 +58,46 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'Too many files (max 5)' }, { status: 400 })
     }
 
-    // The path from the client is the full folder path (e.g., /Posts/Images/some-id).
-    // We use it directly. If it's not provided, we generate a new one.
     let folderPath = path || `Posts/Images/${Date.now()}-${Math.random().toString(36).substring(7)}`
-    // Defensively trim any leading slash to prevent double slashes in the final URL.
     if (folderPath.startsWith('/')) {
       folderPath = folderPath.substring(1)
     }
     console.log(`[Upload API] Using folder path: ${folderPath}`)
 
-    // 1. Create folder in external API. We'll pass the full desired path.
+    // 1. Create folder — now includes JWT alongside API key
     const createFolderUrl = `${FILE_API_URL}/api/${PROJECT_NAME}/upload/folder`
     console.log(`[Upload API] Creating folder at external API: ${createFolderUrl}`)
 
-    const folderRes = await fetch(createFolderUrl, {
+    const folderRes = await fetchWithAuth(createFolderUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': ARCON_API_KEY
-      },
-      body: JSON.stringify({ folder: folderPath }), // Use folderPath here
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder: folderPath }),
     })
 
     console.log(`[Upload API] Create folder response status: ${folderRes.status}`)
 
     if (!folderRes.ok) {
       const errorText = await folderRes.text()
-      // A 409 Conflict status likely means the folder already exists, which is fine.
       if (folderRes.status !== 409) {
         console.error(`[Upload API] Failed to create folder. Response: ${errorText}`)
         throw new Error(`Failed to create folder in external API: ${errorText}`)
       } else {
-        console.log(`[Upload API] Folder already exists or conflict occurred, proceeding with upload.`)
+        console.log(`[Upload API] Folder already exists, proceeding with upload.`)
       }
     }
 
-    // 2. Upload files to that folder using mass upload endpoint
+    // 2. Upload files — now includes JWT alongside API key
+    // Note: No Content-Type header — fetch sets it automatically with the
+    // correct multipart boundary when the body is FormData.
     console.log('[Upload API] Starting file uploads to folder...')
 
     const formData = new FormData()
     files.forEach((file) => formData.append('files', file))
-
-    // The external API expects the destination path in the form data.
     formData.append('folder', folderPath)
 
     const uploadUrl = `${FILE_API_URL}/api/${PROJECT_NAME}/upload/mass`
-    const uploadRes = await fetch(uploadUrl, {
+    const uploadRes = await fetchWithAuth(uploadUrl, {
       method: 'POST',
-      headers: {
-        'x-api-key': ARCON_API_KEY
-      },
       body: formData,
     })
 
@@ -86,15 +107,16 @@ export async function POST(request: Request) {
       throw new Error(`Failed to upload files: ${errorText}`)
     }
 
-    // The external API is the source of truth for the final URLs after its own sanitization.
-    // We parse its response and forward it to the client.
     const uploadedUrls = await uploadRes.json()
 
-    console.log(`[Upload API] Successfully processed uploads. Returning URLs from external API:`, uploadedUrls)
-    // Return the array of full URLs provided by the external API.
+    console.log(`[Upload API] Successfully processed uploads:`, uploadedUrls)
     return NextResponse.json(uploadedUrls)
+
   } catch (error) {
     console.error('[Upload API] Critical error uploading files:', error)
-    return NextResponse.json({ success: false, message: (error as Error).message || 'Upload failed' }, { status: 500 })
+    return NextResponse.json(
+      { success: false, message: (error as Error).message || 'Upload failed' },
+      { status: 500 }
+    )
   }
 }

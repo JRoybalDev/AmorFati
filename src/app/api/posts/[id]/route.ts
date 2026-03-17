@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { fileApiFetch } from '@/lib/fileApiAuth'
 
 const FILE_API_URL = process.env.FILE_API_URL || 'http://localhost:3000'
 const PROJECT_NAME = process.env.PROJECT_NAME || 'default'
@@ -19,6 +20,13 @@ function rewriteImageUrls(images: unknown): string[] {
 async function deleteFiles(urls: string[]) {
   if (!urls || urls.length === 0) {
     return
+  }
+
+  if (!ARCON_API_KEY) {
+    const errorMessage =
+      '[File Cleanup] ARCON_API_KEY is not set. Cannot delete files.'
+    console.error(errorMessage)
+    throw new Error('File storage API key is not configured on the server.')
   }
 
   const filesToDelete = urls
@@ -47,14 +55,13 @@ async function deleteFiles(urls: string[]) {
     return
   }
 
-  const res = await fetch(`${FILE_API_URL}/api/${PROJECT_NAME}/upload/files`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': ARCON_API_KEY,
-    },
-    body: JSON.stringify({ files: filesToDelete }),
-  })
+  const res = await fileApiFetch(
+    `/api/${PROJECT_NAME}/upload/files`,
+    {
+      method: 'DELETE',
+      body: JSON.stringify({ files: filesToDelete }),
+    }
+  )
 
   if (!res.ok) {
     const errorText = await res.text()
@@ -72,14 +79,20 @@ async function deleteFiles(urls: string[]) {
 async function deleteFolder(folderPath: string) {
   if (!folderPath) return
 
-  const res = await fetch(`${FILE_API_URL}/api/${PROJECT_NAME}/upload/folder`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': ARCON_API_KEY,
-    },
-    body: JSON.stringify({ folder: folderPath }),
-  })
+  if (!ARCON_API_KEY) {
+    const errorMessage =
+      '[File Cleanup] ARCON_API_KEY is not set. Cannot delete folder.'
+    console.error(errorMessage)
+    throw new Error('File storage API key is not configured on the server.')
+  }
+
+  const res = await fileApiFetch(
+    `/api/${PROJECT_NAME}/upload/folder`,
+    {
+      method: 'DELETE',
+      body: JSON.stringify({ folder: folderPath }),
+    }
+  )
 
   if (!res.ok) {
     const errorText = await res.text()
