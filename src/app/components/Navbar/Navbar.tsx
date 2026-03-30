@@ -3,9 +3,10 @@ import MobileNavbar from './MobileNavbar';
 
 async function Navbar() {
   const defaultNavItems = [
-    { title: "Bittersweet", link: "/bittersweet" },
+    { title: "Brutal Tenderness", link: "/brutal-tenderness" },
     { title: "Sweet Disposition", link: "/sweet-disposition" },
     { title: "Cinematic Feels", link: "/cinematic-feels" },
+    { title: "Bittersweet", link: "/bittersweet" },
     { title: "Archive", link: "/archive" },
   ]
 

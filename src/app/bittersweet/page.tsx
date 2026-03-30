@@ -10,7 +10,7 @@ export default async function DearDiaryPage() {
       <div className="mx-auto max-w-7xl space-y-12">
         <header>
           <h1 className="text-4xl font-medium font-manufacturingConsent text-gray-900">Bittersweet</h1>
-          <p className="text-gray-500 mt-1">A collection of thoughts and musings.</p>
+          <p className="text-gray-500 mt-1">A collection of poetry.</p>
         </header>
         <section>
           <PostGrid posts={posts} />
