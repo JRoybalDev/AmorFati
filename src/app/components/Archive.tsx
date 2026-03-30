@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useMemo, useTransition, useRef, useEffect, useCallback } from 'react'
+import React, { useState, useMemo, useTransition, useRef, useEffect, useCallback, memo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   FiCalendar,
@@ -17,6 +17,7 @@ import {
   FiGrid,
   FiExternalLink,
 } from 'react-icons/fi'
+import { FadeLoader } from 'react-spinners'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -291,16 +292,21 @@ function Thumbnail({ post, className = '' }: { post: Post; className?: string })
 
 // ── Post Row (List view) ──────────────────────────────────────────────────────
 
-function PostRow({ post, index, onClick }: { post: Post; index: number; onClick: () => void }) {
+const PostRow = memo(({ post, index, onClick }: { post: Post; index: number; onClick: () => void }) => {
   const tags = parseTags(post.tags)
   const displayTitle = getDisplayTitle(post)
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 10 }}
-      transition={{ duration: 0.22, delay: index * 0.035, ease: 'easeOut' }}
+      initial={{ opacity: 0, y: 30, filter: 'blur(4px)' }}
+      animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+      exit={{ opacity: 0, y: 10, filter: 'blur(4px)' }}
+      transition={{
+        type: 'spring',
+        damping: 25,
+        stiffness: 200,
+        delay: index * 0.04
+      }}
       onClick={onClick}
       className="group flex items-start gap-4 py-3 border-b border-[#9B4000]/10 last:border-0
         hover:bg-[#BE5103]/5 -mx-2 px-2 rounded transition-colors duration-150 cursor-pointer"
@@ -374,20 +380,25 @@ function PostRow({ post, index, onClick }: { post: Post; index: number; onClick:
       </span>
     </motion.div>
   )
-}
+})
 
 // ── Grid Card ─────────────────────────────────────────────────────────────────
 
-function GridCard({ post, index, onClick }: { post: Post; index: number; onClick: () => void }) {
+const GridCard = memo(({ post, index, onClick }: { post: Post; index: number; onClick: () => void }) => {
   const tags = parseTags(post.tags)
   const displayTitle = getDisplayTitle(post)
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 12, scale: 0.97 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.25, delay: index * 0.04, ease: 'easeOut' }}
+      initial={{ opacity: 0, y: 50, scale: 0.9, filter: 'blur(8px)' }}
+      animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
+      exit={{ opacity: 0, scale: 0.9, filter: 'blur(8px)' }}
+      transition={{
+        type: 'spring',
+        damping: 20,
+        stiffness: 150,
+        delay: index * 0.05
+      }}
       onClick={onClick}
       className="group relative flex flex-col rounded-lg overflow-hidden cursor-pointer
         bg-BGpage border border-[#9B4000]/15 shadow-sm shadow-[#9B4000]/5
@@ -465,24 +476,29 @@ function GridCard({ post, index, onClick }: { post: Post; index: number; onClick
       </div>
     </motion.div>
   )
-}
+})
 
 // ── Month Section ─────────────────────────────────────────────────────────────
 
-function MonthSection({ monthYear, posts, sectionIndex, viewMode, onPostClick }: {
+const MonthSection = memo(({ monthYear, posts, sectionIndex, viewMode, onPostClick }: {
   monthYear: string
   posts: Post[]
   sectionIndex: number
   viewMode: ViewMode
   onPostClick: (post: Post) => void
-}) {
+}) => {
   const [month, year] = monthYear.split(' ')
 
   return (
     <motion.section
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: sectionIndex * 0.07 }}
+      transition={{
+        type: 'spring',
+        damping: 28,
+        stiffness: 180,
+        delay: sectionIndex * 0.08
+      }}
       className="mb-10"
     >
       <div className="flex items-baseline gap-3 mb-3">
@@ -526,7 +542,7 @@ function MonthSection({ monthYear, posts, sectionIndex, viewMode, onPostClick }:
       </AnimatePresence>
     </motion.section>
   )
-}
+})
 
 // ── Tags Dropdown ─────────────────────────────────────────────────────────────
 
@@ -850,10 +866,11 @@ function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
 
 // ── View Toggle ───────────────────────────────────────────────────────────────
 
-function ViewToggle({ viewMode, onChange }: { viewMode: ViewMode; onChange: (v: ViewMode) => void }) {
+function ViewToggle({ viewMode, onChange, disabled }: { viewMode: ViewMode; onChange: (v: ViewMode) => void; disabled?: boolean }) {
   return (
-    <div className="flex items-center gap-0.5 ml-auto p-0.5 rounded bg-[#9B4000]/10 border border-[#9B4000]/20">
+    <div className={`flex items-center gap-0.5 ml-auto p-0.5 rounded bg-[#9B4000]/10 border border-[#9B4000]/20 transition-opacity duration-200 ${disabled ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
       <button
+        disabled={disabled}
         onClick={() => onChange('list')}
         className={`p-1.5 rounded transition-all duration-150 ${
           viewMode === 'list'
@@ -865,6 +882,7 @@ function ViewToggle({ viewMode, onChange }: { viewMode: ViewMode; onChange: (v: 
         <FiList size={13} />
       </button>
       <button
+        disabled={disabled}
         onClick={() => onChange('grid')}
         className={`p-1.5 rounded transition-all duration-150 ${
           viewMode === 'grid'
@@ -897,21 +915,10 @@ function Archive({ posts }: ArchiveProps) {
   const [appliedType, setAppliedType] = useState<FilterType>('ALL')
   const [appliedTags, setAppliedTags] = useState<string[]>([])
 
-  const applyFilters = (monthKey: string | null, type: FilterType, tags: string[]) => {
-    startTransition(() => {
-      setAppliedMonthKey(monthKey)
-      setAppliedType(type)
-      setAppliedTags(tags)
-    })
-  }
-
-  const toggleDropdown = (key: 'month' | 'type' | 'tags') =>
-    setOpenDropdown((prev) => (prev === key ? null : key))
-
-  const handlePostClick = useCallback((post: Post) => {
-    setSelectedPost(post)
-    setOpenDropdown(null)
-  }, [])
+  // Infinite Scroll State
+  const [displayLimit, setDisplayLimit] = useState(3)
+  const loadMoreRef = useRef<HTMLDivElement>(null)
+  const INITIAL_LIMIT = 3
 
   const availableMonths = useMemo(() => {
     const seen = new Set<string>()
@@ -953,6 +960,38 @@ function Archive({ posts }: ArchiveProps) {
     }))
   }, [filteredPosts])
 
+  const applyFilters = (monthKey: string | null, type: FilterType, tags: string[]) => {
+    startTransition(() => {
+      setAppliedMonthKey(monthKey)
+      setAppliedType(type)
+      setAppliedTags(tags)
+      setDisplayLimit(INITIAL_LIMIT)
+    })
+  }
+
+  // Observer for Infinite Scroll
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isPending && displayLimit < groupedPosts.length) {
+          setDisplayLimit((prev) => prev + 2)
+        }
+      },
+      { threshold: 0.1, rootMargin: '200px' }
+    )
+
+    if (loadMoreRef.current) observer.observe(loadMoreRef.current)
+    return () => observer.disconnect()
+  }, [isPending, displayLimit, groupedPosts.length])
+
+  const toggleDropdown = (key: 'month' | 'type' | 'tags') =>
+    setOpenDropdown((prev) => (prev === key ? null : key))
+
+  const handlePostClick = useCallback((post: Post) => {
+    setSelectedPost(post)
+    setOpenDropdown(null)
+  }, [])
+
   const setMonth = (key: string | null) => {
     setSelectedMonthKey(key); setOpenDropdown(null)
     applyFilters(key, selectedType, selectedTags)
@@ -970,7 +1009,10 @@ function Archive({ posts }: ArchiveProps) {
   }
   const clearAll = () => {
     setSelectedMonthKey(null); setSelectedType('ALL'); setSelectedTags([])
-    applyFilters(null, 'ALL', [])
+    startTransition(() => {
+      applyFilters(null, 'ALL', [])
+      setDisplayLimit(INITIAL_LIMIT)
+    })
   }
 
   const hasActiveFilters = selectedMonthKey !== null || selectedType !== 'ALL' || selectedTags.length > 0
@@ -1056,23 +1098,6 @@ function Archive({ posts }: ArchiveProps) {
             ))}
           </AnimatePresence>
 
-          {/* Pending indicator */}
-          <AnimatePresence>
-            {isPending && (
-              <motion.span
-                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="flex items-center gap-1.5 text-h4Mob text-[#9B4000]/50 ml-1"
-                style={{ fontFamily: "'Texturina', serif" }}
-              >
-                {[0, 1, 2].map((i) => (
-                  <span key={i} className="w-1 h-1 rounded-full bg-[#BE5103]/50 animate-bounce"
-                    style={{ animationDelay: `${i * 120}ms` }} />
-                ))}
-                filtering…
-              </motion.span>
-            )}
-          </AnimatePresence>
-
           {/* Clear */}
           <AnimatePresence>
             {hasActiveFilters && (
@@ -1093,22 +1118,41 @@ function Archive({ posts }: ArchiveProps) {
           <div className="w-px h-4 bg-[#9B4000]/20 mx-1" />
 
           {/* View toggle — far right */}
-          <ViewToggle viewMode={viewMode} onChange={setViewMode} />
+          <ViewToggle
+            viewMode={viewMode}
+            onChange={(v) => startTransition(() => {
+              setViewMode(v)
+              setDisplayLimit(INITIAL_LIMIT)
+            })}
+            disabled={isPending}
+          />
         </div>
       </motion.div>
 
       {/* ── Content ── */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="popLayout">
         {isPending ? (
-          <motion.div key="skeleton" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            {Array.from({ length: 3 }).map((_, i) => (
-              <SkeletonSection key={i} index={i} viewMode={viewMode} />
-            ))}
+          <motion.div
+            key="loading"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="flex items-center justify-center py-40 w-full"
+          >
+            <FadeLoader color="#BE5103" />
           </motion.div>
         ) : groupedPosts.length > 0 ? (
-          <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}>
-            {groupedPosts.map((group, i) => (
+            <motion.div
+              key={`results-${appliedMonthKey}-${appliedType}-${appliedTags.join(',')}-${viewMode}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{
+                duration: 0.4,
+                ease: [0.16, 1, 0.3, 1] // Custom ease-out quint for smoother feel
+              }}
+            >
+              {groupedPosts.slice(0, displayLimit).map((group, i) => (
               <MonthSection
                 key={group.key}
                 monthYear={group.label}
@@ -1118,6 +1162,13 @@ function Archive({ posts }: ArchiveProps) {
                 onPostClick={handlePostClick}
               />
             ))}
+
+              {/* Sentinel for Infinite Scroll */}
+              <div ref={loadMoreRef} className="h-32 w-full flex items-center justify-center">
+                {displayLimit < groupedPosts.length && (
+                  <FadeLoader color="#BE5103" height={12} width={3} radius={1} margin={-2} />
+                )}
+              </div>
           </motion.div>
         ) : (
           <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
