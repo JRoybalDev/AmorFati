@@ -117,7 +117,7 @@ function StarRating({ rating, size = 10 }: { rating: number; size?: number }) {
           className={i < filled ? 'fill-[#BE5103] text-[#BE5103]' : 'text-[#9B4000]/25'}
         />
       ))}
-      <span className="ml-1 text-[10px] text-[#9B4000]/60" style={{ fontFamily: "'Texturina', serif" }}>
+      <span className="ml-1 text-h4Mob text-[#9B4000]/60" style={{ fontFamily: "'Texturina', serif" }}>
         {rating}/10
       </span>
     </span>
@@ -192,7 +192,7 @@ function TagPill({ tag, onRemove }: { tag: string; onRemove: () => void }) {
       initial={{ opacity: 0, scale: 0.85 }}
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.85 }}
-      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px]
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-h4Mob
         bg-[#BE5103]/15 text-[#712F00] border border-[#BE5103]/30"
       style={{ fontFamily: "'Texturina', serif" }}
     >
@@ -307,7 +307,7 @@ function PostRow({ post, index, onClick }: { post: Post; index: number; onClick:
     >
       {/* Date */}
       <span
-        className="shrink-0 w-14 text-right text-[10px] text-[#9B4000]/55 pt-0.5 tabular-nums"
+        className="shrink-0 w-14 text-right text-h4Mob text-[#9B4000]/55 pt-0.5 tabular-nums"
         style={{ fontFamily: "'Texturina', serif" }}
       >
         {formatDate(post.createdAt)}
@@ -325,7 +325,7 @@ function PostRow({ post, index, onClick }: { post: Post; index: number; onClick:
       {/* Content */}
       <div className="flex-1 min-w-0">
         <p
-          className="text-sm text-[#180f00] group-hover:text-[#712F00]
+          className="text-sm text-BGpageDark group-hover:text-[#712F00]
             transition-colors duration-150 truncate leading-snug"
           style={{ fontFamily: "'Texturina', serif", fontStyle: 'italic', fontWeight: 600 }}
         >
@@ -335,7 +335,7 @@ function PostRow({ post, index, onClick }: { post: Post; index: number; onClick:
         {post.type === PostType.FILM && (post.year || post.rating != null) && (
           <div className="flex items-center gap-2 mt-0.5">
             {post.year && (
-              <span className="text-[10px] text-[#9B4000]/55" style={{ fontFamily: "'Texturina', serif" }}>
+              <span className="text-h4Mob text-[#9B4000]/55" style={{ fontFamily: "'Texturina', serif" }}>
                 {post.year}
               </span>
             )}
@@ -344,7 +344,7 @@ function PostRow({ post, index, onClick }: { post: Post; index: number; onClick:
         )}
 
         {post.type === PostType.TEXT && post.content && !post.title && (
-          <p className="text-[11px] text-[#180f00]/50 mt-0.5 line-clamp-1">{post.content}</p>
+          <p className="text-[11px] text-BGpageDark/50 mt-0.5 line-clamp-1">{post.content}</p>
         )}
 
         {tags.length > 0 && (
@@ -390,7 +390,7 @@ function GridCard({ post, index, onClick }: { post: Post; index: number; onClick
       transition={{ duration: 0.25, delay: index * 0.04, ease: 'easeOut' }}
       onClick={onClick}
       className="group relative flex flex-col rounded-lg overflow-hidden cursor-pointer
-        bg-[#FFF5D6] border border-[#9B4000]/15 shadow-sm shadow-[#9B4000]/5
+        bg-BGpage border border-[#9B4000]/15 shadow-sm shadow-[#9B4000]/5
         hover:border-[#9B4000]/40 hover:shadow-md hover:shadow-[#9B4000]/10
         transition-all duration-200"
     >
@@ -400,7 +400,7 @@ function GridCard({ post, index, onClick }: { post: Post; index: number; onClick
       {/* Type badge — overlaid on thumbnail */}
       <span
         className="absolute top-2 right-2 flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded
-          bg-[#FFF5D6]/90 backdrop-blur-sm border border-[#9B4000]/25
+          bg-BGpage/90 backdrop-blur-sm border border-[#9B4000]/25
           text-[#9B4000]/70 uppercase tracking-widest"
         style={{ fontFamily: "'Texturina', serif" }}
       >
@@ -411,7 +411,7 @@ function GridCard({ post, index, onClick }: { post: Post; index: number; onClick
       {/* Content */}
       <div className="p-3 flex-1 flex flex-col gap-1.5">
         <p
-          className="text-xs text-[#180f00] group-hover:text-[#712F00] leading-snug
+          className="text-xs text-BGpageDark group-hover:text-[#712F00] leading-snug
             transition-colors duration-150 line-clamp-2"
           style={{ fontFamily: "'Texturina', serif", fontStyle: 'italic', fontWeight: 700 }}
         >
@@ -430,7 +430,7 @@ function GridCard({ post, index, onClick }: { post: Post; index: number; onClick
         )}
 
         {post.type === PostType.TEXT && post.content && (
-          <p className="text-[10px] text-[#180f00]/50 line-clamp-2 leading-relaxed">
+          <p className="text-h4Mob text-BGpageDark/50 line-clamp-2 leading-relaxed">
             {post.content}
           </p>
         )}
@@ -487,7 +487,7 @@ function MonthSection({ monthYear, posts, sectionIndex, viewMode, onPostClick }:
     >
       <div className="flex items-baseline gap-3 mb-3">
         <h2
-          className="text-xl text-[#180f00]"
+          className="text-xl text-BGpageDark"
           style={{ fontFamily: "'Pirata One', serif" }}
         >
           {month}
@@ -504,7 +504,7 @@ function MonthSection({ monthYear, posts, sectionIndex, viewMode, onPostClick }:
           <div className="h-px w-3 bg-[#9B4000]/20" />
         </div>
         <span
-          className="text-[10px] text-[#9B4000]/40 tabular-nums"
+          className="text-h4Mob text-[#9B4000]/40 tabular-nums"
           style={{ fontFamily: "'Texturina', serif" }}
         >
           {posts.length} {posts.length === 1 ? 'entry' : 'entries'}
@@ -582,7 +582,7 @@ function TagsDropdown({ allTags, tagCounts, selectedTags, toggleTag, isOpen, onT
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search tags…"
-                  className="flex-1 bg-transparent text-[11px] text-[#180f00] outline-none
+                  className="flex-1 bg-transparent text-[11px] text-BGpageDark outline-none
                     placeholder:text-[#9B4000]/40"
                   style={{ fontFamily: "'Texturina', serif" }}
                   onClick={(e) => e.stopPropagation()}
@@ -615,7 +615,7 @@ function TagsDropdown({ allTags, tagCounts, selectedTags, toggleTag, isOpen, onT
                       checked={selectedTags.includes(tag)}
                       onChange={() => toggleTag(tag)}
                     />
-                    <span className="text-[11px] text-[#180f00]/75 truncate"
+                    <span className="text-[11px] text-BGpageDark/75 truncate"
                       style={{ fontFamily: "'Texturina', serif" }}>
                       #{tag}
                     </span>
@@ -661,7 +661,7 @@ function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-50 bg-[#180f00]/40 backdrop-blur-[2px]"
+        className="fixed inset-0 z-50 bg-BGpageDark/40 backdrop-blur-[2px]"
         onClick={onClose}
       />
 
@@ -671,7 +671,7 @@ function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: '100%', opacity: 0 }}
         transition={{ type: 'spring', damping: 28, stiffness: 280, mass: 0.8 }}
-        className="fixed z-50 bg-[#FFF5D6] shadow-2xl shadow-[#180f00]/30
+        className="fixed z-50 bg-BGpage shadow-2xl shadow-BGpageDark/30
           flex flex-col overflow-hidden
           /* Mobile: bottom sheet */
           bottom-0 left-0 right-0 rounded-t-2xl max-h-[88dvh]
@@ -701,14 +701,14 @@ function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
                 {TYPE_LABELS[post.type]}
               </span>
               <span
-                className="text-[10px] text-[#9B4000]/40"
+                className="text-h4Mob text-[#9B4000]/40"
                 style={{ fontFamily: "'Texturina', serif" }}
               >
                 {formatDateLong(post.createdAt)}
               </span>
             </div>
             <h2
-              className="text-lg leading-snug text-[#180f00]"
+              className="text-lg leading-snug text-BGpageDark"
               style={{ fontFamily: "'Pirata One', serif" }}
             >
               {displayTitle}
@@ -730,7 +730,7 @@ function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
           {/* Image gallery */}
           {post.images && post.images.length > 0 && (
             <div className="shrink-0">
-              <div className="relative bg-[#180f00]/5 overflow-hidden" style={{ aspectRatio: '16/9' }}>
+              <div className="relative bg-BGpageDark/5 overflow-hidden" style={{ aspectRatio: '16/9' }}>
                 <AnimatePresence mode="wait">
                   <motion.img
                     key={activeImage}
@@ -772,7 +772,7 @@ function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
                   <div>
                     <p className="text-[9px] text-[#9B4000]/40 uppercase tracking-widest mb-0.5"
                       style={{ fontFamily: "'Texturina', serif" }}>Year</p>
-                    <p className="text-sm text-[#180f00]" style={{ fontFamily: "'Texturina', serif" }}>
+                    <p className="text-sm text-BGpageDark" style={{ fontFamily: "'Texturina', serif" }}>
                       {post.year}
                     </p>
                   </div>
@@ -796,7 +796,7 @@ function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
                 {post.type === PostType.TEXT ? 'Note' : 'Description'}
               </p>
               <div
-                className="text-sm text-[#180f00]/80 leading-relaxed rich-content"
+                className="text-sm text-BGpageDark/80 leading-relaxed rich-content"
                 style={{ fontFamily: "'Texturina', serif" }}
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
@@ -829,7 +829,7 @@ function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="text-[10px] px-2 py-1 rounded
+                    className="text-h4Mob px-2 py-1 rounded
                       bg-[#9B4000]/10 text-[#9B4000]/70 border border-[#9B4000]/15"
                     style={{ fontFamily: "'Texturina', serif" }}
                   >
@@ -857,7 +857,7 @@ function ViewToggle({ viewMode, onChange }: { viewMode: ViewMode; onChange: (v: 
         onClick={() => onChange('list')}
         className={`p-1.5 rounded transition-all duration-150 ${
           viewMode === 'list'
-            ? 'bg-[#FFF5D6] text-[#712F00] shadow-sm border border-[#9B4000]/25'
+            ? 'bg-BGpage text-[#712F00] shadow-sm border border-[#9B4000]/25'
             : 'text-[#9B4000]/40 hover:text-[#9B4000]/70'
         }`}
         title="List view"
@@ -868,7 +868,7 @@ function ViewToggle({ viewMode, onChange }: { viewMode: ViewMode; onChange: (v: 
         onClick={() => onChange('grid')}
         className={`p-1.5 rounded transition-all duration-150 ${
           viewMode === 'grid'
-            ? 'bg-[#FFF5D6] text-[#712F00] shadow-sm border border-[#9B4000]/25'
+            ? 'bg-BGpage text-[#712F00] shadow-sm border border-[#9B4000]/25'
             : 'text-[#9B4000]/40 hover:text-[#9B4000]/70'
         }`}
         title="Grid view"
@@ -988,7 +988,7 @@ function Archive({ posts }: ArchiveProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-wrap items-center gap-2 px-4 py-2.5 rounded
-          bg-[#FFF5D6]/90 backdrop-blur-sm
+          bg-BGpage/90 backdrop-blur-sm
           border border-[#9B4000]/20 shadow-sm shadow-[#9B4000]/10">
 
           {/* Month */}
@@ -1061,7 +1061,7 @@ function Archive({ posts }: ArchiveProps) {
             {isPending && (
               <motion.span
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                className="flex items-center gap-1.5 text-[10px] text-[#9B4000]/50 ml-1"
+                className="flex items-center gap-1.5 text-h4Mob text-[#9B4000]/50 ml-1"
                 style={{ fontFamily: "'Texturina', serif" }}
               >
                 {[0, 1, 2].map((i) => (
@@ -1080,7 +1080,7 @@ function Archive({ posts }: ArchiveProps) {
                 initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.85 }}
                 onClick={clearAll}
-                className="flex items-center gap-1 text-[10px] text-[#9B4000]/50
+                className="flex items-center gap-1 text-h4Mob text-[#9B4000]/50
                   hover:text-[#712F00] transition-colors"
                 style={{ fontFamily: "'Texturina', serif" }}
               >
@@ -1122,7 +1122,7 @@ function Archive({ posts }: ArchiveProps) {
         ) : (
           <motion.div key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="text-center py-24">
-            <p className="text-3xl text-[#180f00]/10 mb-2" style={{ fontFamily: "'Pirata One', serif" }}>
+            <p className="text-3xl text-BGpageDark/10 mb-2" style={{ fontFamily: "'Pirata One', serif" }}>
               Nothing here.
             </p>
             <p className="text-xs text-[#9B4000]/40" style={{ fontFamily: "'Texturina', serif" }}>
