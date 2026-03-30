@@ -2,7 +2,7 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
-import { Star } from 'lucide-react'
+import { Star, ChevronDown } from 'lucide-react'
 import { renderRichContent } from '@/lib/render-rich-content'
 
 export interface PostProps {
@@ -63,6 +63,7 @@ export function Post({
   const [isExpanded, setIsExpanded] = useState(false)
   const [isGalleryExpanded, setIsGalleryExpanded] = useState(false)
   const [isFirstImageSquare, setIsFirstImageSquare] = useState(false)
+  const [isTagsExpanded, setIsTagsExpanded] = useState(false)
   const CHARACTER_LIMIT = (type === 'IMAGE' ? 250 : 450)
   const postRef = useRef<HTMLDivElement>(null)
   const isInitialMount = useRef(true)
@@ -294,10 +295,28 @@ export function Post({
         )}
         {/* Tags */}
         {tags && (
-          <div className="flex flex-wrap gap-1 mb-4">
-            {tags.split(',').map((tag, i) => (
-              <span key={i} className="text-h4Mob bg-gray-100 text-gray-600 px-2 py-1 rounded-full">#{tag.trim()}</span>
-            ))}
+          <div className="flex items-center gap-2 mb-4">
+            <div
+              style={{
+                overflow: 'hidden',
+                transition: 'max-height 0.3s ease-out',
+                maxHeight: isTagsExpanded ? '1000px' : '28px',
+              }}
+              className="flex flex-wrap items-center gap-1.5 flex-1"
+            >
+              {tags.split(',').map((tag, i) => (
+                <span key={i} className="text-h4Mob bg-gray-100 text-gray-600 px-2 py-1 rounded-full whitespace-nowrap">#{tag.trim()}</span>
+              ))}
+            </div>
+            <button
+              onClick={(e) => {
+                e.preventDefault(); e.stopPropagation();
+                setIsTagsExpanded(!isTagsExpanded);
+              }}
+              className="shrink-0 p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-400"
+            >
+              <ChevronDown size={14} className={`transition-transform duration-200 ${isTagsExpanded ? 'rotate-180' : ''}`} />
+            </button>
           </div>
         )}
 

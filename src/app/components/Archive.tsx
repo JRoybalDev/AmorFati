@@ -83,6 +83,7 @@ function getMonthYearKey(date: Date | string): string {
 }
 
 function getDisplayTitle(post: Post): string {
+  if (post.type === PostType.IMAGE && post.showDetails === false) return ''
   if (post.type === PostType.FILM) return post.filmTitle ?? post.title ?? '—'
   return post.title ?? (post.content ? post.content.slice(0, 72) + '…' : '—')
 }
@@ -295,6 +296,8 @@ function Thumbnail({ post, className = '' }: { post: Post; className?: string })
 const PostRow = memo(({ post, index, onClick }: { post: Post; index: number; onClick: () => void }) => {
   const tags = parseTags(post.tags)
   const displayTitle = getDisplayTitle(post)
+  const plainContent = useMemo(() => post.content ? post.content.replace(/<[^>]*>/g, '') : '', [post.content])
+  const isTruncated = plainContent.length > 180
 
   return (
     <motion.div
@@ -323,20 +326,24 @@ const PostRow = memo(({ post, index, onClick }: { post: Post; index: number; onC
       <span className="shrink-0 w-1 h-1 rounded-full bg-[#BE5103]/50 mt-2.5" />
 
       {/* Thumbnail */}
-      <Thumbnail
-        post={post}
-        className="shrink-0 w-10 h-10 rounded overflow-hidden"
-      />
+      {post.type !== PostType.TEXT && (
+        <Thumbnail
+          post={post}
+          className="shrink-0 w-10 h-10 rounded overflow-hidden"
+        />
+      )}
 
       {/* Content */}
       <div className="flex-1 min-w-0">
-        <p
-          className="text-sm text-BGpageDark group-hover:text-[#712F00]
-            transition-colors duration-150 truncate leading-snug"
-          style={{ fontFamily: "'Texturina', serif", fontStyle: 'italic', fontWeight: 600 }}
-        >
-          {displayTitle}
-        </p>
+        {displayTitle && (
+          <p
+            className="text-sm text-BGpageDark group-hover:text-[#712F00]
+              transition-colors duration-150 truncate leading-snug"
+            style={{ fontFamily: "'Texturina', serif", fontStyle: 'italic', fontWeight: 600 }}
+          >
+            {displayTitle}
+          </p>
+        )}
 
         {post.type === PostType.FILM && (post.year || post.rating != null) && (
           <div className="flex items-center gap-2 mt-0.5">
@@ -349,23 +356,15 @@ const PostRow = memo(({ post, index, onClick }: { post: Post; index: number; onC
           </div>
         )}
 
-        {post.type === PostType.TEXT && post.content && !post.title && (
-          <p className="text-[11px] text-BGpageDark/50 mt-0.5 line-clamp-1">{post.content}</p>
-        )}
-
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1.5">
-            {tags.slice(0, 4).map((tag) => (
-              <span
-                key={tag}
-                className="text-[9px] px-1.5 py-0.5 rounded
-                  bg-[#9B4000]/10 text-[#9B4000]/65"
-                style={{ fontFamily: "'Texturina', serif" }}
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
+        {(post.type === PostType.TEXT || post.type === PostType.FILM) && plainContent && (
+          <>
+            <p className="text-[11px] text-BGpageDark/50 mt-0.5 line-clamp-3 italic leading-snug">
+              {plainContent}
+            </p>
+            {isTruncated && (
+              <span className="text-[9px] text-[#BE5103] font-bold uppercase tracking-tighter mt-1 block">Click to read more</span>
+            )}
+          </>
         )}
       </div>
 
@@ -387,6 +386,8 @@ const PostRow = memo(({ post, index, onClick }: { post: Post; index: number; onC
 const GridCard = memo(({ post, index, onClick }: { post: Post; index: number; onClick: () => void }) => {
   const tags = parseTags(post.tags)
   const displayTitle = getDisplayTitle(post)
+  const plainContent = useMemo(() => post.content ? post.content.replace(/<[^>]*>/g, '') : '', [post.content])
+  const isTruncated = plainContent.length > 350
 
   return (
     <motion.div
@@ -406,7 +407,7 @@ const GridCard = memo(({ post, index, onClick }: { post: Post; index: number; on
         transition-all duration-200"
     >
       {/* Thumbnail */}
-      <Thumbnail post={post} className="w-full h-40" />
+      {post.type !== PostType.TEXT && <Thumbnail post={post} className="w-full h-40" />}
 
       {/* Type badge — overlaid on thumbnail */}
       <span
@@ -420,14 +421,16 @@ const GridCard = memo(({ post, index, onClick }: { post: Post; index: number; on
       </span>
 
       {/* Content */}
-      <div className="p-3 flex-1 flex flex-col gap-1.5">
-        <p
-          className="text-xs text-BGpageDark group-hover:text-[#712F00] leading-snug
-            transition-colors duration-150 line-clamp-2"
-          style={{ fontFamily: "'Texturina', serif", fontStyle: 'italic', fontWeight: 700 }}
-        >
-          {displayTitle}
-        </p>
+      <div className={`p-3 flex-1 flex flex-col gap-1.5 ${post.type === PostType.TEXT ? 'pt-10' : ''}`}>
+        {displayTitle && (
+          <p
+            className="text-xs text-BGpageDark group-hover:text-[#712F00] leading-snug
+              transition-colors duration-150 line-clamp-2"
+            style={{ fontFamily: "'Texturina', serif", fontStyle: 'italic', fontWeight: 700 }}
+          >
+            {displayTitle}
+          </p>
+        )}
 
         {post.type === PostType.FILM && (post.year || post.rating != null) && (
           <div className="flex items-center gap-2">
@@ -440,38 +443,24 @@ const GridCard = memo(({ post, index, onClick }: { post: Post; index: number; on
           </div>
         )}
 
-        {post.type === PostType.TEXT && post.content && (
-          <p className="text-h4Mob text-BGpageDark/50 line-clamp-2 leading-relaxed">
-            {post.content}
-          </p>
+        {(post.type === PostType.TEXT || post.type === PostType.FILM) && plainContent && (
+          <>
+            <p className={`text-h4Mob text-BGpageDark/50 leading-relaxed italic ${post.type === PostType.TEXT ? 'line-clamp-8' : 'line-clamp-2'}`}>
+              {plainContent}
+            </p>
+            {isTruncated && (
+              <span className="text-[9px] text-[#BE5103] font-bold uppercase tracking-tighter mt-auto pt-1">Click to read more</span>
+            )}
+          </>
         )}
 
-        <div className="mt-auto pt-1.5 flex items-center justify-between">
+        <div className="mt-auto pt-1.5 flex items-center">
           <span
             className="text-[9px] text-[#9B4000]/40 tabular-nums"
             style={{ fontFamily: "'Texturina', serif" }}
           >
             {formatDate(post.createdAt)}
           </span>
-
-          {tags.length > 0 && (
-            <div className="flex gap-1 overflow-hidden">
-              {tags.slice(0, 2).map((tag) => (
-                <span
-                  key={tag}
-                  className="text-[8px] px-1.5 py-0.5 rounded bg-[#9B4000]/10 text-[#9B4000]/60"
-                  style={{ fontFamily: "'Texturina', serif" }}
-                >
-                  #{tag}
-                </span>
-              ))}
-              {tags.length > 2 && (
-                <span className="text-[8px] text-[#9B4000]/40" style={{ fontFamily: "'Texturina', serif" }}>
-                  +{tags.length - 2}
-                </span>
-              )}
-            </div>
-          )}
         </div>
       </div>
     </motion.div>
@@ -651,10 +640,13 @@ function TagsDropdown({ allTags, tagCounts, selectedTags, toggleTag, isOpen, onT
 
 // ── Post Modal ────────────────────────────────────────────────────────────────
 
-function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
+function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => void; isMobile: boolean }) {
   const tags = parseTags(post.tags)
   const displayTitle = getDisplayTitle(post)
   const [activeImage, setActiveImage] = useState(0)
+  const [isTagsExpanded, setIsTagsExpanded] = useState(false)
+  const showDetails = !(post.type === PostType.IMAGE && post.showDetails === false)
+  const isFilmDesktop = post.type === PostType.FILM && !isMobile
 
   // Close on Escape
   useEffect(() => {
@@ -683,20 +675,18 @@ function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
 
       {/* Panel — slides from right on md+, from bottom on mobile */}
       <motion.div
-        initial={{ x: '100%', opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        exit={{ x: '100%', opacity: 0 }}
+        initial={isMobile ? { y: '100%' } : { x: '100%', opacity: 0 }}
+        animate={isMobile ? { y: 0 } : { x: 0, opacity: 1 }}
+        exit={isMobile ? { y: '100%' } : { x: '100%', opacity: 0 }}
         transition={{ type: 'spring', damping: 28, stiffness: 280, mass: 0.8 }}
-        className="fixed z-50 bg-BGpage shadow-2xl shadow-BGpageDark/30
-          flex flex-col overflow-hidden
-          /* Mobile: bottom sheet */
+        className={`fixed z-50 bg-BGpage shadow-2xl shadow-BGpageDark/30
+          flex flex-col overflow-hidden transition-[width] duration-300
           bottom-0 left-0 right-0 rounded-t-2xl max-h-[88dvh]
-          /* Desktop: right panel */
-          md:inset-y-0 md:right-0 md:left-auto md:bottom-auto md:top-0
-          md:w-[480px] md:max-h-full md:rounded-none md:rounded-l-2xl"
-        style={{
-          // Override spring initial for mobile
-        }}
+          md:right-0 md:left-auto md:transition-all
+          ${isFilmDesktop
+            ? 'md:top-6 md:h-fit md:max-h-[94vh] md:w-[850px] md:max-w-[90vw] md:rounded-2xl md:right-6'
+            : 'md:inset-y-0 md:top-0 md:h-screen md:w-fit md:min-w-[400px] md:max-w-[65vw] md:rounded-none md:rounded-l-2xl'
+          }`}
       >
         {/* Mobile pull handle */}
         <div className="flex justify-center pt-3 pb-1 md:hidden">
@@ -727,7 +717,7 @@ function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
               className="text-lg leading-snug text-BGpageDark"
               style={{ fontFamily: "'Pirata One', serif" }}
             >
-              {displayTitle}
+              {showDetails ? displayTitle : 'Image Entry'}
             </h2>
           </div>
 
@@ -741,18 +731,37 @@ function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
         </div>
 
         {/* Scrollable body */}
-        <div className="flex-1 overflow-y-auto">
+        < div className={`flex-1 overflow-y-auto ${isFilmDesktop ? 'md:flex md:flex-row md:overflow-hidden' : ''}`
+        }>
 
-          {/* Image gallery */}
-          {post.images && post.images.length > 0 && (
-            <div className="shrink-0">
-              <div className="relative bg-BGpageDark/5 overflow-hidden" style={{ aspectRatio: '16/9' }}>
+          {/* Left Side: Poster (Desktop Film only) */}
+          {
+            isFilmDesktop && post.images?.[0] && (
+              <div className="md:w-[380px] md:shrink-0 bg-BGpageDark/5 border-r border-[#9B4000]/10 overflow-hidden">
+                <img
+                  src={post.images[0]}
+                  alt={post.filmTitle || 'Poster'}
+                  className="w-full h-auto block"
+                />
+              </div>
+            )
+          }
+
+          {/* Right Side: Content */}
+          <div className={`flex-1 ${isFilmDesktop ? 'md:overflow-y-auto' : ''}`}>
+            {/* Image gallery (Hidden for Film on Desktop as we use the split layout) */}
+            {post.images && post.images.length > 0 && !isFilmDesktop && (
+              <div className="shrink-0 flex flex-col">
+                <div
+                  className="relative bg-BGpageDark/5 overflow-hidden flex items-center justify-center"
+                  style={{ aspectRatio: isMobile ? '16/9' : 'auto', height: isMobile ? 'auto' : '65vh' }}
+                >
                 <AnimatePresence mode="wait">
                   <motion.img
                     key={activeImage}
                     src={post.images[activeImage]}
                     alt={`Image ${activeImage + 1}`}
-                    className="w-full h-full object-contain"
+                      className={isMobile ? "w-full h-full object-contain" : "h-full w-auto object-contain"}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -805,7 +814,7 @@ function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
           )}
 
           {/* Content body */}
-          {post.content && (
+            {post.content && showDetails && (
             <div className="px-6 py-5 border-b border-[#9B4000]/10">
               <p className="text-[9px] text-[#9B4000]/40 uppercase tracking-widest mb-2"
                 style={{ fontFamily: "'Texturina', serif" }}>
@@ -841,23 +850,39 @@ function PostModal({ post, onClose }: { post: Post; onClose: () => void }) {
             <div className="px-6 py-4">
               <p className="text-[9px] text-[#9B4000]/40 uppercase tracking-widest mb-2"
                 style={{ fontFamily: "'Texturina', serif" }}>Tags</p>
-              <div className="flex flex-wrap gap-1.5">
-                {tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="text-h4Mob px-2 py-1 rounded
-                      bg-[#9B4000]/10 text-[#9B4000]/70 border border-[#9B4000]/15"
-                    style={{ fontFamily: "'Texturina', serif" }}
+                <div className="flex items-center gap-2 min-w-0">
+                  <motion.div
+                    initial={false}
+                    animate={{ height: isTagsExpanded ? 'auto' : 32 }}
+                    className="flex flex-wrap items-center gap-1.5 overflow-hidden flex-1"
                   >
-                    #{tag}
-                  </span>
-                ))}
+                    {tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-h4Mob px-2 py-1 rounded
+                        bg-[#9B4000]/10 text-[#9B4000]/70 border border-[#9B4000]/15"
+                        style={{ fontFamily: "'Texturina', serif" }}
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </motion.div>
+
+                  <button
+                    onClick={() => setIsTagsExpanded(!isTagsExpanded)}
+                    className="shrink-0 p-1 hover:bg-[#9B4000]/10 rounded-full transition-colors text-[#9B4000]/40"
+                  >
+                    <motion.div animate={{ rotate: isTagsExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                      <FiChevronDown size={14} />
+                    </motion.div>
+                  </button>
               </div>
             </div>
           )}
 
           {/* Bottom padding for mobile safe area */}
           <div className="h-6 md:h-2" />
+          </div>
         </div>
       </motion.div>
     </>
@@ -904,7 +929,7 @@ type FilterType = PostType | 'ALL'
 function Archive({ posts }: ArchiveProps) {
   const [isPending, startTransition] = useTransition()
   const [openDropdown, setOpenDropdown] = useState<'month' | 'type' | 'tags' | null>(null)
-  const [viewMode, setViewMode] = useState<ViewMode>('list')
+  const [viewMode, setViewMode] = useState<ViewMode>('grid')
   const [selectedPost, setSelectedPost] = useState<Post | null>(null)
 
   const [selectedMonthKey, setSelectedMonthKey] = useState<string | null>(null)
@@ -915,10 +940,22 @@ function Archive({ posts }: ArchiveProps) {
   const [appliedType, setAppliedType] = useState<FilterType>('ALL')
   const [appliedTags, setAppliedTags] = useState<string[]>([])
 
+  const [isTagsExpanded, setIsTagsExpanded] = useState(false)
+
   // Infinite Scroll State
   const [displayLimit, setDisplayLimit] = useState(3)
   const loadMoreRef = useRef<HTMLDivElement>(null)
   const INITIAL_LIMIT = 3
+
+  // Mobile detection - moved to parent to ensure modal animations are stable on mount
+  const [isMobile, setIsMobile] = useState(false)
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 767px)')
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches)
+    setIsMobile(mql.matches)
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [])
 
   const availableMonths = useMemo(() => {
     const seen = new Set<string>()
@@ -1012,6 +1049,7 @@ function Archive({ posts }: ArchiveProps) {
     startTransition(() => {
       applyFilters(null, 'ALL', [])
       setDisplayLimit(INITIAL_LIMIT)
+      setIsTagsExpanded(false)
     })
   }
 
@@ -1092,11 +1130,30 @@ function Archive({ posts }: ArchiveProps) {
           )}
 
           {/* Active tag pills */}
-          <AnimatePresence>
-            {selectedTags.map((tag) => (
-              <TagPill key={tag} tag={tag} onRemove={() => toggleTag(tag)} />
-            ))}
-          </AnimatePresence>
+          <div className="flex flex-1 items-center gap-1.5 min-w-0">
+            <motion.div
+              initial={false}
+              animate={{ height: isTagsExpanded ? 'auto' : 32 }}
+              className="flex flex-wrap items-center gap-2 overflow-hidden px-0.5"
+            >
+              <AnimatePresence mode="popLayout">
+                {selectedTags.map((tag) => (
+                  <TagPill key={tag} tag={tag} onRemove={() => toggleTag(tag)} />
+                ))}
+              </AnimatePresence>
+            </motion.div>
+
+            {selectedTags.length > 0 && (
+              <button
+                onClick={() => setIsTagsExpanded(!isTagsExpanded)}
+                className="shrink-0 p-1 hover:bg-[#9B4000]/10 rounded-full transition-colors text-[#9B4000]/40"
+              >
+                <motion.div animate={{ rotate: isTagsExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+                  <FiChevronDown size={14} />
+                </motion.div>
+              </button>
+            )}
+          </div>
 
           {/* Clear */}
           <AnimatePresence>
@@ -1186,7 +1243,7 @@ function Archive({ posts }: ArchiveProps) {
       {/* ── Post Modal ── */}
       <AnimatePresence>
         {selectedPost && (
-          <PostModal post={selectedPost} onClose={() => setSelectedPost(null)} />
+          <PostModal post={selectedPost} onClose={() => setSelectedPost(null)} isMobile={isMobile} />
         )}
       </AnimatePresence>
 
