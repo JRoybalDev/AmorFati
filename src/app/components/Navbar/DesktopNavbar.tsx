@@ -12,7 +12,7 @@ type NavItem = {
 
 type NavItems = {
   navItems: NavItem[];
-  currPath: String;
+  currPath: string;
 }
 
 function DesktopNavbar({ navItems, currPath }: NavItems) {

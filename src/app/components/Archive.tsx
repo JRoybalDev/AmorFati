@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import React, { useState, useMemo, useTransition, useRef, useEffect, useCallback, memo } from 'react'
@@ -214,56 +215,35 @@ function TagPill({ tag, onRemove }: { tag: string; onRemove: () => void }) {
 
 // ── Skeleton Loading ──────────────────────────────────────────────────────────
 
-const shimmer = `animate-pulse bg-[#9B4000]/10`
+// const shimmer = `animate-pulse bg-[#9B4000]/10`
 
-function SkeletonRow() {
-  return (
-    <div className="flex items-start gap-4 py-3 border-b border-[#9B4000]/10 last:border-0">
-      <div className={`shrink-0 h-3 w-10 rounded ${shimmer}`} />
-      <div className={`shrink-0 w-1 h-1 rounded-full mt-2 ${shimmer}`} />
-      <div className={`shrink-0 w-10 h-10 rounded ${shimmer}`} />
-      <div className="flex-1 space-y-1.5">
-        <div className={`h-3 rounded ${shimmer}`} style={{ width: '60%' }} />
-        <div className={`h-2.5 rounded ${shimmer}`} style={{ width: '35%' }} />
-      </div>
-      <div className={`shrink-0 h-4 w-12 rounded ${shimmer}`} />
-    </div>
-  )
-}
+// function SkeletonRow() {
+//   return (
+//     <div className="flex items-start gap-4 py-3 border-b border-[#9B4000]/10 last:border-0">
+//       <div className={`shrink-0 h-3 w-10 rounded ${shimmer}`} />
+//       <div className={`shrink-0 w-1 h-1 rounded-full mt-2 ${shimmer}`} />
+//       <div className={`shrink-0 w-10 h-10 rounded ${shimmer}`} />
+//       <div className="flex-1 space-y-1.5">
+//         <div className={`h-3 rounded ${shimmer}`} style={{ width: '60%' }} />
+//         <div className={`h-2.5 rounded ${shimmer}`} style={{ width: '35%' }} />
+//       </div>
+//       <div className={`shrink-0 h-4 w-12 rounded ${shimmer}`} />
+//     </div>
+//   )
+// }
 
-function SkeletonCard() {
-  return (
-    <div className={`rounded-lg overflow-hidden border border-[#9B4000]/10`}>
-      <div className={`w-full h-40 ${shimmer}`} />
-      <div className="p-3 space-y-2">
-        <div className={`h-3 rounded ${shimmer}`} style={{ width: '70%' }} />
-        <div className={`h-2.5 rounded ${shimmer}`} style={{ width: '45%' }} />
-        <div className={`h-2.5 rounded ${shimmer}`} style={{ width: '30%' }} />
-      </div>
-    </div>
-  )
-}
-
-function SkeletonSection({ index, viewMode }: { index: number; viewMode: ViewMode }) {
-  return (
-    <div className="mb-10" style={{ opacity: 1 - index * 0.25 }}>
-      <div className="flex items-baseline gap-3 mb-4">
-        <div className={`h-6 w-28 rounded ${shimmer}`} />
-        <div className={`h-3 w-10 rounded ${shimmer}`} />
-        <div className="flex-1 h-px bg-[#9B4000]/15" />
-        <div className={`h-3 w-12 rounded ${shimmer}`} />
-      </div>
-      {viewMode === 'list'
-        ? Array.from({ length: 3 }).map((_, i) => <SkeletonRow key={i} />)
-        : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
-          </div>
-        )
-      }
-    </div>
-  )
-}
+// function SkeletonCard() {
+//   return (
+//     <div className={`rounded-lg overflow-hidden border border-[#9B4000]/10`}>
+//       <div className={`w-full h-40 ${shimmer}`} />
+//       <div className="p-3 space-y-2">
+//         <div className={`h-3 rounded ${shimmer}`} style={{ width: '70%' }} />
+//         <div className={`h-2.5 rounded ${shimmer}`} style={{ width: '45%' }} />
+//         <div className={`h-2.5 rounded ${shimmer}`} style={{ width: '30%' }} />
+//       </div>
+//     </div>
+//   )
+// }
 
 // ── Thumbnail ─────────────────────────────────────────────────────────────────
 
@@ -300,7 +280,6 @@ function Thumbnail({ post, className = '' }: { post: Post; className?: string })
 // ── Post Row (List view) ──────────────────────────────────────────────────────
 
 const PostRow = memo(({ post, index, onClick }: { post: Post; index: number; onClick: () => void }) => {
-  const tags = parseTags(post.tags)
   const displayTitle = getDisplayTitle(post)
   const plainContent = useMemo(() => post.content ? post.content.replace(/<[^>]*>/g, '') : '', [post.content])
   const isPoetry = post.type === PostType.TEXT && post.isPoetry
@@ -388,11 +367,11 @@ const PostRow = memo(({ post, index, onClick }: { post: Post; index: number; onC
     </motion.div>
   )
 })
+PostRow.displayName = 'PostRow'
 
 // ── Grid Card ─────────────────────────────────────────────────────────────────
 
 const GridCard = memo(({ post, index, onClick }: { post: Post; index: number; onClick: () => void }) => {
-  const tags = parseTags(post.tags)
   const displayTitle = getDisplayTitle(post)
   const plainContent = useMemo(() => post.content ? post.content.replace(/<[^>]*>/g, '') : '', [post.content])
   const isPoetry = post.type === PostType.TEXT && post.isPoetry
@@ -476,6 +455,7 @@ const GridCard = memo(({ post, index, onClick }: { post: Post; index: number; on
     </motion.div>
   )
 })
+GridCard.displayName = 'GridCard'
 
 // ── Month Section ─────────────────────────────────────────────────────────────
 
@@ -542,6 +522,7 @@ const MonthSection = memo(({ monthYear, posts, sectionIndex, viewMode, onPostCli
     </motion.section>
   )
 })
+MonthSection.displayName = 'MonthSection'
 
 // ── Tags Dropdown ─────────────────────────────────────────────────────────────
 

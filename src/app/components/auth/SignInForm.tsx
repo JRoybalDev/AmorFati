@@ -33,7 +33,7 @@ export default function SignInForm() {
         router.push('/dashboard')
       } else {
         // This can happen for scenarios like MFA
-        console.log(result)
+        // console.log(result)
         setError(
           'Multi-factor authentication is not yet supported in this custom form.',
         )

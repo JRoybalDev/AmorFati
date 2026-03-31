@@ -1,8 +1,8 @@
 'use client'
 
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react'
-import { PostsApi, UploadResult } from '@/lib/posts'
-import { usePostsManager } from '@/hooks/use-posts-manager'
+import { PostsApi, PostType, UploadResult } from '@/lib/posts'
+import { usePostsManager, DashboardFilterType } from '@/hooks/use-posts-manager'
 import { Post } from '../components/Post'
 import {
   List, Plus, Edit2, Trash2, Film, LayoutGrid, Search, Image as ImageIcon, Type, X, AlertTriangle, Feather, Filter
@@ -291,8 +291,7 @@ export function PostsForm() {
           }
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        handleInputChange({ target: { name: 'images', value: finalImages } } as any)
+        handleInputChange({ target: { name: 'images', value: finalImages } })
         shouldSubmit.current = true
       } catch (error) {
         console.error('Error uploading image:', error)
@@ -321,8 +320,7 @@ export function PostsForm() {
                 <button
                   key={t}
                   type="button"
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  onClick={() => handleInputChange({ target: { name: 'type', value: t } } as any)}
+                  onClick={() => handleInputChange({ target: { name: 'type', value: t as PostType } })}
                   className={`px-5 py-2 text-sm font-medium rounded-lg transition-all ${formData.type === t
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500 hover:text-gray-700'
@@ -652,8 +650,7 @@ export function PostsList() {
                     {['ALL', 'IMAGE', 'TEXT', 'POETRY', 'FILM'].map((type) => (
                       <button
                         key={type}
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                        onClick={() => { setFilterType(type as any); setIsFilterDropdownOpen(false); }}
+                        onClick={() => { setFilterType(type as DashboardFilterType); setIsFilterDropdownOpen(false); }}
                         className={`w-full text-left px-4 py-3 text-xs font-bold transition-colors ${filterType === type
                           ? 'bg-gray-50 text-BGbutton'
                           : 'text-gray-500 hover:bg-gray-50'
@@ -672,8 +669,7 @@ export function PostsList() {
               {['ALL', 'IMAGE', 'TEXT', 'POETRY', 'FILM'].map((type) => (
                 <button
                   key={type}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  onClick={() => setFilterType(type as any)}
+                  onClick={() => setFilterType(type as DashboardFilterType)}
                   className={`px-5 py-2 text-xs font-bold rounded-full transition-all ${filterType === type
                     ? 'bg-BGbutton text-white shadow-md'
                     : 'text-gray-500 hover:text-BGbuttonSelected hover:bg-gray-50'
@@ -713,21 +709,15 @@ export function PostsList() {
                 type={post.type || 'TEXT'}
                 title={post.title || undefined}
                 content={post.content || undefined}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                images={(post as any).images}
+                images={post.images}
                 link={post.link || undefined}
                 createdAt={post.createdAt}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                rating={(post as any).rating ?? undefined}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                year={(post as any).year ?? undefined}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                filmTitle={(post as any).filmTitle ?? undefined}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                tags={(post as any).tags}
-                isPoetry={(post as any).isPoetry}
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                showDetails={(post as any).showDetails ?? undefined}
+                rating={post.rating ?? undefined}
+                year={post.year ?? undefined}
+                filmTitle={post.filmTitle ?? undefined}
+                tags={post.tags || undefined}
+                isPoetry={post.isPoetry ?? false}
+                showDetails={post.showDetails ?? undefined}
               >
                 <button
                   onClick={() => handleEdit(post)}
@@ -761,10 +751,8 @@ export function PostsList() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {posts.map((post) => {
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const hasImage = (post as any).images && (post as any).images.length > 0;
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  const displayImage = hasImage ? (post as any).images[0] : null;
+                  const hasImage = post.images && post.images.length > 0;
+                  const displayImage = hasImage ? post.images[0] : null;
 
                   return (
                     <tr key={post.id} className="hover:bg-gray-50/50 transition-colors">
@@ -787,7 +775,7 @@ export function PostsList() {
                             <div className="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-gray-100 border border-gray-200">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
-                                src={displayImage}
+                                src={displayImage ?? undefined}
                                 alt={post.title || "Post preview"}
                                 className="h-full w-full object-cover"
                               />

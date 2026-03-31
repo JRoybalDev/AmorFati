@@ -1,6 +1,5 @@
 import { getPosts } from '@/lib/data'
 import Archive, { Post } from '../components/Archive'
-import { PostType } from '@/generated/prisma'
 
 export default async function ArchivePage() {
   const posts = await getPosts() // No type, so all posts

@@ -52,8 +52,14 @@ export function usePostsManager(authorId: string) {
   const fetchPosts = useCallback(async () => {
     setLoading(true)
     try {
-      const apiType = filterType === 'POETRY' ? PostType.TEXT : filterType
-      const data = await PostsApi.getAll({ type: apiType as any, authorId })
+      const apiType =
+        filterType === 'POETRY'
+          ? PostType.TEXT
+          : filterType === 'ALL'
+            ? undefined
+            : (filterType as PostType)
+
+      const data = await PostsApi.getAll({ type: apiType, authorId })
       setAllPosts(data)
     } catch {
       setError('Failed to fetch posts')
@@ -80,8 +86,7 @@ export function usePostsManager(authorId: string) {
       const lowerQuery = searchQuery.toLowerCase()
       filteredPosts = allPosts.filter(post =>
         (post.title?.toLowerCase() || '').includes(lowerQuery) ||
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ((post as any).tags?.toLowerCase() || '').includes(lowerQuery)
+        (post.tags?.toLowerCase() || '').includes(lowerQuery)
       )
     }
 
@@ -113,16 +118,16 @@ export function usePostsManager(authorId: string) {
 
     setTotalPages(pages.length)
     setPosts(pages[currentPage - 1] || [])
-  }, [allPosts, currentPage, columnsPerPage, viewMode, searchQuery])
+  }, [allPosts, currentPage, columnsPerPage, viewMode, searchQuery, filterType])
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [filterType, searchQuery])
+  }, [filterType, searchQuery, viewMode])
 
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-      > | { target: { name: string; value: any; type?: string } },
+      > | { target: { name: string; value: string | boolean | number | string[]; type?: string } },
   ) => {
     const target = e.target
     const { name, value } = target

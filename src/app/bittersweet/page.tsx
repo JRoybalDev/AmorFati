@@ -4,9 +4,9 @@ import { PostType } from '@/generated/prisma'
 
 export default async function DearDiaryPage() {
   const allTextPosts = await getPosts(PostType.TEXT)
-  console.log(allTextPosts)
+  // console.log(allTextPosts)
   const posts = allTextPosts.filter(post => post.isPoetry === true)
-  console.log(posts)
+  // console.log(posts)
 
   return (
     <div className="min-h-screen my-8 bg-BGpage p-8">

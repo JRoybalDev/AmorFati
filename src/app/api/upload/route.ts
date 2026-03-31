@@ -36,17 +36,17 @@ async function fetchWithAuth(url: string, options: RequestInit): Promise<Respons
 }
 
 export async function POST(request: Request) {
-  console.log('[Upload API] Starting upload request processing')
+  // console.log('[Upload API] Starting upload request processing')
   try {
     const data = await request.formData()
     const files: File[] | null = data.getAll('file') as unknown as File[]
     const path = data.get('path') as string | null
 
-    if (path) {
-      console.log(`[Upload API] Target path from client: ${path}`)
-    }
+    // if (path) {
+    //   console.log(`[Upload API] Target path from client: ${path}`)
+    // }
 
-    console.log(`[Upload API] Received ${files?.length || 0} files`)
+    // console.log(`[Upload API] Received ${files?.length || 0} files`)
 
     if (!files || files.length === 0) {
       console.warn('[Upload API] No files found in request')
@@ -62,11 +62,11 @@ export async function POST(request: Request) {
     if (folderPath.startsWith('/')) {
       folderPath = folderPath.substring(1)
     }
-    console.log(`[Upload API] Using folder path: ${folderPath}`)
+    // console.log(`[Upload API] Using folder path: ${folderPath}`)
 
     // 1. Create folder — now includes JWT alongside API key
     const createFolderUrl = `${FILE_API_URL}/api/${PROJECT_NAME}/upload/folder`
-    console.log(`[Upload API] Creating folder at external API: ${createFolderUrl}`)
+    // console.log(`[Upload API] Creating folder at external API: ${createFolderUrl}`)
 
     const folderRes = await fetchWithAuth(createFolderUrl, {
       method: 'POST',
@@ -74,7 +74,7 @@ export async function POST(request: Request) {
       body: JSON.stringify({ folder: folderPath }),
     })
 
-    console.log(`[Upload API] Create folder response status: ${folderRes.status}`)
+    // console.log(`[Upload API] Create folder response status: ${folderRes.status}`)
 
     if (!folderRes.ok) {
       const errorText = await folderRes.text()
@@ -82,14 +82,14 @@ export async function POST(request: Request) {
         console.error(`[Upload API] Failed to create folder. Response: ${errorText}`)
         throw new Error(`Failed to create folder in external API: ${errorText}`)
       } else {
-        console.log(`[Upload API] Folder already exists, proceeding with upload.`)
+        // console.log(`[Upload API] Folder already exists, proceeding with upload.`)
       }
     }
 
     // 2. Upload files — now includes JWT alongside API key
     // Note: No Content-Type header — fetch sets it automatically with the
     // correct multipart boundary when the body is FormData.
-    console.log('[Upload API] Starting file uploads to folder...')
+    // console.log('[Upload API] Starting file uploads to folder...')
 
     const formData = new FormData()
     files.forEach((file) => formData.append('files', file))
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
 
     const uploadedUrls = await uploadRes.json()
 
-    console.log(`[Upload API] Successfully processed uploads:`, uploadedUrls)
+    // console.log(`[Upload API] Successfully processed uploads:`, uploadedUrls)
     return NextResponse.json(uploadedUrls)
 
   } catch (error) {

@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { PostType } from '@/generated/prisma';
 
 function restoreImageUrls(images: unknown): string[] {
   if (!Array.isArray(images)) return []
@@ -20,10 +19,10 @@ function restoreImageUrls(images: unknown): string[] {
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const {
       type,
@@ -70,10 +69,10 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     await prisma.post.delete({
       where: { id },
     });

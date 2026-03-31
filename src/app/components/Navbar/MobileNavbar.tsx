@@ -15,7 +15,7 @@ type NavItem = {
 
 type NavItems = {
   navItems: NavItem[];
-  currPath: String;
+  currPath: string;
 }
 
 const menuVariants = {
