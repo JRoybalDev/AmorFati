@@ -1,7 +1,12 @@
+'use client'
+
 import DesktopNavbar from './DesktopNavbar';
 import MobileNavbar from './MobileNavbar';
+import { useRouter } from 'next/navigation'
 
 async function Navbar() {
+  const router = useRouter();
+
   const defaultNavItems = [
     { title: "Brutal Tenderness", link: "/brutal-tenderness" },
     { title: "Sweet Disposition", link: "/sweet-disposition" },

@@ -66,8 +66,10 @@ export function Post({
   const [isGalleryExpanded, setIsGalleryExpanded] = useState(false)
   const [isFirstImageSquare, setIsFirstImageSquare] = useState(false)
   const [isTagsExpanded, setIsTagsExpanded] = useState(false)
+  const [hasMoreTags, setHasMoreTags] = useState(false)
   const CHARACTER_LIMIT = (type === 'IMAGE' ? 250 : 450)
   const postRef = useRef<HTMLDivElement>(null)
+  const tagsRef = useRef<HTMLDivElement>(null)
   const isInitialMount = useRef(true)
   const prevHeight = useRef<number | null>(null)
 
@@ -99,6 +101,18 @@ export function Post({
 
     prevHeight.current = currentHeight
   }, [isGalleryExpanded])
+
+  useLayoutEffect(() => {
+    const checkOverflow = () => {
+      if (tagsRef.current) {
+        // The collapsed height is 28px; anything larger indicates multiple lines
+        setHasMoreTags(tagsRef.current.scrollHeight > 28)
+      }
+    }
+    checkOverflow()
+    window.addEventListener('resize', checkOverflow)
+    return () => window.removeEventListener('resize', checkOverflow)
+  }, [tags])
 
   // Use the first image for single view or cover checks
   const firstImage = displayImages[0]
@@ -299,6 +313,7 @@ export function Post({
         {tags && (
           <div className="flex items-center gap-2 mb-4">
             <div
+              ref={tagsRef}
               style={{
                 overflow: 'hidden',
                 transition: 'max-height 0.3s ease-out',
@@ -310,15 +325,17 @@ export function Post({
                 <span key={i} className="text-h4Mob bg-gray-100 text-gray-600 px-2 py-1 rounded-full whitespace-nowrap">#{tag.trim()}</span>
               ))}
             </div>
-            <button
-              onClick={(e) => {
-                e.preventDefault(); e.stopPropagation();
-                setIsTagsExpanded(!isTagsExpanded);
-              }}
-              className="shrink-0 p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-400"
-            >
-              <ChevronDown size={14} className={`transition-transform duration-200 ${isTagsExpanded ? 'rotate-180' : ''}`} />
-            </button>
+            {hasMoreTags && (
+              <button
+                onClick={(e) => {
+                  e.preventDefault(); e.stopPropagation();
+                  setIsTagsExpanded(!isTagsExpanded);
+                }}
+                className="shrink-0 p-1 hover:bg-gray-100 rounded-full transition-colors text-gray-400"
+              >
+                <ChevronDown size={14} className={`transition-transform duration-200 ${isTagsExpanded ? 'rotate-180' : ''}`} />
+              </button>
+            )}
           </div>
         )}
 
