@@ -15,6 +15,7 @@ type NavItem = {
 
 type NavItems = {
   navItems: NavItem[];
+  currPath: String;
 }
 
 const menuVariants = {
@@ -40,7 +41,7 @@ const menuVariants = {
   }
 };
 
-function MobileNavbar({ navItems }: NavItems) {
+function MobileNavbar({ navItems, currPath }: NavItems) {
 
   const [isOpen, setOpen] = useState(false);
 
@@ -75,7 +76,7 @@ function MobileNavbar({ navItems }: NavItems) {
             {/* Links */}
             <div className="py-4 flex flex-col gap-4">
               {navItems.map((item, idx) => (
-                <Link key={idx} className={`font-semibold text-h3 hover:text-HOVERlink duration-250`} href={item.link} onClick={handleLinkClick}>{item.title}</Link>
+                <Link key={idx} className={`font-semibold text-h3 hover:text-HOVERlink duration-250 ${currPath === item.link && 'text-HOVERlink underline'}`} href={item.link} onClick={handleLinkClick}>{item.title}</Link>
               ))}
             </div>
 
@@ -83,7 +84,7 @@ function MobileNavbar({ navItems }: NavItems) {
 
             <SignedIn>
               <div className='flex flex-col gap-4 py-4'>
-                <Link className='text-h3 font-semibold hover:text-HOVERlink duration-250' href={'/dashboard'} onClick={handleLinkClick}>Dashboard</Link>
+                <Link className={`text-h3 font-semibold hover:text-HOVERlink duration-250 ${currPath === '/dashboard' && 'text-HOVERlink underline'}`} href={'/dashboard'} onClick={handleLinkClick}>Dashboard</Link>
                 <SignOutButton>
                   <p className='text-h3 font-semibold hover:cursor-pointer hover:text-HOVERlink duration-250' onClick={handleLinkClick}>Sign out</p>
                 </SignOutButton>

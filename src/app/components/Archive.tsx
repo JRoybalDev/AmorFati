@@ -570,9 +570,11 @@ function TagsDropdown({ allTags, tagCounts, selectedTags, toggleTag, isOpen, onT
     <div className="relative">
       <button onClick={onToggle} className={filterBtnCls} style={{ fontFamily: "'Texturina', serif" }}>
         <FiTag size={12} />
-        {selectedTags.length > 0
-          ? `${selectedTags.length} tag${selectedTags.length > 1 ? 's' : ''}`
-          : 'Tags'}
+        <span className="hidden md:inline">
+          {selectedTags.length > 0
+            ? `${selectedTags.length} tag${selectedTags.length > 1 ? 's' : ''}`
+            : 'Tags'}
+        </span>
         <motion.span animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.18 }}>
           <FiChevronDown size={12} />
         </motion.span>
@@ -1091,9 +1093,11 @@ function Archive({ posts }: ArchiveProps) {
             label={
               <span className="flex items-center gap-1.5">
                 <FiCalendar size={12} />
-                {selectedMonthKey
-                  ? availableMonths.find((m) => m.key === selectedMonthKey)?.label
-                  : 'Month'}
+                <span className="hidden md:inline">
+                  {selectedMonthKey
+                    ? availableMonths.find((m) => m.key === selectedMonthKey)?.label
+                    : 'Month'}
+                </span>
               </span>
             }
             isOpen={openDropdown === 'month'}
@@ -1116,7 +1120,7 @@ function Archive({ posts }: ArchiveProps) {
 
           {/* Type */}
           <Dropdown
-            label={<span className="flex items-center gap-1.5">{TYPE_ICONS[selectedType]}{typeLabel}</span>}
+            label={<span className="flex items-center gap-1.5">{TYPE_ICONS[selectedType]}<span className="hidden md:inline">{typeLabel}</span></span>}
             isOpen={openDropdown === 'type'}
             onToggle={() => toggleDropdown('type')}
           >

@@ -12,9 +12,10 @@ type NavItem = {
 
 type NavItems = {
   navItems: NavItem[];
+  currPath: String;
 }
 
-function DesktopNavbar({ navItems }: NavItems) {
+function DesktopNavbar({ navItems, currPath }: NavItems) {
 
   return (
     <nav className='bg-BGnav px-4 py-6 text-TEXTmain w-full'>
@@ -37,7 +38,7 @@ function DesktopNavbar({ navItems }: NavItems) {
       {/* Links */}
       <div className="py-4 flex flex-col gap-4">
         {navItems.map((item, idx) => (
-          <Link key={idx} className={`text-h3 font-semibold hover:text-HOVERlink duration-250`} href={item.link}>{item.title}</Link>
+          <Link key={idx} className={`text-h3 font-semibold hover:text-HOVERlink duration-250 ${currPath === item.link && 'text-HOVERlink underline'}`} href={item.link}>{item.title}</Link>
         ))}
       </div>
 
@@ -45,7 +46,7 @@ function DesktopNavbar({ navItems }: NavItems) {
 
       <SignedIn>
         <div className='flex flex-col gap-4 py-4'>
-          <Link className='text-h3 font-semibold hover:text-HOVERlink duration-250' href={'/dashboard'}>Dashboard</Link>
+          <Link className={`text-h3 font-semibold hover:text-HOVERlink duration-250 ${currPath === '/dashboard' && 'text-HOVERlink underline'}`} href={'/dashboard'}>Dashboard</Link>
           <SignOutButton>
             <p className='text-h3 font-semibold hover:cursor-pointer hover:text-HOVERlink duration-250'>Sign out</p>
           </SignOutButton>

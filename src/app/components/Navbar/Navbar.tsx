@@ -2,10 +2,10 @@
 
 import DesktopNavbar from './DesktopNavbar';
 import MobileNavbar from './MobileNavbar';
-import { useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 
-async function Navbar() {
-  const router = useRouter();
+function Navbar() {
+  const currPath = usePathname();
 
   const defaultNavItems = [
     { title: "Brutal Tenderness", link: "/brutal-tenderness" },
@@ -27,10 +27,10 @@ async function Navbar() {
   return (
     <>
       <div className='md:flex hidden w-3/12 min-w-[250px]'>
-        <DesktopNavbar navItems={defaultNavItems} />
+        <DesktopNavbar navItems={defaultNavItems} currPath={currPath} />
       </div>
       <div className='md:hidden w-screen'>
-        <MobileNavbar navItems={defaultNavItems} />
+        <MobileNavbar navItems={defaultNavItems} currPath={currPath} />
       </div>
     </>
   )
