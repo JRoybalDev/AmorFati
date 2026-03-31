@@ -40,5 +40,6 @@ model Post {
   filmTitle String?
   tags      String?
   showDetails Boolean? @default(true)
+  isPoetry  Boolean? @default(false)
   images    String[]
 }

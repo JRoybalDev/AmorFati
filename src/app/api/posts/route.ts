@@ -86,7 +86,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { id, type, title, content, link, authorId, createdAt, tags, showDetails, rating, year, filmTitle } = body;
+    const { id, type, title, content, link, authorId, createdAt, tags, showDetails, isPoetry, rating, year, filmTitle } = body;
     let { images } = body;
 
     // Restore original URLs from proxy URLs
@@ -121,6 +121,7 @@ export async function POST(request: Request) {
         createdAt: createdAt ? new Date(createdAt) : undefined,
         tags,
         showDetails,
+        isPoetry: !!isPoetry,
         rating,
         year,
         filmTitle,

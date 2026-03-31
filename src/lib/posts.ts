@@ -17,6 +17,7 @@ export interface CreatePostRequest {
   rating?: number;
   year?: string;
   filmTitle?: string;
+  isPoetry?: boolean;
 }
 
 export interface UpdatePostRequest {
@@ -31,6 +32,7 @@ export interface UpdatePostRequest {
   rating?: number;
   year?: string;
   filmTitle?: string;
+  isPoetry?: boolean;
 }
 
 export interface UploadResult {

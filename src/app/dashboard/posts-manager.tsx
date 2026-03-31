@@ -5,7 +5,7 @@ import { PostsApi, UploadResult } from '@/lib/posts'
 import { usePostsManager } from '@/hooks/use-posts-manager'
 import { Post } from '../components/Post'
 import {
-  List, Plus, Edit2, Trash2, Film, LayoutGrid, Search, Image as ImageIcon, Type, X, AlertTriangle
+  List, Plus, Edit2, Trash2, Film, LayoutGrid, Search, Image as ImageIcon, Type, X, AlertTriangle, Feather, Filter
 } from 'lucide-react'
 import { Reorder, AnimatePresence, motion } from 'framer-motion'
 import RichTextEditor from '../components/RichTextEditor'
@@ -53,6 +53,20 @@ export function PostsProvider({ children, authorId }: PostsProviderProps) {
     }
   }, [isEditing, formData.images])
 
+  // Scroll to the workspace when starting to edit a post
+  useEffect(() => {
+    if (isEditing) {
+      setTimeout(() => {
+        const workspace = document.getElementById('posts-workspace')
+        if (workspace) {
+          workspace.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        } else {
+          window.scrollTo({ top: 0, behavior: 'smooth' })
+        }
+      }, 100)
+    }
+  }, [isEditing])
+
   useEffect(() => {
     if (!isEditing && (!formData.images || formData.images.length === 0)) {
       setGalleryItems([])
@@ -75,11 +89,17 @@ export function PostsProvider({ children, authorId }: PostsProviderProps) {
 }
 
 export function PostsHeader() {
-  const { setIsFormVisible, cancelEdit } = usePosts()
+  const { setIsFormVisible, isFormVisible, cancelEdit } = usePosts()
 
   const handleNewPost = () => {
     cancelEdit()
-    setIsFormVisible((prev) => !prev)
+    const nextVisible = !isFormVisible
+    setIsFormVisible(nextVisible)
+    if (nextVisible) {
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      }, 100)
+    }
   }
 
   return (
@@ -106,6 +126,7 @@ export function PostsWorkspace() {
     <AnimatePresence>
       {isFormVisible && (
         <motion.div
+          id="posts-workspace"
           initial={{ opacity: 0, height: 0, overflow: 'hidden' }}
           animate={{ opacity: 1, height: 'auto', transitionEnd: { overflow: 'visible' } }}
           exit={{ opacity: 0, height: 0, overflow: 'hidden' }}
@@ -393,6 +414,21 @@ export function PostsForm() {
               </div>
             )}
 
+            {/* isPoetry Checkbox for TEXT */}
+            {formData.type === 'TEXT' && (
+              <div className="flex items-center gap-2 pt-2">
+                <input
+                  type="checkbox"
+                  id="isPoetry"
+                  name="isPoetry"
+                  checked={formData.isPoetry ?? false}
+                  onChange={handleInputChange}
+                  className="rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                />
+                <label htmlFor="isPoetry" className="text-sm text-gray-700 font-medium">Mark as Poetry</label>
+              </div>
+            )}
+
             {/* Show Details Checkbox for IMAGE */}
             {formData.type === 'IMAGE' && (
               <div className="flex items-center gap-2 pt-2">
@@ -401,8 +437,7 @@ export function PostsForm() {
                   id="showDetails"
                   name="showDetails"
                   checked={formData.showDetails ?? true}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  onChange={(e) => handleInputChange({ target: { name: 'showDetails', value: e.target.checked } } as any)}
+                  onChange={handleInputChange}
                   className="rounded border-gray-300 text-gray-900 focus:ring-gray-900"
                 />
                 <label htmlFor="showDetails" className="text-sm text-gray-700 font-medium">Show title and content on post</label>
@@ -526,6 +561,7 @@ export function PostPreview() {
             year={formData.year}
             filmTitle={movieTitle || formData.filmTitle}
             tags={formData.tags}
+            isPoetry={formData.isPoetry}
             showDetails={formData.showDetails}
           />
         </div>
@@ -537,6 +573,19 @@ export function PostPreview() {
 export function PostsList() {
   const { posts, loading, handleEdit, handleDelete, filterType, setFilterType, currentPage, setCurrentPage, totalPages, viewMode, setViewMode, searchQuery, setSearchQuery } = usePosts()
   const [deletePostId, setDeletePostId] = useState<string | null>(null)
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false)
+  const filterRef = useRef<HTMLDivElement>(null)
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
+        setIsFilterDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   const getPaginationItems = (currentPage: number, totalPages: number) => {
     const delta = 1
@@ -566,9 +615,9 @@ export function PostsList() {
       <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-8 gap-4">
         <h2 className="text-2xl font-bold text-gray-900">Manage Posts</h2>
 
-        <div className="flex flex-col xl:flex-row items-center gap-4 w-full xl:w-auto">
+        <div className="flex items-center gap-2 md:gap-4 w-full xl:w-auto">
           {/* Search Bar */}
-          <div className="relative w-full xl:w-64">
+          <div className="relative flex-1 md:w-64 md:flex-none">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search size={16} className="text-gray-400" />
             </div>
@@ -581,10 +630,46 @@ export function PostsList() {
             />
           </div>
 
-          <div className="flex items-center gap-4 w-full xl:w-auto justify-between xl:justify-end">
+          <div className="flex items-center gap-2 md:gap-4 xl:w-auto justify-end">
+            {/* Mobile Filter Dropdown */}
+            <div className="relative md:hidden" ref={filterRef}>
+              <button
+                onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                className="flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-full text-gray-500 shadow-sm"
+                title="Filter Posts"
+              >
+                <Filter size={18} className={filterType !== 'ALL' ? 'text-BGbutton' : ''} />
+              </button>
+
+              <AnimatePresence>
+                {isFilterDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 mt-2 w-40 bg-white border border-gray-100 rounded-2xl shadow-xl z-30 overflow-hidden"
+                  >
+                    {['ALL', 'IMAGE', 'TEXT', 'POETRY', 'FILM'].map((type) => (
+                      <button
+                        key={type}
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        onClick={() => { setFilterType(type as any); setIsFilterDropdownOpen(false); }}
+                        className={`w-full text-left px-4 py-3 text-xs font-bold transition-colors ${filterType === type
+                          ? 'bg-gray-50 text-BGbutton'
+                          : 'text-gray-500 hover:bg-gray-50'
+                          }`}
+                      >
+                        {type === 'ALL' ? 'All' : (type === 'IMAGE' ? 'Gallery' : (type === 'FILM' ? 'Films' : (type === 'POETRY' ? 'Poetry' : 'Text')))}
+                      </button>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
             {/* Filter Tabs */}
-            <div className="flex bg-white p-1.5 rounded-full shadow-sm border border-gray-100">
-              {['ALL', 'TEXT', 'IMAGE', 'FILM'].map((type) => (
+            <div className="hidden md:flex bg-white p-1.5 rounded-full shadow-sm border border-gray-100">
+              {['ALL', 'IMAGE', 'TEXT', 'POETRY', 'FILM'].map((type) => (
                 <button
                   key={type}
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -594,7 +679,7 @@ export function PostsList() {
                     : 'text-gray-500 hover:text-BGbuttonSelected hover:bg-gray-50'
                     }`}
                 >
-                  {type === 'ALL' ? 'All Posts' : (type === 'IMAGE' ? 'Photos' : (type === 'FILM' ? 'Films' : 'Text'))}
+                  {type === 'ALL' ? 'All' : (type === 'IMAGE' ? 'Gallery' : (type === 'FILM' ? 'Films' : (type === 'POETRY' ? 'Poetry' : 'Text')))}
                 </button>
               ))}
             </div>
@@ -640,6 +725,7 @@ export function PostsList() {
                 filmTitle={(post as any).filmTitle ?? undefined}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 tags={(post as any).tags}
+                isPoetry={(post as any).isPoetry}
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 showDetails={(post as any).showDetails ?? undefined}
               >
@@ -684,7 +770,15 @@ export function PostsList() {
                     <tr key={post.id} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-500">
-                          {post.type === 'IMAGE' ? <ImageIcon size={18} /> : (post.type === 'FILM' ? <Film size={18} /> : <Type size={18} />)}
+                          {post.type === 'IMAGE' ? (
+                            <ImageIcon size={18} />
+                          ) : post.type === 'FILM' ? (
+                            <Film size={18} />
+                          ) : post.isPoetry ? (
+                            <Feather size={18} />
+                          ) : (
+                            <Type size={18} />
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4">

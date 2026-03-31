@@ -3,7 +3,10 @@ import { PostGrid } from '@/app/components/PostGrid'
 import { PostType } from '@/generated/prisma'
 
 export default async function DearDiaryPage() {
-  const posts = await getPosts(PostType.TEXT)
+  const allTextPosts = await getPosts(PostType.TEXT)
+  console.log(allTextPosts)
+  const posts = allTextPosts.filter(post => post.isPoetry === true)
+  console.log(posts)
 
   return (
     <div className="min-h-screen my-8 bg-BGpage p-8">

@@ -16,6 +16,7 @@ export interface PostProps {
   year?: string | number
   filmTitle?: string
   tags?: string
+  isPoetry?: boolean
   showDetails?: boolean
   children?: React.ReactNode
 }
@@ -55,6 +56,7 @@ export function Post({
   year,
   filmTitle,
   tags,
+  isPoetry,
   showDetails = true,
   children,
 }: PostProps) {
@@ -101,7 +103,7 @@ export function Post({
   // Use the first image for single view or cover checks
   const firstImage = displayImages[0]
 
-  const typeLabel = type === 'IMAGE' ? 'Gallery' : (type === 'FILM' ? 'Film' : 'Text')
+  const typeLabel = type === 'IMAGE' ? 'Gallery' : (type === 'FILM' ? 'Film' : (isPoetry ? 'Poetry' : 'Text'))
 
   const timeAgo = (date: string | Date | undefined) => {
     if (!date) return ''
@@ -265,7 +267,7 @@ export function Post({
             >
               <div
                 ref={contentRef as React.RefObject<HTMLDivElement>}
-                className="text-sm text-gray-500 leading-relaxed rich-content"
+                className={`text-sm text-gray-500 leading-relaxed rich-content`}
                 dangerouslySetInnerHTML={{ __html: renderRichContent(content) }}
               />
             </div>

@@ -34,6 +34,7 @@ export function PostGrid({ posts }: PostGridProps) {
             year={post.year ?? undefined}
             filmTitle={post.filmTitle ?? undefined}
             tags={post.tags ?? undefined}
+            isPoetry={post.isPoetry ?? undefined}
             showDetails={post.showDetails ?? undefined}
           />
         </div>

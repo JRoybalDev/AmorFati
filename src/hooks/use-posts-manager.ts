@@ -12,10 +12,12 @@ interface TmdbMovie {
   vote_average?: number
 }
 
+export type DashboardFilterType = PostType | 'POETRY' | 'ALL'
+
 export function usePostsManager(authorId: string) {
   const [allPosts, setAllPosts] = useState<Post[]>([])
   const [posts, setPosts] = useState<Post[]>([]) // paginated posts
-  const [filterType, setFilterType] = useState<PostType | 'ALL'>('ALL')
+  const [filterType, setFilterType] = useState<DashboardFilterType>('ALL')
   const [viewMode, setViewMode] = useState<'mosaic' | 'list'>('list')
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(false)
@@ -33,7 +35,7 @@ export function usePostsManager(authorId: string) {
 
   // Form state
   const [isEditing, setIsEditing] = useState<string | null>(null)
-  const [formData, setFormData] = useState<Partial<CreatePostRequest> & { rating?: number; year?: string; filmTitle?: string; tags?: string; showDetails?: boolean; images?: string[] }>({
+  const [formData, setFormData] = useState<Partial<CreatePostRequest>>({
     type: PostType.TEXT,
     title: '',
     content: '',
@@ -44,12 +46,14 @@ export function usePostsManager(authorId: string) {
     filmTitle: undefined,
     tags: '',
     showDetails: true,
+    isPoetry: false,
   })
 
   const fetchPosts = useCallback(async () => {
     setLoading(true)
     try {
-      const data = await PostsApi.getAll({ type: filterType, authorId })
+      const apiType = filterType === 'POETRY' ? PostType.TEXT : filterType
+      const data = await PostsApi.getAll({ type: apiType as any, authorId })
       setAllPosts(data)
     } catch {
       setError('Failed to fetch posts')
@@ -66,7 +70,12 @@ export function usePostsManager(authorId: string) {
   useEffect(() => {
     const pages = []
 
-    let filteredPosts = allPosts
+    let filteredPosts = allPosts.filter(post => {
+      if (filterType === 'POETRY') return post.isPoetry === true
+      if (filterType === 'TEXT') return !post.isPoetry
+      return true
+    })
+
     if (searchQuery) {
       const lowerQuery = searchQuery.toLowerCase()
       filteredPosts = allPosts.filter(post =>
@@ -113,9 +122,19 @@ export function usePostsManager(authorId: string) {
   const handleInputChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >,
+      > | { target: { name: string; value: any; type?: string } },
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
+    const target = e.target
+    const { name, value } = target
+
+    // Correctly detect checkbox status even with forwarded/custom events
+    const isCheckbox = 'type' in target && target.type === 'checkbox'
+    const finalValue = isCheckbox ? (target as HTMLInputElement).checked : value
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: finalValue,
+    }))
   }
 
   const handleSubmit = async (e: React.FormEvent): Promise<boolean> => {
@@ -144,6 +163,7 @@ export function usePostsManager(authorId: string) {
         filmTitle: undefined,
         tags: '',
         showDetails: true,
+        isPoetry: false,
       })
       setMovieTitle('')
       setTmdbQuery('')
@@ -165,24 +185,22 @@ export function usePostsManager(authorId: string) {
       type: post.type,
       title: post.title || '',
       content: post.content || '',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      images: (post as any).images || [],
+      images: post.images || [],
       link: post.link || '',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      rating: (post as any).rating ?? undefined,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      year: (post as any).year ?? undefined,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      filmTitle: (post as any).filmTitle ?? undefined,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      tags: (post as any).tags || '',
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      showDetails: (post as any).showDetails ?? true,
+      rating: post.rating ?? undefined,
+      year: post.year ?? undefined,
+      filmTitle: post.filmTitle ?? undefined,
+      tags: post.tags || '',
+      showDetails: post.showDetails ?? true,
+      isPoetry: post.isPoetry ?? false,
     })
     setMovieTitle('')
     setTmdbQuery('')
     setTmdbResults([])
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    // Small delay ensures the form is mounted and height is calculated before scrolling
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, 100)
   }
 
   const cancelEdit = () => {
@@ -198,6 +216,7 @@ export function usePostsManager(authorId: string) {
       filmTitle: undefined,
       tags: '',
       showDetails: true,
+      isPoetry: false,
     })
     setMovieTitle('')
   }
@@ -271,15 +290,15 @@ export function usePostsManager(authorId: string) {
       console.error("Failed to fetch movie credits", e)
     }
 
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       link: `https://www.themoviedb.org/${movie.media_type === 'tv' ? 'tv' : 'movie'}/${movie.id}`,
       images: movie.poster_path ? [`https://image.tmdb.org/t/p/original${movie.poster_path}`] : [],
       rating: movie.vote_average,
       year: year,
       filmTitle: movie.title || movie.name,
       tags: tagsList.join(', '),
-    })
+    }))
     setTmdbResults([])
     setTmdbQuery('')
   }

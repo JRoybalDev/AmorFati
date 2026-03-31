@@ -8,6 +8,7 @@ import {
   FiFilter,
   FiChevronDown,
   FiFileText,
+  FiFeather,
   FiImage,
   FiFilm,
   FiX,
@@ -41,8 +42,11 @@ export interface Post {
   filmTitle?: string | null
   tags?: string | null
   showDetails?: boolean | null
+  isPoetry?: boolean | null
   images: string[]
 }
+
+type FilterType = PostType | 'POETRY' | 'ALL'
 
 interface ArchiveProps {
   posts: Post[]
@@ -93,17 +97,19 @@ function getThumbnail(post: Post): string | null {
   return null
 }
 
-const TYPE_LABELS: Record<PostType, string> = {
-  [PostType.IMAGE]: 'Image',
+const TYPE_LABELS: Record<Exclude<FilterType, 'ALL'>, string> = {
+  [PostType.IMAGE]: 'Gallery',
   [PostType.TEXT]: 'Text',
   [PostType.FILM]: 'Film',
+  POETRY: 'Poetry',
 }
 
-const TYPE_ICONS: Record<PostType | 'ALL', React.ReactNode> = {
+const TYPE_ICONS: Record<FilterType, React.ReactNode> = {
   ALL: <FiFilter size={12} />,
   [PostType.IMAGE]: <FiImage size={12} />,
   [PostType.TEXT]: <FiFileText size={12} />,
   [PostType.FILM]: <FiFilm size={12} />,
+  POETRY: <FiFeather size={12} />,
 }
 
 // ── Star Rating ───────────────────────────────────────────────────────────────
@@ -297,6 +303,8 @@ const PostRow = memo(({ post, index, onClick }: { post: Post; index: number; onC
   const tags = parseTags(post.tags)
   const displayTitle = getDisplayTitle(post)
   const plainContent = useMemo(() => post.content ? post.content.replace(/<[^>]*>/g, '') : '', [post.content])
+  const isPoetry = post.type === PostType.TEXT && post.isPoetry
+  const label = post.type === PostType.IMAGE ? 'Gallery' : (post.type === PostType.FILM ? 'Film' : (isPoetry ? 'Poetry' : 'Text'))
   const isTruncated = plainContent.length > 180
 
   return (
@@ -374,8 +382,8 @@ const PostRow = memo(({ post, index, onClick }: { post: Post; index: number; onC
           border border-[#9B4000]/25 text-[#9B4000]/55 uppercase tracking-widest"
         style={{ fontFamily: "'Texturina', serif" }}
       >
-        {TYPE_ICONS[post.type]}
-        {TYPE_LABELS[post.type]}
+        {isPoetry ? <FiFeather size={12} /> : TYPE_ICONS[post.type]}
+        {label}
       </span>
     </motion.div>
   )
@@ -387,6 +395,8 @@ const GridCard = memo(({ post, index, onClick }: { post: Post; index: number; on
   const tags = parseTags(post.tags)
   const displayTitle = getDisplayTitle(post)
   const plainContent = useMemo(() => post.content ? post.content.replace(/<[^>]*>/g, '') : '', [post.content])
+  const isPoetry = post.type === PostType.TEXT && post.isPoetry
+  const label = post.type === PostType.IMAGE ? 'Gallery' : (post.type === PostType.FILM ? 'Film' : (isPoetry ? 'Poetry' : 'Text'))
   const isTruncated = plainContent.length > 350
 
   return (
@@ -416,8 +426,8 @@ const GridCard = memo(({ post, index, onClick }: { post: Post; index: number; on
           text-[#9B4000]/70 uppercase tracking-widest"
         style={{ fontFamily: "'Texturina', serif" }}
       >
-        {TYPE_ICONS[post.type]}
-        {TYPE_LABELS[post.type]}
+        {isPoetry ? <FiFeather size={12} /> : TYPE_ICONS[post.type]}
+        {label}
       </span>
 
       {/* Content */}
@@ -647,6 +657,8 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
   const [isTagsExpanded, setIsTagsExpanded] = useState(false)
   const showDetails = !(post.type === PostType.IMAGE && post.showDetails === false)
   const isFilmDesktop = post.type === PostType.FILM && !isMobile
+  const isPoetry = post.type === PostType.TEXT && post.isPoetry
+  const label = post.type === PostType.IMAGE ? 'Gallery' : (post.type === PostType.FILM ? 'Film' : (isPoetry ? 'Poetry' : 'Text'))
 
   // Close on Escape
   useEffect(() => {
@@ -703,8 +715,8 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
                   border border-[#9B4000]/25 text-[#9B4000]/55 uppercase tracking-widest"
                 style={{ fontFamily: "'Texturina', serif" }}
               >
-                {TYPE_ICONS[post.type]}
-                {TYPE_LABELS[post.type]}
+                {isPoetry ? <FiFeather size={12} /> : TYPE_ICONS[post.type]}
+                {label}
               </span>
               <span
                 className="text-h4Mob text-[#9B4000]/40"
@@ -924,8 +936,6 @@ function ViewToggle({ viewMode, onChange, disabled }: { viewMode: ViewMode; onCh
 
 // ── Archive ───────────────────────────────────────────────────────────────────
 
-type FilterType = PostType | 'ALL'
-
 function Archive({ posts }: ArchiveProps) {
   const [isPending, startTransition] = useTransition()
   const [openDropdown, setOpenDropdown] = useState<'month' | 'type' | 'tags' | null>(null)
@@ -977,7 +987,12 @@ function Archive({ posts }: ArchiveProps) {
 
   const filteredPosts = useMemo(() => posts.filter((post) => {
     const monthMatch = !appliedMonthKey || getMonthYearKey(post.createdAt) === appliedMonthKey
-    const typeMatch = appliedType === 'ALL' || post.type === appliedType
+    const typeMatch = appliedType === 'ALL' ||
+      (appliedType === 'POETRY'
+        ? (post.type === PostType.TEXT && post.isPoetry)
+        : (appliedType === PostType.TEXT
+          ? (post.type === PostType.TEXT && !post.isPoetry)
+          : post.type === appliedType))
     const postTags = parseTags(post.tags)
     const tagMatch = appliedTags.length === 0 || appliedTags.every((t) => postTags.includes(t))
     return monthMatch && typeMatch && tagMatch
@@ -1110,11 +1125,11 @@ function Archive({ posts }: ArchiveProps) {
                 style={{ fontFamily: "'Texturina', serif" }}>
                 <FiFilter size={12} /> All
               </button>
-              {Object.values(PostType).map((type) => (
-                <button key={type} onClick={() => setType(type)}
+              {['IMAGE', 'TEXT', 'POETRY', 'FILM'].map((type) => (
+                <button key={type} onClick={() => setType(type as FilterType)}
                   className={dropdownItemCls(selectedType === type)}
                   style={{ fontFamily: "'Texturina', serif" }}>
-                  {TYPE_ICONS[type]}{TYPE_LABELS[type]}
+                  {TYPE_ICONS[type as FilterType]}{TYPE_LABELS[type as Exclude<FilterType, 'ALL'>]}
                 </button>
               ))}
             </div>
