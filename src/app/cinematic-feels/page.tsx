@@ -1,10 +1,15 @@
 import { getPosts } from '@/lib/data'
 import { PostGrid } from '@/app/components/PostGrid'
 import { PostType } from '@/generated/prisma'
+import { Suspense } from 'react'
+import GlobalLoader from '@/app/components/GlobalLoader'
+
+async function CinematicFeelsPosts() {
+  const posts = await getPosts(PostType.FILM)
+  return <PostGrid posts={posts} />
+}
 
 export default async function CinematicFeelsPage() {
-  const posts = await getPosts(PostType.FILM)
-
   return (
     <div className="min-h-screen my-8 bg-BGpage p-8">
       <div className="mx-auto max-w-7xl space-y-12">
@@ -13,7 +18,9 @@ export default async function CinematicFeelsPage() {
           <p className="text-gray-500 mt-1">Reviews and thoughts on films.</p>
         </header>
         <section>
-          <PostGrid posts={posts} />
+          <Suspense fallback={<GlobalLoader />}>
+            <CinematicFeelsPosts />
+          </Suspense>
         </section>
       </div>
     </div>

@@ -8,6 +8,7 @@ import {
   List, Plus, Edit2, Trash2, Film, LayoutGrid, Search, Image as ImageIcon, Type, X, AlertTriangle, Feather, Filter
 } from 'lucide-react'
 import { Reorder, AnimatePresence, motion } from 'framer-motion'
+import { FadeLoader } from 'react-spinners'
 import RichTextEditor from '../components/RichTextEditor'
 
 // Create a context to share the state
@@ -701,7 +702,12 @@ export function PostsList() {
         </div>
       </div>
 
-      {viewMode === 'mosaic' ? (
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-32 w-full bg-white rounded-3xl border border-gray-100 shadow-sm animate-in fade-in duration-500">
+          <FadeLoader color="#BE5103" />
+          <p className="mt-6 text-xs font-bold text-gray-400 uppercase tracking-widest">Updating Dashboard...</p>
+        </div>
+      ) : viewMode === 'mosaic' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
           {posts.map((post) => (
             <div key={post.id} className={`h-full ${post.type === 'TEXT' || post.type === 'FILM' ? 'lg:col-span-2' : ''}`}>
