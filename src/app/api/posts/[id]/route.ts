@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { revalidateTag } from 'next/cache';
 
 function restoreImageUrls(images: unknown): string[] {
   if (!Array.isArray(images)) return []
@@ -60,6 +61,9 @@ export async function PUT(
       },
     });
 
+    // Ensure pages show updated content
+    revalidateTag('posts');
+
     return NextResponse.json(post);
   } catch (error) {
     console.error('Error updating post:', error);
@@ -76,6 +80,9 @@ export async function DELETE(
     await prisma.post.delete({
       where: { id },
     });
+
+    revalidateTag('posts');
+
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error('Error deleting post:', error);

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { PostType } from '@/generated/prisma';
 import { randomUUID } from 'crypto';
+import { revalidateTag } from 'next/cache';
 
 const FILE_API_URL = process.env.FILE_API_URL || ''
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || ''
@@ -127,6 +128,9 @@ export async function POST(request: Request) {
         filmTitle,
       },
     });
+
+    // Clear the cache so the new post appears immediately
+    revalidateTag('posts');
 
     return NextResponse.json(post, { status: 201 });
   } catch (error) {

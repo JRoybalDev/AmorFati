@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { PostType } from '@/generated/prisma'
+import { unstable_cache } from 'next/cache'
 
 const FILE_API_URL = process.env.FILE_API_URL || ''
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || ''
@@ -53,24 +54,28 @@ function rewriteImageUrls(images: unknown): string[] {
   })
 }
 
-export async function getPosts(type?: PostType) {
-  const where: { type?: PostType } = {}
-  if (type) {
-    where.type = type
-  }
+export const getPosts = unstable_cache(
+  async (type?: PostType) => {
+    const where: { type?: PostType } = {}
+    if (type) {
+      where.type = type
+    }
 
-  const posts = await prisma.post.findMany({
-    where,
-    orderBy: { createdAt: 'desc' },
-    include: {
-      author: {
-        select: { name: true, username: true, email: true },
+    const posts = await prisma.post.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        author: {
+          select: { name: true, username: true, email: true },
+        },
       },
-    },
-  })
+    })
 
-  return posts.map((post) => ({
-    ...post,
-    images: rewriteImageUrls(post.images),
-  }))
-}
+    return posts.map((post) => ({
+      ...post,
+      images: rewriteImageUrls(post.images),
+    }))
+  },
+  ['all-posts'], // Cache key
+  { tags: ['posts'] } // Revalidation tag
+)
