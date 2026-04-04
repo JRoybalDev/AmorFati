@@ -1,12 +1,13 @@
 'use client'
 
-import React, { createContext, useContext, useState, useRef, useEffect } from 'react'
+import React, { createContext, useContext, useState, useRef, useEffect, useOptimistic } from 'react'
 import { PostsApi, PostType, UploadResult } from '@/lib/posts'
 import { usePostsManager, DashboardFilterType } from '@/hooks/use-posts-manager'
 import { Post } from '../components/Post'
 import {
   List, Plus, Edit2, Trash2, Film, LayoutGrid, Search, Image as ImageIcon, Type, X, AlertTriangle, Feather, Filter
 } from 'lucide-react'
+import { revalidatePosts } from '@/app/actions/posts'
 import { Reorder, AnimatePresence, motion } from 'framer-motion'
 import { FadeLoader } from 'react-spinners'
 import RichTextEditor from '../components/RichTextEditor'
@@ -19,6 +20,8 @@ type PostsContextType = ReturnType<typeof usePostsManager> & {
   setGalleryItems: React.Dispatch<React.SetStateAction<GalleryItem[]>>
   isFormVisible: boolean
   setIsFormVisible: React.Dispatch<React.SetStateAction<boolean>>
+  optimisticPosts: any[]
+  addOptimisticPost: (action: { type: 'DELETE' | 'CREATE' | 'UPDATE', payload: any }) => void
 }
 
 const PostsContext = createContext<PostsContextType | null>(
@@ -42,17 +45,40 @@ export function PostsProvider({ children, authorId }: PostsProviderProps) {
   const postsManager = usePostsManager(authorId)
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>([])
   const [isFormVisible, setIsFormVisible] = useState(false)
-  const { isEditing, formData } = postsManager
+  const { isEditing, formData, posts } = postsManager
+
+  // Initialize optimistic state based on the posts from usePostsManager
+  const [optimisticPosts, addOptimisticPost] = useOptimistic(
+    posts,
+    (state, action: { type: 'DELETE' | 'CREATE' | 'UPDATE'; payload: any }) => {
+      switch (action.type) {
+        case 'DELETE':
+          return state.filter((p: any) => p.id !== action.payload)
+        case 'CREATE':
+          return [action.payload, ...state]
+        case 'UPDATE':
+          return state.map((p: any) => p.id === action.payload.id ? { ...p, ...action.payload } : p)
+        default:
+          return state
+      }
+    }
+  )
 
   useEffect(() => {
     if (isEditing) {
       const imgs = formData.images && formData.images.length > 0 ? formData.images : []
       setGalleryItems(imgs.map((url: string, index: number) => ({ id: `${url}-${index}`, url })))
       setIsFormVisible(true)
-    } else {
+    }
+  }, [isEditing])
+
+  // Clear gallery items only when the form is explicitly closed.
+  // This prevents images from being cleared when typing in Title/Content fields.
+  useEffect(() => {
+    if (!isFormVisible) {
       setGalleryItems([])
     }
-  }, [isEditing, formData.images])
+  }, [isFormVisible])
 
   // Scroll to the workspace when starting to edit a post
   useEffect(() => {
@@ -68,18 +94,14 @@ export function PostsProvider({ children, authorId }: PostsProviderProps) {
     }
   }, [isEditing])
 
-  useEffect(() => {
-    if (!isEditing && (!formData.images || formData.images.length === 0)) {
-      setGalleryItems([])
-    }
-  }, [formData, isEditing])
-
   const value = {
     ...postsManager,
     galleryItems,
     setGalleryItems,
     isFormVisible,
     setIsFormVisible,
+    optimisticPosts,
+    addOptimisticPost,
   }
 
   return (
@@ -162,6 +184,7 @@ export function PostsForm() {
     galleryItems,
     setGalleryItems,
     setIsFormVisible,
+    addOptimisticPost,
   } = usePosts()
 
   const [uploading, setUploading] = useState(false)
@@ -171,8 +194,16 @@ export function PostsForm() {
   useEffect(() => {
     if (shouldSubmit.current) {
       shouldSubmit.current = false
-      handleSubmit({ preventDefault: () => { } } as React.FormEvent).then((success) => {
-        if (success) setIsFormVisible(false)
+      handleSubmit({ preventDefault: () => { } } as React.FormEvent).then(async (success: any) => {
+        if (success) {
+          if (formData.id) {
+            addOptimisticPost({ type: 'UPDATE', payload: formData })
+          } else {
+            addOptimisticPost({ type: 'CREATE', payload: { ...formData, id: 'temp-' + Date.now(), createdAt: new Date() } })
+          }
+          await revalidatePosts()
+          setIsFormVisible(false)
+        }
       })
     }
   }, [formData.images, formData.id, handleSubmit, setIsFormVisible])
@@ -302,7 +333,15 @@ export function PostsForm() {
       }
     } else {
       const success = await handleSubmit(e)
-      if (success) setIsFormVisible(false)
+      if (success) {
+        if (formData.id) {
+          addOptimisticPost({ type: 'UPDATE', payload: formData })
+        } else {
+          addOptimisticPost({ type: 'CREATE', payload: { ...formData, id: 'temp-' + Date.now(), createdAt: new Date() } })
+        }
+        await revalidatePosts()
+        setIsFormVisible(false)
+      }
     }
   }
 
@@ -570,7 +609,7 @@ export function PostPreview() {
 }
 
 export function PostsList() {
-  const { posts, loading, handleEdit, handleDelete, filterType, setFilterType, currentPage, setCurrentPage, totalPages, viewMode, setViewMode, searchQuery, setSearchQuery } = usePosts()
+  const { optimisticPosts, loading, handleEdit, handleDelete, filterType, setFilterType, currentPage, setCurrentPage, totalPages, viewMode, setViewMode, searchQuery, setSearchQuery, addOptimisticPost } = usePosts()
   const [deletePostId, setDeletePostId] = useState<string | null>(null)
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false)
   const filterRef = useRef<HTMLDivElement>(null)
@@ -604,7 +643,9 @@ export function PostsList() {
 
   const confirmDelete = async () => {
     if (deletePostId) {
+      addOptimisticPost({ type: 'DELETE', payload: deletePostId })
       await handleDelete(deletePostId)
+      await revalidatePosts()
       setDeletePostId(null)
     }
   }
@@ -709,7 +750,7 @@ export function PostsList() {
         </div>
       ) : viewMode === 'mosaic' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
-          {posts.map((post) => (
+            {optimisticPosts.map((post) => (
             <div key={post.id} className={`h-full ${post.type === 'TEXT' || post.type === 'FILM' ? 'lg:col-span-2' : ''}`}>
               <Post
                 type={post.type || 'TEXT'}
@@ -756,7 +797,7 @@ export function PostsList() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {posts.map((post) => {
+                    {optimisticPosts.map((post) => {
                   const hasImage = post.images && post.images.length > 0;
                   const displayImage = hasImage ? post.images[0] : null;
 
@@ -823,7 +864,7 @@ export function PostsList() {
         </div>
       )}
 
-      {posts.length === 0 && !loading && (
+      {optimisticPosts.length === 0 && !loading && (
         <div className="col-span-full py-12 text-center text-gray-400 bg-white rounded-3xl border border-dashed border-gray-200">
           No posts found matching your filter.
         </div>
