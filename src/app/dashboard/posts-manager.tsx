@@ -15,13 +15,37 @@ import RichTextEditor from '../components/RichTextEditor'
 // Create a context to share the state
 type GalleryItem = { id: string; url: string; file?: File }
 
+interface DashboardPost {
+  id: string
+  type: PostType
+  title: string | null
+  content: string | null
+  images: string[]
+  isPoetry: boolean | null
+  showDetails: boolean | null
+  createdAt: Date
+  updatedAt: Date
+  authorId: string
+  filmTitle: string | null
+  link: string | null
+  rating: number | null
+  year: string | null
+  tags: string | null
+}
+
+type OptimisticAction =
+  | { type: 'DELETE'; payload: string }
+  | { type: 'CREATE'; payload: DashboardPost }
+  | { type: 'UPDATE'; payload: DashboardPost }
+
 type PostsContextType = ReturnType<typeof usePostsManager> & {
   galleryItems: GalleryItem[]
   setGalleryItems: React.Dispatch<React.SetStateAction<GalleryItem[]>>
   isFormVisible: boolean
   setIsFormVisible: React.Dispatch<React.SetStateAction<boolean>>
-  optimisticPosts: any[]
-  addOptimisticPost: (action: { type: 'DELETE' | 'CREATE' | 'UPDATE', payload: any }) => void
+  optimisticPosts: DashboardPost[]
+  addOptimisticPost: (action: OptimisticAction) => void
+  authorId: string
 }
 
 const PostsContext = createContext<PostsContextType | null>(
@@ -48,16 +72,16 @@ export function PostsProvider({ children, authorId }: PostsProviderProps) {
   const { isEditing, formData, posts } = postsManager
 
   // Initialize optimistic state based on the posts from usePostsManager
-  const [optimisticPosts, addOptimisticPost] = useOptimistic(
-    posts,
-    (state, action: { type: 'DELETE' | 'CREATE' | 'UPDATE'; payload: any }) => {
+  const [optimisticPosts, addOptimisticPost] = useOptimistic<DashboardPost[], OptimisticAction>(
+    posts as DashboardPost[],
+    (state, action) => {
       switch (action.type) {
         case 'DELETE':
-          return state.filter((p: any) => p.id !== action.payload)
+          return state.filter((p: DashboardPost) => p.id !== action.payload)
         case 'CREATE':
           return [action.payload, ...state]
         case 'UPDATE':
-          return state.map((p: any) => p.id === action.payload.id ? { ...p, ...action.payload } : p)
+          return state.map((p: DashboardPost) => p.id === action.payload.id ? { ...p, ...action.payload } : p)
         default:
           return state
       }
@@ -102,6 +126,7 @@ export function PostsProvider({ children, authorId }: PostsProviderProps) {
     setIsFormVisible,
     optimisticPosts,
     addOptimisticPost,
+    authorId,
   }
 
   return (
@@ -185,6 +210,7 @@ export function PostsForm() {
     setGalleryItems,
     setIsFormVisible,
     addOptimisticPost,
+    authorId,
   } = usePosts()
 
   const [uploading, setUploading] = useState(false)
@@ -194,12 +220,47 @@ export function PostsForm() {
   useEffect(() => {
     if (shouldSubmit.current) {
       shouldSubmit.current = false
-      handleSubmit({ preventDefault: () => { } } as React.FormEvent).then(async (success: any) => {
+      handleSubmit({ preventDefault: () => { } } as React.FormEvent).then(async (success: boolean) => {
         if (success) {
           if (formData.id) {
-            addOptimisticPost({ type: 'UPDATE', payload: formData })
+            addOptimisticPost({
+              type: 'UPDATE',
+              payload: {
+                ...formData,
+                title: formData.title ?? null,
+                content: formData.content ?? null,
+                isPoetry: formData.isPoetry ?? null,
+                showDetails: formData.showDetails ?? null,
+                filmTitle: formData.filmTitle ?? null,
+                link: formData.link ?? null,
+                rating: formData.rating ?? null,
+                year: formData.year ? String(formData.year) : null,
+                tags: formData.tags ?? null,
+                createdAt: new Date(formData.createdAt ?? new Date()),
+                updatedAt: new Date(),
+                authorId
+              } as DashboardPost
+            })
           } else {
-            addOptimisticPost({ type: 'CREATE', payload: { ...formData, id: 'temp-' + Date.now(), createdAt: new Date() } })
+            addOptimisticPost({
+              type: 'CREATE',
+              payload: {
+                ...formData,
+                title: formData.title ?? null,
+                content: formData.content ?? null,
+                isPoetry: formData.isPoetry ?? null,
+                showDetails: formData.showDetails ?? null,
+                filmTitle: formData.filmTitle ?? null,
+                link: formData.link ?? null,
+                rating: formData.rating ?? null,
+                year: formData.year ? String(formData.year) : null,
+                tags: formData.tags ?? null,
+                id: 'temp-' + Date.now(),
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                authorId
+              } as DashboardPost
+            })
           }
           await revalidatePosts()
           setIsFormVisible(false)
@@ -335,9 +396,44 @@ export function PostsForm() {
       const success = await handleSubmit(e)
       if (success) {
         if (formData.id) {
-          addOptimisticPost({ type: 'UPDATE', payload: formData })
+          addOptimisticPost({
+            type: 'UPDATE',
+            payload: {
+              ...formData,
+              title: formData.title ?? null,
+              content: formData.content ?? null,
+              isPoetry: formData.isPoetry ?? null,
+              showDetails: formData.showDetails ?? null,
+              filmTitle: formData.filmTitle ?? null,
+              link: formData.link ?? null,
+              rating: formData.rating ?? null,
+              year: formData.year ? String(formData.year) : null,
+              tags: formData.tags ?? null,
+              createdAt: new Date(formData.createdAt ?? new Date()),
+              updatedAt: new Date(),
+              authorId
+            } as DashboardPost
+          })
         } else {
-          addOptimisticPost({ type: 'CREATE', payload: { ...formData, id: 'temp-' + Date.now(), createdAt: new Date() } })
+          addOptimisticPost({
+            type: 'CREATE',
+            payload: {
+              ...formData,
+              title: formData.title ?? null,
+              content: formData.content ?? null,
+              isPoetry: formData.isPoetry ?? null,
+              showDetails: formData.showDetails ?? null,
+              filmTitle: formData.filmTitle ?? null,
+              link: formData.link ?? null,
+              rating: formData.rating ?? null,
+              year: formData.year ? String(formData.year) : null,
+              tags: formData.tags ?? null,
+              id: 'temp-' + Date.now(),
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              authorId
+            } as DashboardPost
+          })
         }
         await revalidatePosts()
         setIsFormVisible(false)
