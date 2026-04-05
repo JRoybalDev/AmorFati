@@ -1,6 +1,6 @@
 'use client'
 
-import React, { createContext, useContext, useState, useRef, useEffect, useOptimistic } from 'react'
+import React, { createContext, useContext, useState, useRef, useEffect, useOptimistic, startTransition } from 'react'
 import { PostsApi, PostType, UploadResult } from '@/lib/posts'
 import { usePostsManager, DashboardFilterType } from '@/hooks/use-posts-manager'
 import { Post } from '../components/Post'
@@ -151,17 +151,20 @@ export function PostsHeader() {
   }
 
   return (
-    <div className="flex flex-col md:flex-row md:items-end justify-between">
+    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Content Studio</h1>
-        <p className="text-gray-500 mt-1">Create, manage and schedule your content across platforms.</p>
+        <h1 className="text-4xl text-BGpageDark" style={{ fontFamily: "'Pirata One', serif" }}>Content Studio</h1>
+        <p className="text-[#9B4000]/60 mt-1 text-sm" style={{ fontFamily: "'Texturina', serif" }}>
+          Create, manage and curate your artistic expressions.
+        </p>
       </div>
       <button
         onClick={handleNewPost}
-        className="flex items-center gap-2 bg-BGbutton text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-HOVERbutton transition-colors shadow-sm mb-1 mt-4 md:mt-0 w-fit"
+        className="flex items-center gap-2 bg-[#BE5103] text-white px-6 py-2.5 rounded-full text-sm font-bold hover:bg-[#9B4000] transition-all shadow-md hover:shadow-lg mb-1 w-fit"
+        style={{ fontFamily: "'Texturina', serif" }}
       >
         <Plus size={18} />
-        <span className='mb-1'>New Post</span>
+        <span>New Entry</span>
       </button>
     </div>
   )
@@ -217,51 +220,80 @@ export function PostsForm() {
   const shouldSubmit = useRef(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Tag Pill Logic
+  const [tagInput, setTagInput] = useState('')
+  const tagsArray = (formData.tags || '').split(',').map(t => t.trim()).filter(Boolean)
+
+  const addTag = (tag: string) => {
+    const cleaned = tag.trim().replace(/,/g, '')
+    if (cleaned && !tagsArray.includes(cleaned)) {
+      const newTags = [...tagsArray, cleaned].join(', ')
+      handleInputChange({ target: { name: 'tags', value: newTags } } as unknown as React.ChangeEvent<HTMLInputElement>)
+    }
+    setTagInput('')
+  }
+
+  const removeTag = (tagToRemove: string) => {
+    const newTags = tagsArray.filter(t => t !== tagToRemove).join(', ')
+    handleInputChange({ target: { name: 'tags', value: newTags } } as unknown as React.ChangeEvent<HTMLInputElement>)
+  }
+
+  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === ',' || e.key === 'Enter') {
+      e.preventDefault()
+      addTag(tagInput)
+    } else if (e.key === 'Backspace' && !tagInput && tagsArray.length > 0) {
+      removeTag(tagsArray[tagsArray.length - 1])
+    }
+  }
+
   useEffect(() => {
     if (shouldSubmit.current) {
       shouldSubmit.current = false
       handleSubmit({ preventDefault: () => { } } as React.FormEvent).then(async (success: boolean) => {
         if (success) {
-          if (formData.id) {
-            addOptimisticPost({
-              type: 'UPDATE',
-              payload: {
-                ...formData,
-                title: formData.title ?? null,
-                content: formData.content ?? null,
-                isPoetry: formData.isPoetry ?? null,
-                showDetails: formData.showDetails ?? null,
-                filmTitle: formData.filmTitle ?? null,
-                link: formData.link ?? null,
-                rating: formData.rating ?? null,
-                year: formData.year ? String(formData.year) : null,
-                tags: formData.tags ?? null,
-                createdAt: new Date(formData.createdAt ?? new Date()),
-                updatedAt: new Date(),
-                authorId
-              } as DashboardPost
-            })
-          } else {
-            addOptimisticPost({
-              type: 'CREATE',
-              payload: {
-                ...formData,
-                title: formData.title ?? null,
-                content: formData.content ?? null,
-                isPoetry: formData.isPoetry ?? null,
-                showDetails: formData.showDetails ?? null,
-                filmTitle: formData.filmTitle ?? null,
-                link: formData.link ?? null,
-                rating: formData.rating ?? null,
-                year: formData.year ? String(formData.year) : null,
-                tags: formData.tags ?? null,
-                id: 'temp-' + Date.now(),
-                createdAt: new Date(),
-                updatedAt: new Date(),
-                authorId
-              } as DashboardPost
-            })
-          }
+          startTransition(() => {
+            if (formData.id) {
+              addOptimisticPost({
+                type: 'UPDATE',
+                payload: {
+                  ...formData,
+                  title: formData.title ?? null,
+                  content: formData.content ?? null,
+                  isPoetry: formData.isPoetry ?? null,
+                  showDetails: formData.showDetails ?? null,
+                  filmTitle: formData.filmTitle ?? null,
+                  link: formData.link ?? null,
+                  rating: formData.rating ?? null,
+                  year: formData.year ? String(formData.year) : null,
+                  tags: formData.tags ?? null,
+                  createdAt: new Date(formData.createdAt ?? new Date()),
+                  updatedAt: new Date(),
+                  authorId
+                } as DashboardPost
+              })
+            } else {
+              addOptimisticPost({
+                type: 'CREATE',
+                payload: {
+                  ...formData,
+                  title: formData.title ?? null,
+                  content: formData.content ?? null,
+                  isPoetry: formData.isPoetry ?? null,
+                  showDetails: formData.showDetails ?? null,
+                  filmTitle: formData.filmTitle ?? null,
+                  link: formData.link ?? null,
+                  rating: formData.rating ?? null,
+                  year: formData.year ? String(formData.year) : null,
+                  tags: formData.tags ?? null,
+                  id: 'temp-' + Date.now(),
+                  createdAt: new Date(),
+                  updatedAt: new Date(),
+                  authorId
+                } as DashboardPost
+              })
+            }
+          })
           await revalidatePosts()
           setIsFormVisible(false)
         }
@@ -395,46 +427,48 @@ export function PostsForm() {
     } else {
       const success = await handleSubmit(e)
       if (success) {
-        if (formData.id) {
-          addOptimisticPost({
-            type: 'UPDATE',
-            payload: {
-              ...formData,
-              title: formData.title ?? null,
-              content: formData.content ?? null,
-              isPoetry: formData.isPoetry ?? null,
-              showDetails: formData.showDetails ?? null,
-              filmTitle: formData.filmTitle ?? null,
-              link: formData.link ?? null,
-              rating: formData.rating ?? null,
-              year: formData.year ? String(formData.year) : null,
-              tags: formData.tags ?? null,
-              createdAt: new Date(formData.createdAt ?? new Date()),
-              updatedAt: new Date(),
-              authorId
-            } as DashboardPost
-          })
-        } else {
-          addOptimisticPost({
-            type: 'CREATE',
-            payload: {
-              ...formData,
-              title: formData.title ?? null,
-              content: formData.content ?? null,
-              isPoetry: formData.isPoetry ?? null,
-              showDetails: formData.showDetails ?? null,
-              filmTitle: formData.filmTitle ?? null,
-              link: formData.link ?? null,
-              rating: formData.rating ?? null,
-              year: formData.year ? String(formData.year) : null,
-              tags: formData.tags ?? null,
-              id: 'temp-' + Date.now(),
-              createdAt: new Date(),
-              updatedAt: new Date(),
-              authorId
-            } as DashboardPost
-          })
-        }
+        startTransition(() => {
+          if (formData.id) {
+            addOptimisticPost({
+              type: 'UPDATE',
+              payload: {
+                ...formData,
+                title: formData.title ?? null,
+                content: formData.content ?? null,
+                isPoetry: formData.isPoetry ?? null,
+                showDetails: formData.showDetails ?? null,
+                filmTitle: formData.filmTitle ?? null,
+                link: formData.link ?? null,
+                rating: formData.rating ?? null,
+                year: formData.year ? String(formData.year) : null,
+                tags: formData.tags ?? null,
+                createdAt: new Date(formData.createdAt ?? new Date()),
+                updatedAt: new Date(),
+                authorId
+              } as DashboardPost
+            })
+          } else {
+            addOptimisticPost({
+              type: 'CREATE',
+              payload: {
+                ...formData,
+                title: formData.title ?? null,
+                content: formData.content ?? null,
+                isPoetry: formData.isPoetry ?? null,
+                showDetails: formData.showDetails ?? null,
+                filmTitle: formData.filmTitle ?? null,
+                link: formData.link ?? null,
+                rating: formData.rating ?? null,
+                year: formData.year ? String(formData.year) : null,
+                tags: formData.tags ?? null,
+                id: 'temp-' + Date.now(),
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                authorId
+              } as DashboardPost
+            })
+          }
+        })
         await revalidatePosts()
         setIsFormVisible(false)
       }
@@ -442,25 +476,26 @@ export function PostsForm() {
   }
 
   return (
-    <div className="space-y-8 font-sans">
+    <div className="space-y-8">
       {/* Header Section */}
       <div className="grid grid-cols-1">
         {/* Create Post Section - Full Width */}
-        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 h-full">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-xl font-bold text-gray-900">
+        <div className="bg-[#FFF5D6]/50 rounded-2xl shadow-sm border border-[#9B4000]/20 p-6 md:p-8 h-full">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+            <h2 className="text-2xl text-BGpageDark" style={{ fontFamily: "'Pirata One', serif" }}>
               {isEditing ? 'Edit Post' : 'Create New Post'}
             </h2>
-            <div className="flex bg-gray-50 p-1 rounded-xl">
+            <div className="flex bg-[#9B4000]/5 p-1 rounded-xl border border-[#9B4000]/10">
               {['TEXT', 'IMAGE', 'FILM'].map((t) => (
                 <button
                   key={t}
                   type="button"
                   onClick={() => handleInputChange({ target: { name: 'type', value: t as PostType } })}
                   className={`px-5 py-2 text-sm font-medium rounded-lg transition-all ${formData.type === t
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-500 hover:text-gray-700'
+                    ? 'bg-[#BE5103] text-white shadow-sm'
+                    : 'text-[#9B4000]/60 hover:text-[#712F00]'
                     }`}
+                  style={{ fontFamily: "'Texturina', serif" }}
                 >
                   {t.charAt(0) + t.slice(1).toLowerCase()}
                 </button>
@@ -468,26 +503,26 @@ export function PostsForm() {
             </div>
           </div>
 
-          {error && <div className="mb-4 text-red-500 text-sm">{error}</div>}
+          {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm" style={{ fontFamily: "'Texturina', serif" }}>{error}</div>}
 
           <form onSubmit={onFormSubmit} className="space-y-6">
             {/* Title Input */}
-            <div>
-              <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">Title</label>
+            <div style={{ fontFamily: "'Texturina', serif" }}>
+              <label className="block text-[10px] font-bold text-[#9B4000]/40 mb-1.5 uppercase tracking-[0.2em]">Title</label>
               <input
                 type="text"
                 name="title"
                 value={formData.title}
                 onChange={handleInputChange}
                 placeholder="Enter post title..."
-                className="w-full bg-gray-50 border-none rounded-xl px-4 py-3.5 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-black/5 outline-none transition-all"
+                className="w-full bg-white border border-[#9B4000]/20 rounded-xl px-4 py-3 text-BGpageDark placeholder:text-[#9B4000]/30 focus:border-[#BE5103] outline-none transition-all"
               />
             </div>
 
             {/* Content Area */}
             {(formData.type === 'TEXT' || formData.type === 'FILM' || formData.type === 'IMAGE') && (
-              <div>
-                <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">Content</label>
+              <div style={{ fontFamily: "'Texturina', serif" }}>
+                <label className="block text-[10px] font-bold text-[#9B4000]/40 mb-1.5 uppercase tracking-[0.2em]">Body Content</label>
                 <RichTextEditor
                   value={formData.content}
                   onChange={(html) =>
@@ -502,14 +537,14 @@ export function PostsForm() {
             {/* Film Search */}
             {formData.type === 'FILM' && (
               <div className="space-y-4 pt-2">
-                <div className="relative" ref={searchContainerRef}>
-                  <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">Search Movie</label>
+                <div className="relative" ref={searchContainerRef} style={{ fontFamily: "'Texturina', serif" }}>
+                  <label className="block text-[10px] font-bold text-[#9B4000]/40 mb-1.5 uppercase tracking-[0.2em]">Search Cinema Database</label>
                   <input
                     type="text"
                     value={tmdbQuery}
                     onChange={(e) => setTmdbQuery(e.target.value)}
-                    placeholder="Search TMDB..."
-                    className="w-full bg-gray-50 border-none rounded-xl px-4 py-3.5 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-black/5 outline-none"
+                    placeholder="Search films..."
+                    className="w-full bg-white border border-[#9B4000]/20 rounded-xl px-4 py-3 text-BGpageDark placeholder:text-[#9B4000]/30 focus:border-[#BE5103] outline-none"
                   />
                   {tmdbResults.length > 0 && (
                     <ul className="absolute z-10 mt-2 w-full max-h-60 overflow-y-auto rounded-xl border border-gray-100 bg-white shadow-lg">
@@ -540,7 +575,7 @@ export function PostsForm() {
                 </div>
 
                 {movieTitle && (
-                  <div className="p-3 bg-blue-50 text-blue-700 rounded-xl text-sm font-medium flex items-center gap-2">
+                  <div className="p-3 bg-[#BE5103]/10 text-[#712F00] rounded-xl text-sm font-medium flex items-center gap-2" style={{ fontFamily: "'Texturina', serif" }}>
                     <Film size={16} />
                     Selected: {movieTitle}
                   </div>
@@ -550,7 +585,7 @@ export function PostsForm() {
 
             {/* isPoetry Checkbox for TEXT */}
             {formData.type === 'TEXT' && (
-              <div className="flex items-center gap-2 pt-2">
+              <div className="flex items-center gap-2 pt-2" style={{ fontFamily: "'Texturina', serif" }}>
                 <input
                   type="checkbox"
                   id="isPoetry"
@@ -558,14 +593,15 @@ export function PostsForm() {
                   checked={formData.isPoetry ?? false}
                   onChange={handleInputChange}
                   className="rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                  style={{ accentColor: '#BE5103' }}
                 />
-                <label htmlFor="isPoetry" className="text-sm text-gray-700 font-medium">Mark as Poetry</label>
+                <label htmlFor="isPoetry" className="text-sm text-[#712F00] font-medium">Mark as Poetry</label>
               </div>
             )}
 
             {/* Show Details Checkbox for IMAGE */}
             {formData.type === 'IMAGE' && (
-              <div className="flex items-center gap-2 pt-2">
+              <div className="flex items-center gap-2 pt-2" style={{ fontFamily: "'Texturina', serif" }}>
                 <input
                   type="checkbox"
                   id="showDetails"
@@ -573,15 +609,16 @@ export function PostsForm() {
                   checked={formData.showDetails ?? true}
                   onChange={handleInputChange}
                   className="rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                  style={{ accentColor: '#BE5103' }}
                 />
-                <label htmlFor="showDetails" className="text-sm text-gray-700 font-medium">Show title and content on post</label>
+                <label htmlFor="showDetails" className="text-sm text-[#712F00] font-medium">Show metadata on entry</label>
               </div>
             )}
 
             {/* Image Upload */}
             {formData.type === 'IMAGE' && (
               <div>
-                <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">Gallery Images</label>
+                <label className="block text-[10px] font-bold text-[#9B4000]/40 mb-2 uppercase tracking-[0.2em]" style={{ fontFamily: "'Texturina', serif" }}>Gallery Images</label>
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center gap-3">
                     <input
@@ -596,22 +633,23 @@ export function PostsForm() {
                     />
                     <label
                       htmlFor="imageUpload"
-                      className={`cursor-pointer rounded-xl bg-BGbutton px-5 py-3 text-sm font-medium text-white hover:bg-BGbuttonSelected transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`cursor-pointer rounded-xl bg-[#BE5103] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#9B4000] transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      style={{ fontFamily: "'Texturina', serif" }}
                     >
                       Add Images
                     </label>
-                    <span className="text-sm text-gray-500">Drag to reorder</span>
+                    <span className="text-xs text-[#9B4000]/50 italic" style={{ fontFamily: "'Texturina', serif" }}>Drag to reorder sequence</span>
                   </div>
 
                   <Reorder.Group axis="y" values={galleryItems} onReorder={setGalleryItems} className="space-y-2">
                     {galleryItems.map((item) => (
-                      <Reorder.Item key={item.id} value={item} className="bg-gray-50 rounded-xl p-2 flex items-center gap-3 cursor-move border border-transparent hover:border-gray-200 transition-colors">
-                        <div className="h-12 w-12 rounded-lg overflow-hidden bg-gray-200 shrink-0">
+                      <Reorder.Item key={item.id} value={item} className="bg-white rounded-xl p-2 flex items-center gap-3 cursor-move border border-[#9B4000]/10 hover:border-[#BE5103]/30 transition-colors shadow-sm">
+                        <div className="h-12 w-12 rounded-lg overflow-hidden bg-[#9B4000]/5 shrink-0">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={item.url} alt="Preview" className="h-full w-full object-cover" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-700 truncate">{item.file ? item.file.name : 'Existing Image'}</p>
+                          <p className="text-sm font-medium text-BGpageDark truncate" style={{ fontFamily: "'Texturina', serif" }}>{item.file ? item.file.name : 'Existing Entry'}</p>
                         </div>
                         <button
                           type="button"
@@ -628,40 +666,65 @@ export function PostsForm() {
             )}
 
             {/* Tags Input */}
-            <div>
-              <label className="block text-xs font-bold text-gray-400 mb-2 uppercase tracking-wide">Tags</label>
-              <input
-                type="text"
-                name="tags"
-                value={formData.tags || ''}
-                onChange={handleInputChange}
-                placeholder="Enter tags separated by commas..."
-                className="w-full bg-gray-50 border-none rounded-xl px-4 py-3.5 text-gray-900 placeholder:text-gray-400 focus:ring-2 focus:ring-black/5 outline-none transition-all"
-              />
+            <div style={{ fontFamily: "'Texturina', serif" }}>
+              <label className="block text-[10px] font-bold text-[#9B4000]/40 mb-1.5 uppercase tracking-[0.2em]">
+                Tags <span className="lowercase font-normal italic opacity-60">(type comma or enter to add)</span>
+              </label>
+              <div className="flex flex-wrap items-center gap-2 w-full bg-white border border-[#9B4000]/20 rounded-xl px-3 py-2 focus-within:border-[#BE5103] transition-all min-h-[46px]">
+                <AnimatePresence mode="popLayout">
+                  {tagsArray.map((tag) => (
+                    <motion.span
+                      key={tag}
+                      layout
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="group flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#BE5103]/10 text-[#BE5103] text-xs font-medium border border-[#BE5103]/20 hover:bg-[#BE5103]/20 transition-colors"
+                    >
+                      <span>#{tag}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        className="opacity-0 group-hover:opacity-100 hover:text-red-600 transition-all duration-200"
+                      >
+                        <X size={12} strokeWidth={3} />
+                      </button>
+                    </motion.span>
+                  ))}
+                </AnimatePresence>
+                <input
+                  type="text"
+                  value={tagInput}
+                  onChange={(e) => setTagInput(e.target.value)}
+                  onKeyDown={handleTagKeyDown}
+                  placeholder={tagsArray.length === 0 ? "Add tags..." : ""}
+                  className="flex-1 bg-transparent border-none p-0 text-BGpageDark placeholder:text-[#9B4000]/30 focus:ring-0 outline-none text-sm min-w-[120px]"
+                />
+              </div>
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-end gap-3 pt-4">
+            <div className="flex items-center justify-end gap-3 pt-4" style={{ fontFamily: "'Texturina', serif" }}>
               <button
                 type="button"
                 onClick={handleCancel}
-                className="px-6 py-3 text-sm font-bold text-gray-500 hover:text-gray-900 transition-colors"
+                className="px-6 py-3 text-sm font-bold text-[#9B4000]/60 hover:text-BGpageDark transition-colors"
               >
                 Cancel
               </button>
 
               <button
                 type="submit"
-                disabled={loading}
-                className="px-8 py-3 text-sm font-bold bg-BGbutton text-white rounded-full hover:bg-BGbuttonSelected transition-colors disabled:opacity-50 shadow-sm hover:shadow-md"
+                disabled={loading || uploading}
+                className="px-8 py-3 text-sm font-bold bg-[#BE5103] text-white rounded-full hover:bg-[#9B4000] transition-all disabled:opacity-50 shadow-md hover:shadow-lg"
               >
-                {loading ? 'Processing...' : (isEditing ? 'Update Post' : 'Publish Now')}
+                {loading || uploading ? 'Processing...' : (isEditing ? 'Update Entry' : 'Publish Entry')}
               </button>
             </div>
           </form>
         </div>
       </div>
-    </div>
+    </div >
   )
 }
 
@@ -682,8 +745,11 @@ export function PostPreview() {
 
   return (
     <>
-      <div className="rounded-3xl p-8 h-full sticky top-8 font-sans">
-        <div className="flex justify-center">
+      <div className="rounded-2xl h-full sticky top-8 flex flex-col">
+        <p className="text-[10px] font-bold text-[#9B4000]/40 mb-4 uppercase tracking-[0.2em] text-center" style={{ fontFamily: "'Texturina', serif" }}>
+          Live Preview
+        </p>
+        <div className="flex justify-center items-center flex-1 bg-[#9B4000]/5 rounded-2xl border border-dashed border-[#9B4000]/20 p-4 md:p-8">
           <Post
             type={formData.type || 'TEXT'}
             title={formData.title}
@@ -739,7 +805,7 @@ export function PostsList() {
 
   const confirmDelete = async () => {
     if (deletePostId) {
-      addOptimisticPost({ type: 'DELETE', payload: deletePostId })
+      startTransition(() => addOptimisticPost({ type: 'DELETE', payload: deletePostId }))
       await handleDelete(deletePostId)
       await revalidatePosts()
       setDeletePostId(null)
@@ -748,33 +814,35 @@ export function PostsList() {
 
   return (
     <div className="mt-12">
-      <div className="flex flex-col xl:flex-row xl:items-center justify-between mb-8 gap-4">
-        <h2 className="text-2xl font-bold text-gray-900">Manage Posts</h2>
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-6">
+        <h2 className="text-3xl text-BGpageDark" style={{ fontFamily: "'Pirata One', serif" }}>Manage Entries</h2>
 
         <div className="flex items-center gap-2 md:gap-4 w-full xl:w-auto">
           {/* Search Bar */}
-          <div className="relative flex-1 md:w-64 md:flex-none">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <div className="relative flex-1 md:w-72 md:flex-none">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <Search size={16} className="text-gray-400" />
             </div>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-full leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-gray-900 focus:border-gray-900 sm:text-sm transition duration-150 ease-in-out shadow-sm"
+              className="block w-full pl-11 pr-4 py-2.5 border border-[#9B4000]/20 rounded-full bg-white text-BGpageDark placeholder:text-[#9B4000]/30 focus:border-[#BE5103] outline-none shadow-sm transition-all"
               placeholder="Search posts..."
+              style={{ fontFamily: "'Texturina', serif" }}
             />
           </div>
 
           <div className="flex items-center gap-2 md:gap-4 xl:w-auto justify-end">
             {/* Mobile Filter Dropdown */}
-            <div className="relative md:hidden" ref={filterRef}>
+            <div className="relative lg:hidden" ref={filterRef}>
               <button
                 onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-                className="flex items-center justify-center w-10 h-10 bg-white border border-gray-200 rounded-full text-gray-500 shadow-sm"
+                className={`flex items-center justify-center w-10 h-10 rounded-full border transition-all shadow-sm ${filterType !== 'ALL' ? 'bg-[#BE5103] text-white border-[#BE5103]' : 'bg-white text-[#9B4000]/60 border-[#9B4000]/20'
+                  }`}
                 title="Filter Posts"
               >
-                <Filter size={18} className={filterType !== 'ALL' ? 'text-BGbutton' : ''} />
+                <Filter size={18} />
               </button>
 
               <AnimatePresence>
@@ -783,13 +851,14 @@ export function PostsList() {
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                    className="absolute right-0 mt-2 w-40 bg-white border border-gray-100 rounded-2xl shadow-xl z-30 overflow-hidden"
+                    className="absolute right-0 mt-2 w-40 bg-[#FFF5D6] border border-[#9B4000]/30 rounded-xl shadow-xl z-30 overflow-hidden"
                   >
                     {['ALL', 'IMAGE', 'TEXT', 'POETRY', 'FILM'].map((type) => (
                       <button
                         key={type}
                         onClick={() => { setFilterType(type as DashboardFilterType); setIsFilterDropdownOpen(false); }}
-                        className={`w-full text-left px-4 py-3 text-xs font-bold transition-colors ${filterType === type
+                        style={{ fontFamily: "'Texturina', serif" }}
+                        className={`w-full text-left px-4 py-3 text-xs font-bold transition-colors border-b border-[#9B4000]/10 last:border-0 ${filterType === type
                           ? 'bg-gray-50 text-BGbutton'
                           : 'text-gray-500 hover:bg-gray-50'
                           }`}
@@ -803,15 +872,16 @@ export function PostsList() {
             </div>
 
             {/* Filter Tabs */}
-            <div className="hidden md:flex bg-white p-1.5 rounded-full shadow-sm border border-gray-100">
+            <div className="hidden lg:flex bg-[#9B4000]/5 p-1 rounded-full border border-[#9B4000]/15">
               {['ALL', 'IMAGE', 'TEXT', 'POETRY', 'FILM'].map((type) => (
                 <button
                   key={type}
                   onClick={() => setFilterType(type as DashboardFilterType)}
-                  className={`px-5 py-2 text-xs font-bold rounded-full transition-all ${filterType === type
-                    ? 'bg-BGbutton text-white shadow-md'
-                    : 'text-gray-500 hover:text-BGbuttonSelected hover:bg-gray-50'
+                  className={`px-5 py-1.5 text-xs font-bold rounded-full transition-all ${filterType === type
+                    ? 'bg-[#BE5103] text-white shadow-sm'
+                    : 'text-[#9B4000]/50 hover:text-[#712F00]'
                     }`}
+                  style={{ fontFamily: "'Texturina', serif" }}
                 >
                   {type === 'ALL' ? 'All' : (type === 'IMAGE' ? 'Gallery' : (type === 'FILM' ? 'Films' : (type === 'POETRY' ? 'Poetry' : 'Text')))}
                 </button>
@@ -819,17 +889,17 @@ export function PostsList() {
             </div>
 
             {/* View Mode Toggle */}
-            <div className="flex bg-white p-1.5 rounded-full shadow-sm border border-gray-100">
+            <div className="flex bg-[#9B4000]/5 p-1 rounded-full border border-[#9B4000]/15 ml-2">
               <button
                 onClick={() => setViewMode('mosaic')}
-                className={`p-2 rounded-full transition-all ${viewMode === 'mosaic' ? 'bg-BGbutton text-white shadow-md' : 'text-gray-400 hover:text-gray-900'}`}
+                className={`p-2 rounded-full transition-all ${viewMode === 'mosaic' ? 'bg-[#BE5103] text-white shadow-sm' : 'text-[#9B4000]/40 hover:text-[#712F00]'}`}
                 title="Mosaic View"
               >
                 <LayoutGrid size={16} />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 rounded-full transition-all ${viewMode === 'list' ? 'bg-BGbutton text-white shadow-md' : 'text-gray-400 hover:text-gray-900'}`}
+                className={`p-2 rounded-full transition-all ${viewMode === 'list' ? 'bg-[#BE5103] text-white shadow-sm' : 'text-[#9B4000]/40 hover:text-[#712F00]'}`}
                 title="List View"
               >
                 <List size={16} />
@@ -840,13 +910,13 @@ export function PostsList() {
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-32 w-full bg-white rounded-3xl border border-gray-100 shadow-sm animate-in fade-in duration-500">
+        <div className="flex flex-col items-center justify-center py-32 w-full bg-[#FFF5D6]/30 rounded-2xl border border-[#9B4000]/10 shadow-sm animate-in fade-in duration-500">
           <FadeLoader color="#BE5103" />
-          <p className="mt-6 text-xs font-bold text-gray-400 uppercase tracking-widest">Updating Dashboard...</p>
+          <p className="mt-6 text-[10px] font-bold text-[#9B4000]/40 uppercase tracking-[0.3em]" style={{ fontFamily: "'Texturina', serif" }}>Updating Studio...</p>
         </div>
       ) : viewMode === 'mosaic' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-start">
-            {optimisticPosts.map((post) => (
+          {optimisticPosts.map((post) => (
             <div key={post.id} className={`h-full ${post.type === 'TEXT' || post.type === 'FILM' ? 'lg:col-span-2' : ''}`}>
               <Post
                 type={post.type || 'TEXT'}
@@ -881,24 +951,24 @@ export function PostsList() {
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="bg-[#FFF5D6]/30 rounded-2xl shadow-sm border border-[#9B4000]/20 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-gray-50 border-b border-gray-100">
+              <thead className="bg-[#9B4000]/5 border-b border-[#9B4000]/15" style={{ fontFamily: "'Texturina', serif" }}>
                 <tr>
-                  <th className="px-6 py-4 font-semibold text-gray-900 w-24">Type</th>
-                  <th className="px-6 py-4 font-semibold text-gray-900">Preview</th>
-                  <th className="px-6 py-4 font-semibold text-gray-900 w-24 text-center">Edit</th>
-                  <th className="px-6 py-4 font-semibold text-gray-900 w-24 text-center">Delete</th>
+                  <th className="px-6 py-4 font-bold text-BGpageDark/60 uppercase tracking-widest text-[8px] md:text-xs w-24">Type</th>
+                  <th className="px-6 py-4 font-bold text-BGpageDark/60 uppercase tracking-widest text-[8px] md:text-xs">Preview</th>
+                  <th className="px-6 py-4 font-bold text-BGpageDark/60 uppercase tracking-widest text-[8px] md:text-xs w-24 text-center">Edit</th>
+                  <th className="px-6 py-4 font-bold text-BGpageDark/60 uppercase tracking-widest text-[8px] md:text-xs w-24 text-center">Remove</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
-                    {optimisticPosts.map((post) => {
+              <tbody className="divide-y divide-[#9B4000]/10" style={{ fontFamily: "'Texturina', serif" }}>
+                {optimisticPosts.map((post) => {
                   const hasImage = post.images && post.images.length > 0;
                   const displayImage = hasImage ? post.images[0] : null;
 
                   return (
-                    <tr key={post.id} className="hover:bg-gray-50/50 transition-colors">
+                    <tr key={post.id} className="hover:bg-[#BE5103]/5 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 text-gray-500">
                           {post.type === 'IMAGE' ? (
@@ -961,32 +1031,33 @@ export function PostsList() {
       )}
 
       {optimisticPosts.length === 0 && !loading && (
-        <div className="col-span-full py-12 text-center text-gray-400 bg-white rounded-3xl border border-dashed border-gray-200">
-          No posts found matching your filter.
+        <div className="col-span-full py-24 text-center bg-[#FFF5D6]/30 rounded-2xl border border-dashed border-[#9B4000]/20">
+          <p className="text-3xl text-BGpageDark/10 mb-2" style={{ fontFamily: "'Pirata One', serif" }}>Nothing found.</p>
+          <p className="text-xs text-[#9B4000]/40" style={{ fontFamily: "'Texturina', serif" }}>Try adjusting your search or filters.</p>
         </div>
       )}
 
       {/* Visual Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center mt-12 gap-2">
+        <div className="flex justify-center mt-12 gap-2" style={{ fontFamily: "'Texturina', serif" }}>
           <button
             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-[#9B4000]/20 text-[#9B4000]/40 hover:border-[#BE5103] hover:text-[#BE5103] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             &lt;
           </button>
           {getPaginationItems(currentPage, totalPages).map((item, index) => {
             if (item === '...') {
-              return <span key={`${item}-${index}`} className="flex items-end px-2 text-gray-300 pb-2">...</span>
+              return <span key={`${item}-${index}`} className="flex items-end px-2 text-[#9B4000]/20 pb-2">...</span>
             }
             return (
               <button
                 key={item}
                 onClick={() => setCurrentPage(item as number)}
                 className={`w-10 h-10 flex items-center justify-center rounded-full border transition-colors ${currentPage === item
-                  ? 'bg-gray-900 text-white font-bold shadow-md border-gray-900'
-                  : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-[#BE5103] text-white font-bold shadow-md border-[#BE5103]'
+                  : 'bg-white border-[#9B4000]/20 text-[#9B4000]/60 hover:border-[#BE5103] hover:text-[#BE5103]'
                   }`}
               >
                 {item}
@@ -996,7 +1067,7 @@ export function PostsList() {
           <button
             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-400 hover:bg-gray-50 hover:text-gray-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-white border border-[#9B4000]/20 text-[#9B4000]/40 hover:border-[#BE5103] hover:text-[#BE5103] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           >
             &gt;
           </button>
@@ -1006,25 +1077,25 @@ export function PostsList() {
       {/* Delete Confirmation Modal */}
       {deletePostId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200">
+          <div className="bg-BGpage rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in fade-in zoom-in duration-200 border border-[#9B4000]/30" style={{ fontFamily: "'Texturina', serif" }}>
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3 text-red-600 font-bold text-lg">
+              <div className="flex items-center gap-3 text-red-700 font-bold text-lg">
                 <AlertTriangle size={24} />
-                <h3>Delete Post</h3>
+                <h3 className="text-xl" style={{ fontFamily: "'Pirata One', serif" }}>Erase Entry</h3>
               </div>
-              <button onClick={() => setDeletePostId(null)} className="text-gray-400 hover:text-gray-600">
+              <button onClick={() => setDeletePostId(null)} className="text-[#9B4000]/40 hover:text-[#712F00]">
                 <X size={20} />
               </button>
             </div>
-            <p className="text-gray-600 mb-8">
-              Are you sure you want to delete this post? This action cannot be undone.
+            <p className="text-[#712F00]/80 mb-8 leading-relaxed">
+              Are you certain you wish to remove this entry from your collection? This action is permanent and cannot be reversed.
             </p>
             <div className="flex justify-end gap-3">
-              <button onClick={() => setDeletePostId(null)} className="px-5 py-2.5 text-sm font-bold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+              <button onClick={() => setDeletePostId(null)} className="px-6 py-2.5 text-sm font-bold text-[#9B4000]/60 hover:bg-[#9B4000]/5 rounded-full transition-colors">
                 Cancel
               </button>
-              <button onClick={confirmDelete} className="px-5 py-2.5 text-sm font-bold bg-red-600 text-white hover:bg-red-700 rounded-xl transition-colors shadow-sm">
-                Delete Post
+              <button onClick={confirmDelete} className="px-6 py-2.5 text-sm font-bold bg-red-700 text-white hover:bg-red-800 rounded-full transition-all shadow-md">
+                Confirm Deletion
               </button>
             </div>
           </div>
