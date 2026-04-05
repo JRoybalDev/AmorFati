@@ -7,6 +7,15 @@ import GlobalLoader from '@/app/components/GlobalLoader'
 async function BittersweetPosts() {
   const allTextPosts = await getPosts(PostType.TEXT)
   const posts = allTextPosts.filter(post => post.isPoetry === true)
+
+  if (posts.length < 1) return (
+    <div className="text-center py-24">
+      <p className="text-3xl text-BGpageDark/10 mb-2" style={{ fontFamily: "'Pirata One', serif" }}>
+        Nothing here.
+      </p>
+    </div>
+  )
+
   return <PostGrid posts={posts} />
 }
 
