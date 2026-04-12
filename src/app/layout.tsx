@@ -10,7 +10,7 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "Amor Fati",
+    default: "Unearthing Amor Fati",
     template: "%s | Amor Fati",
   },
   description: "Welcome to a world away from superficial: one with raw insights and emotions. This is for the bitter and the sweet.",
@@ -21,27 +21,27 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Amor Fati",
+    title: "Unearthing Amor Fati",
   },
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "https://unearthingamorfati.com",
-    siteName: "Amor Fati",
-    title: "Amor Fati",
+    siteName: "Unearthing Amor Fati",
+    title: "Unearthing Amor Fati",
     description: "Welcome to a world away from superficial: one with raw insights and emotions. This is for the bitter and the sweet.",
     images: [
       {
         url: "/OpenGraphImage-2.jpg", // Ensure this image exists in your public folder
         width: 1200,
         height: 630,
-        alt: "Amor Fati",
+        alt: "Unearthing Amor Fati",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Amor Fati",
+    title: "Unearthing Amor Fati",
     description: "Welcome to a world away from superficial: one with raw insights and emotions. This is for the bitter and the sweet.",
     images: ["/OpenGraphImage-2.jpg"],
   },
