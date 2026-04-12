@@ -264,8 +264,9 @@ export function Post({
         )}
 
         {content && (type !== 'IMAGE' || showDetails) && (
-          <div className="mb-4 relative">
+          <div className="mb-4">
             <div
+              className="relative"
               style={{
                 overflow: 'hidden',
                 transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -284,12 +285,12 @@ export function Post({
                 className={`text-sm text-gray-500 leading-relaxed rich-content`}
                 dangerouslySetInnerHTML={{ __html: renderRichContent(content) }}
               />
-            </div>
 
-            {/* Fade overlay — only when collapsed */}
-            {shouldTruncate && !isExpanded && (
-              <div className="absolute bottom-6 left-0 right-0 h-12 bg-linear-to-t from-white to-transparent pointer-events-none" />
-            )}
+              {/* Fade overlay — now anchored to the bottom of the clipped container for perfect alignment */}
+              {shouldTruncate && !isExpanded && (
+                <div className="absolute bottom-0 left-0 right-0 h-20 bg-linear-to-t from-white via-white/80 to-white/0 pointer-events-none z-10" />
+              )}
+            </div>
 
             {shouldTruncate && (
               <button
