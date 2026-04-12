@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: 'Explore the philosophy of Amor Fati through our collection of posts.',
     start_url: '/',
     display: 'standalone',
-    background_color: '#ffffff',
-    theme_color: '#000000',
+    background_color: '#FFF5D6',
+    theme_color: '#BE5103',
     icons: [
       {
         src: '/favicon.ico',

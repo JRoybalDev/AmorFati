@@ -5,7 +5,7 @@ import { FilterProvider } from "@/context/FilterContext";
 import Navbar from "../app/components/Navbar/Navbar";
 
 export const viewport: Viewport = {
-  themeColor: "#000000",
+  themeColor: "#BE5103",
 };
 
 export const metadata: Metadata = {
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   },
   description: "Explore the philosophy of Amor Fati through our collection of posts.",
   keywords: ["Amor Fati", "Philosophy", "Stoicism", "Blog"],
-  authors: [{ name: "Amor Fati Team" }],
+  authors: [{ name: "JRoybalDev" }],
   creator: "Amor Fati",
   metadataBase: new URL("https://unearthingamorfati.com"), // Replace with your actual domain
   appleWebApp: {
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     description: "Welcome to Amor Fati!",
     images: [
       {
-        url: "/og-image.png", // Ensure this image exists in your public folder
+        url: "/OpenGraphImage-1.jpg", // Ensure this image exists in your public folder
         width: 1200,
         height: 630,
         alt: "Amor Fati",
@@ -43,10 +43,14 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Amor Fati",
     description: "Welcome to Amor Fati!",
-    images: ["/og-image.png"],
+    images: ["/OpenGraphImage-1.jpg"],
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/icon-32.png",
     apple: "/apple-touch-icon.png",
   },
 };
