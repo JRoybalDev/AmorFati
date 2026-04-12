@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Amor Fati',
     short_name: 'Amor Fati',
-    description: 'Explore the philosophy of Amor Fati through our collection of posts.',
+    description: 'Welcome to a world away from superficial: one with raw insights and emotions. This is for the bitter and the sweet.',
     start_url: '/',
     display: 'standalone',
     background_color: '#FFF5D6',

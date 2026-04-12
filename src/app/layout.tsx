@@ -13,10 +13,10 @@ export const metadata: Metadata = {
     default: "Amor Fati",
     template: "%s | Amor Fati",
   },
-  description: "Explore the philosophy of Amor Fati through our collection of posts.",
+  description: "Welcome to a world away from superficial: one with raw insights and emotions. This is for the bitter and the sweet.",
   keywords: ["Amor Fati", "Philosophy", "Stoicism", "Blog"],
   authors: [{ name: "JRoybalDev" }],
-  creator: "Amor Fati",
+  creator: "JRoybalDev",
   metadataBase: new URL("https://unearthingamorfati.com"), // Replace with your actual domain
   appleWebApp: {
     capable: true,
@@ -29,10 +29,10 @@ export const metadata: Metadata = {
     url: "https://unearthingamorfati.com",
     siteName: "Amor Fati",
     title: "Amor Fati",
-    description: "Welcome to Amor Fati!",
+    description: "Welcome to a world away from superficial: one with raw insights and emotions. This is for the bitter and the sweet.",
     images: [
       {
-        url: "/OpenGraphImage-1.jpg", // Ensure this image exists in your public folder
+        url: "/OpenGraphImage-2.jpg", // Ensure this image exists in your public folder
         width: 1200,
         height: 630,
         alt: "Amor Fati",
@@ -42,8 +42,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Amor Fati",
-    description: "Welcome to Amor Fati!",
-    images: ["/OpenGraphImage-1.jpg"],
+    description: "Welcome to a world away from superficial: one with raw insights and emotions. This is for the bitter and the sweet.",
+    images: ["/OpenGraphImage-2.jpg"],
   },
   icons: {
     icon: [
