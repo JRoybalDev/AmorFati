@@ -53,9 +53,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: 'No files found' }, { status: 400 })
     }
 
-    if (files.length > 5) {
+    if (files.length > 10) {
       console.warn(`[Upload API] Too many files: ${files.length}`)
-      return NextResponse.json({ success: false, message: 'Too many files (max 5)' }, { status: 400 })
+      return NextResponse.json({ success: false, message: 'Too many files (max 10)' }, { status: 400 })
     }
 
     let folderPath = path || `Posts/Images/${Date.now()}-${Math.random().toString(36).substring(7)}`

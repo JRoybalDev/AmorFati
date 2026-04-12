@@ -304,7 +304,15 @@ export function PostsForm() {
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return
 
+    setError('')
     const files = Array.from(e.target.files)
+
+    if (galleryItems.length + files.length > 10) {
+      setError(`Limit exceeded: You can only have a maximum of 10 images (Current: ${galleryItems.length}).`)
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      return
+    }
+
     for (const file of files) {
       if (file.size > 50 * 1024 * 1024) {
         alert(`File ${file.name} size exceeds 50MB limit.`)
@@ -340,6 +348,11 @@ export function PostsForm() {
     if (formData.type === 'IMAGE') {
       if (galleryItems.length === 0) {
         setError('Please add at least one image.')
+        return
+      }
+
+      if (galleryItems.length > 10) {
+        setError('Maximum of 10 images allowed.')
         return
       }
 
@@ -633,10 +646,10 @@ export function PostsForm() {
                     />
                     <label
                       htmlFor="imageUpload"
-                      className={`cursor-pointer rounded-xl bg-[#BE5103] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#9B4000] transition-colors ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`cursor-pointer rounded-xl bg-[#BE5103] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#9B4000] transition-colors ${uploading || galleryItems.length >= 10 ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                       style={{ fontFamily: "'Texturina', serif" }}
                     >
-                      Add Images
+                      {galleryItems.length >= 10 ? 'Limit Reached' : 'Add Images'}
                     </label>
                     <span className="text-xs text-[#9B4000]/50 italic" style={{ fontFamily: "'Texturina', serif" }}>Drag to reorder sequence</span>
                   </div>
