@@ -642,6 +642,7 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
   const isFilmDesktop = post.type === PostType.FILM && !isMobile
   const isPoetry = post.type === PostType.TEXT && post.isPoetry
   const label = post.type === PostType.IMAGE ? 'Gallery' : (post.type === PostType.FILM ? 'Film' : (isPoetry ? 'Poetry' : 'Text'))
+  const isTextOrPoetry = post.type === PostType.TEXT || isPoetry
 
   // Close on Escape
   useEffect(() => {
@@ -680,7 +681,7 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
           md:right-0 md:left-auto md:transition-all
           ${isFilmDesktop
             ? 'md:top-6 md:h-fit md:max-h-[94vh] md:w-[850px] md:max-w-[90vw] md:rounded-2xl md:right-6'
-            : 'md:inset-y-0 md:top-0 md:h-screen md:w-fit md:min-w-[400px] md:max-w-[65vw] md:rounded-none md:rounded-l-2xl'
+            : `md:inset-y-0 md:top-0 md:h-screen md:w-fit md:min-w-[400px] ${isTextOrPoetry ? 'md:max-w-[40vw]' : 'md:max-w-[65vw]'} md:rounded-none md:rounded-l-2xl`
           }`}
       >
         {/* Mobile pull handle */}
@@ -749,14 +750,14 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
               <div className="shrink-0 flex flex-col">
                 <div
                   className="relative bg-BGpageDark/5 overflow-hidden flex items-center justify-center"
-                  style={{ aspectRatio: isMobile ? '16/9' : 'auto', height: isMobile ? 'auto' : '65vh' }}
+                  style={{ aspectRatio: '16/9', height: isMobile ? 'auto' : '65vh' }}
                 >
                 <AnimatePresence mode="wait">
                   <motion.img
                     key={activeImage}
                     src={post.images[activeImage]}
                     alt={`Image ${activeImage + 1}`}
-                      className={isMobile ? "w-full h-full object-contain" : "h-full w-auto object-contain"}
+                      className="w-full h-full object-contain"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
