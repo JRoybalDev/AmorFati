@@ -22,7 +22,7 @@ function DesktopNavbar({ navItems, currPath }: NavItems) {
       {/* Hero */}
       <div className="pb-4">
         <Link className="text-4xl font-medium font-manufacturingConsent" href={"/"}>Amor Fati</Link>
-        <h3 className="text-h2 font-pirataOne font-normal">28 | I enjoy staring at the sky and singing to the ocean.</h3>
+        <h3 className="text-h2 font-pirataOne font-normal">I enjoy staring at the sky and singing to the ocean.</h3>
       </div>
 
       <div className='border-b-6 rounded-lg border-BGdivider' />
