@@ -1,22 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { revalidateTag } from 'next/cache';
-
-function restoreImageUrls(images: unknown): string[] {
-  if (!Array.isArray(images)) return []
-  return images.map((url) => {
-    if (typeof url === 'string' && url.includes('/api/proxy?url=')) {
-      try {
-        const parsed = new URL(url, 'http://localhost')
-        const original = parsed.searchParams.get('url')
-        if (original) return original
-      } catch {
-        // ignore
-      }
-    }
-    return url
-  })
-}
+import cloudinary from '@/lib/cloudinary';
 
 export async function PUT(
   request: Request,
@@ -36,12 +21,30 @@ export async function PUT(
       rating,
       year,
       filmTitle,
-      createdAt
+      createdAt,
+      images,
     } = body;
-    let { images } = body;
 
-    // Restore original URLs from proxy URLs
-    images = restoreImageUrls(images);
+    // Get the existing post to compare images
+    const existingPost = await prisma.post.findUnique({ where: { id } });
+
+    // Find images that were removed (in old list but not in new list)
+    const existingImages: string[] = existingPost?.images ?? [];
+    const newImages: string[] = images ?? [];
+    const removedImages = existingImages.filter(url => !newImages.includes(url));
+
+    // Delete removed images from Cloudinary
+    if (removedImages.length > 0) {
+      const deletePromises = removedImages.map(url => {
+        const parts = url.split('/');
+        const fileName = parts[parts.length - 1].split('.')[0];
+        const folder = parts.slice(parts.indexOf('upload') + 2, -1).join('/');
+        const publicId = folder ? `${folder}/${fileName}` : fileName;
+        return cloudinary.uploader.destroy(publicId);
+      });
+      await Promise.all(deletePromises);
+      console.log(`Deleted ${removedImages.length} image(s) from Cloudinary.`);
+    }
 
     const post = await prisma.post.update({
       where: { id },
@@ -49,7 +52,7 @@ export async function PUT(
         type,
         title,
         content,
-        images: images || [],
+        images: newImages,
         link: type === 'TEXT' || type === 'IMAGE' ? null : link,
         createdAt: createdAt ? new Date(createdAt) : undefined,
         tags,
@@ -61,7 +64,6 @@ export async function PUT(
       },
     });
 
-    // Ensure pages show updated content
     revalidateTag('posts');
 
     return NextResponse.json(post);
@@ -77,6 +79,22 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+
+    // Find the post first to get image URLs for deletion from Cloudinary
+    const post = await prisma.post.findUnique({ where: { id } });
+    if (post?.images && Array.isArray(post.images)) {
+      const deletePromises = post.images.map(url => {
+        // Simple regex to extract public_id from Cloudinary URL
+        // e.g. https://res.cloudinary.com/demo/image/upload/v1234/folder/image.jpg -> folder/image
+        const parts = url.split('/');
+        const fileName = parts[parts.length - 1].split('.')[0];
+        const folder = parts.slice(parts.indexOf('upload') + 2, -1).join('/');
+        const publicId = folder ? `${folder}/${fileName}` : fileName;
+        return cloudinary.uploader.destroy(publicId);
+      });
+      await Promise.all(deletePromises);
+    }
+
     await prisma.post.delete({
       where: { id },
     });

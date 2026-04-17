@@ -1,9 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import React, { useState, useEffect, useRef, useLayoutEffect } from 'react'
 import { Star, ChevronDown } from 'lucide-react'
 import { renderRichContent } from '@/lib/render-rich-content'
+import { CldImage } from 'next-cloudinary'
 
 export interface PostProps {
   type: 'TEXT' | 'IMAGE' | 'FILM'
@@ -156,10 +156,13 @@ export function Post({
         <div className={`relative bg-gray-100 group/image ${styles.imageContainer}`}>
           {type === 'FILM' ? (
             <a href={link} target="_blank" rel="noopener noreferrer" className="block w-full relative">
-              <img
+              <CldImage
                 src={firstImage}
                 alt={filmTitle || title || 'Film poster'}
-                className="w-full block object-cover"
+                width={600}
+                height={900}
+                deliveryType={firstImage.includes('cloudinary.com') ? 'upload' : 'fetch'}
+                className="w-full block object-cover h-auto"
               />
               <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/20 to-transparent flex flex-col justify-end p-5 text-white">
                 <h3 className="text-lg font-bold leading-tight drop-shadow-md">{filmTitle}</h3>
@@ -189,15 +192,19 @@ export function Post({
                   >
                     <div className="grid grid-cols-1 gap-0.5">
                       {displayImages.map((img, idx) => (
-                        <img
+                        <CldImage
                         key={idx}
                         src={img}
                         alt={title || `Gallery image ${idx + 1}`}
+                        width={1200}
+                        height={idx === 0 && isFirstImageSquare ? 1200 : 800}
+                        crop="limit"
+                        deliveryType={img.includes('cloudinary.com') ? 'upload' : 'fetch'}
                         className={`w-full h-auto object-cover block ${idx === 0 && isFirstImageSquare ? 'col-span-2' : ''}`}
                         onLoad={idx === 0 ? (e) => {
-                          const target = e.currentTarget
-                          if (target.naturalWidth && target.naturalHeight) {
-                            const ratio = target.naturalWidth / target.naturalHeight
+                          const imgElement = e.target as HTMLImageElement
+                          if (imgElement.naturalWidth && imgElement.naturalHeight) {
+                            const ratio = imgElement.naturalWidth / imgElement.naturalHeight
                             // Check if image is square (allow small tolerance)
                             if (ratio >= 0.99 && ratio <= 1.01) {
                               setIsFirstImageSquare(true)
@@ -236,9 +243,13 @@ export function Post({
                     )}
                   </div>
                 ) : (
-                  <img
+                  <CldImage
                     src={firstImage}
                     alt={title || "Post image"}
+                    width={1200}
+                    height={800}
+                    crop="limit"
+                    deliveryType={firstImage.includes('cloudinary.com') ? 'upload' : 'fetch'}
                     className={`w-full block ${styles.image}`}
                   />
                 )}

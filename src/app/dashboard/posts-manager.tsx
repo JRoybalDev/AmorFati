@@ -88,13 +88,13 @@ export function PostsProvider({ children, authorId }: PostsProviderProps) {
     }
   )
 
-  useEffect(() => {
-    if (isEditing) {
-      const imgs = formData.images && formData.images.length > 0 ? formData.images : []
-      setGalleryItems(imgs.map((url: string, index: number) => ({ id: `${url}-${index}`, url })))
-      setIsFormVisible(true)
-    }
-  }, [isEditing])
+useEffect(() => {
+  if (isEditing) {
+    const imgs = formData.images && formData.images.length > 0 ? formData.images : []
+    setGalleryItems(imgs.map((url: string, index: number) => ({ id: `${url}-${index}`, url })))
+    setIsFormVisible(true)
+  }
+}, [isEditing, formData.images])
 
   // Clear gallery items only when the form is explicitly closed.
   // This prevents images from being cleared when typing in Title/Content fields.
@@ -299,6 +299,7 @@ export function PostsForm() {
         }
       })
     }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.images, formData.id, handleSubmit, setIsFormVisible])
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -375,13 +376,7 @@ export function PostsForm() {
         const existingItem = galleryItems.find((item) => !item.file && item.url)
         if (existingItem) {
           try {
-            let url = existingItem.url
-            if (url.includes('/api/proxy?url=')) {
-              const urlObj = new URL(url, window.location.origin)
-              const original = urlObj.searchParams.get('url')
-              if (original) url = original
-            }
-
+            const url = existingItem.url
             const lastSlashIndex = url.lastIndexOf('/')
             if (lastSlashIndex !== -1) {
               const parentDir = url.substring(0, lastSlashIndex)

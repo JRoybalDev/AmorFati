@@ -4,43 +4,6 @@ import { PostType } from '@/generated/prisma';
 import { randomUUID } from 'crypto';
 import { revalidateTag } from 'next/cache';
 
-const FILE_API_URL = process.env.FILE_API_URL || ''
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || ''
-
-function rewriteImageUrls(images: unknown): string[] {
-  if (!Array.isArray(images)) return []
-  return images.map((url) => {
-    if (typeof url === 'string') {
-      try {
-        const urlObj = new URL(url)
-        const fileApiObj = new URL(FILE_API_URL)
-        if (urlObj.hostname === fileApiObj.hostname && urlObj.port === fileApiObj.port) {
-          return `${APP_URL}/api/proxy?url=${encodeURIComponent(url)}`
-        }
-      } catch {
-        // not a valid URL, return as-is
-      }
-    }
-    return url
-  })
-}
-
-function restoreImageUrls(images: unknown): string[] {
-  if (!Array.isArray(images)) return []
-  return images.map((url) => {
-    if (typeof url === 'string' && url.includes('/api/proxy?url=')) {
-      try {
-        const parsed = new URL(url, 'http://localhost')
-        const original = parsed.searchParams.get('url')
-        if (original) return original
-      } catch {
-        // ignore
-      }
-    }
-    return url
-  })
-}
-
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const typeParam = searchParams.get('type');
@@ -66,18 +29,7 @@ export async function GET(request: Request) {
       },
     });
 
-    // console.log('[DEBUG] First post images:', posts[0]?.images)
-    // console.log('[DEBUG] FILE_API_URL:', FILE_API_URL)
-    // console.log('[DEBUG] APP_URL:', APP_URL)
-
-    const rewritten = posts.map((post) => ({
-      ...post,
-      images: rewriteImageUrls(post.images),
-    }))
-
-    // console.log('[DEBUG] First post rewritten images:', rewritten[0]?.images)
-
-    return NextResponse.json(rewritten);
+    return NextResponse.json(posts);
   } catch (error) {
     console.error('Error fetching posts:', error);
     return NextResponse.json({ error: 'Error fetching posts' }, { status: 500 });
@@ -87,11 +39,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { id, type, title, content, link, authorId, createdAt, tags, showDetails, isPoetry, rating, year, filmTitle } = body;
-    let { images } = body;
-
-    // Restore original URLs from proxy URLs
-    images = restoreImageUrls(images)
+    const { id, type, title, content, link, authorId, createdAt, tags, showDetails, isPoetry, rating, year, filmTitle, images } = body;
 
     // Basic validation based on PostType
     if (!type || !Object.values(PostType).includes(type)) {

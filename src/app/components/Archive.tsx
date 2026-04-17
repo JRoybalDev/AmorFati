@@ -1,4 +1,3 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import React, { useState, useMemo, useTransition, useRef, useEffect, useCallback, memo } from 'react'
@@ -20,6 +19,7 @@ import {
   FiExternalLink,
 } from 'react-icons/fi'
 import { FadeLoader } from 'react-spinners'
+import { CldImage } from 'next-cloudinary'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -251,13 +251,19 @@ function Thumbnail({ post, className = '' }: { post: Post; className?: string })
   const src = getThumbnail(post)
 
   if (src) {
+    const isCloudinary = src.includes('cloudinary.com')
+
     return (
       <div className={`relative overflow-hidden bg-[#9B4000]/10 ${className}`}>
-        <img
+        <CldImage
           src={src}
           alt={getDisplayTitle(post)}
+          width={400}
+          height={400}
+          crop="fill"
+          gravity="auto"
+          deliveryType={isCloudinary ? 'upload' : 'fetch'}
           className="w-full h-full object-cover"
-          loading="lazy"
         />
       </div>
     )
@@ -734,9 +740,12 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
           {
             isFilmDesktop && post.images?.[0] && (
               <div className="md:w-[380px] md:shrink-0 bg-BGpageDark/5 border-r border-[#9B4000]/10 overflow-hidden">
-                <img
+                <CldImage
                   src={post.images[0]}
                   alt={post.filmTitle || 'Poster'}
+                  width={600}
+                  height={900}
+                  deliveryType={post.images[0].includes('cloudinary.com') ? 'upload' : 'fetch'}
                   className="w-full h-auto block"
                 />
               </div>
@@ -753,16 +762,24 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
                   style={{ aspectRatio: '16/9', height: isMobile ? 'auto' : '65vh' }}
                 >
                 <AnimatePresence mode="wait">
-                  <motion.img
+                  <motion.div
                     key={activeImage}
-                    src={post.images[activeImage]}
-                    alt={`Image ${activeImage + 1}`}
-                      className="w-full h-full object-contain"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.15 }}
-                  />
+                    className="w-full h-full"
+                  >
+                    <CldImage
+                      src={post.images[activeImage]}
+                      alt={`Image ${activeImage + 1}`}
+                      width={1200}
+                      height={800}
+                      crop="limit"
+                      deliveryType={post.images[activeImage].includes('cloudinary.com') ? 'upload' : 'fetch'}
+                      className="w-full h-full object-contain"
+                    />
+                  </motion.div>
                 </AnimatePresence>
               </div>
 
@@ -777,7 +794,16 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
                           ? 'border-[#BE5103] opacity-100'
                           : 'border-transparent opacity-50 hover:opacity-80'}`}
                     >
-                      <img src={img} alt={`Thumb ${i + 1}`} className="w-full h-full object-cover" />
+                      <CldImage
+                        src={img}
+                        alt={`Thumb ${i + 1}`}
+                        width={100}
+                        height={100}
+                        crop="thumb"
+                        gravity="auto"
+                        deliveryType={img.includes('cloudinary.com') ? 'upload' : 'fetch'}
+                        className="w-full h-full object-cover"
+                      />
                     </button>
                   ))}
                 </div>
