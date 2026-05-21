@@ -1,7 +1,3 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Manufacturing+Consent&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Pirata+One&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Texturina:ital,opsz,wght@0,12..72,100..900;1,12..72,100..900&display=swap');
 @import "tailwindcss";
 @plugin "daisyui";
 @theme {
@@ -19,10 +15,10 @@
 
   --color-MOBILEnav: #BE5103;
 
-  --font-manufacturingConsent: "Manufacturing Consent", serif;
-    --font-pirataOne: "Pirata One", serif;
+  --font-manufacturingConsent: var(--font-manufacturing-consent), serif;
+    --font-pirataOne: var(--font-pirata-one), serif;
     --font-datatype: "Datatype", serif;
-    --font-texturina: "Texturina", serif;
+    --font-texturina: var(--font-texturina), serif;
 
   --text-h1: 24px;
   --text-h2: 16px;

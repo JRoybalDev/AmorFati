@@ -161,6 +161,9 @@ export function Post({
                 alt={filmTitle || title || 'Film poster'}
                 width={600}
                 height={900}
+                sizes="(min-width: 768px) 300px, 100vw"
+                format="auto"
+                quality="auto:best"
                 deliveryType={firstImage.includes('cloudinary.com') ? 'upload' : 'fetch'}
                 className="w-full block object-cover h-auto"
               />
@@ -198,6 +201,9 @@ export function Post({
                         alt={title || `Gallery image ${idx + 1}`}
                         width={1200}
                         height={idx === 0 && isFirstImageSquare ? 1200 : 800}
+                        sizes="(min-width: 768px) 300px, 100vw"
+                        format="auto"
+                        quality="auto:best"
                         crop="limit"
                         deliveryType={img.includes('cloudinary.com') ? 'upload' : 'fetch'}
                         className={`w-full h-auto object-cover block ${idx === 0 && isFirstImageSquare ? 'col-span-2' : ''}`}
@@ -248,6 +254,9 @@ export function Post({
                     alt={title || "Post image"}
                     width={1200}
                     height={800}
+                    sizes="(min-width: 768px) 300px, 100vw"
+                    format="auto"
+                    quality="auto:best"
                     crop="limit"
                     deliveryType={firstImage.includes('cloudinary.com') ? 'upload' : 'fetch'}
                     className={`w-full block ${styles.image}`}

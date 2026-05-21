@@ -1,8 +1,32 @@
 import './globals.css'
 import type { Metadata, Viewport } from "next";
+import { Manufacturing_Consent, Pirata_One, Texturina } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { FilterProvider } from "@/context/FilterContext";
 import Navbar from "../app/components/Navbar/Navbar";
+import MainScrollShell from "@/app/components/MainScrollShell";
+
+const texturina = Texturina({
+  subsets: ["latin"],
+  variable: "--font-texturina",
+  display: "swap",
+});
+
+const manufacturingConsent = Manufacturing_Consent({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-manufacturing-consent",
+  display: "swap",
+  adjustFontFallback: false,
+});
+
+const pirataOne = Pirata_One({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-pirata-one",
+  display: "swap",
+  adjustFontFallback: false,
+});
 
 export const viewport: Viewport = {
   themeColor: "#BE5103",
@@ -62,15 +86,10 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" className={`${texturina.variable} ${manufacturingConsent.variable} ${pirataOne.variable}`}>
         <body className="font-texturina">
           <FilterProvider>
-            <div className="flex h-screen w-screen flex-col md:flex-row">
-              <Navbar />
-              <main className="h-screen w-full overflow-y-scroll bg-BGpage pt-[60px] md:pt-0">
-                {children}
-              </main>
-            </div>
+            <MainScrollShell nav={<Navbar />}>{children}</MainScrollShell>
           </FilterProvider>
         </body>
       </html>

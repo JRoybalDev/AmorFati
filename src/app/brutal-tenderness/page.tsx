@@ -5,7 +5,8 @@ import { Suspense } from 'react'
 import GlobalLoader from '@/app/components/GlobalLoader'
 
 async function BrutalTendernessPosts() {
-  const posts = await getPosts(PostType.TEXT)
+  const allTextPosts = await getPosts(PostType.TEXT)
+  const posts = allTextPosts.filter(post => post.isPoetry !== true)
 
   if (posts.length < 1) return (
     <div className="text-center py-24">

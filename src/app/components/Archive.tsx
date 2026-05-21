@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useTransition, useRef, useEffect, useCallback, memo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useDragControls } from 'framer-motion'
 import {
   FiCalendar,
   FiTag,
@@ -247,7 +247,17 @@ function TagPill({ tag, onRemove }: { tag: string; onRemove: () => void }) {
 
 // ── Thumbnail ─────────────────────────────────────────────────────────────────
 
-function Thumbnail({ post, className = '' }: { post: Post; className?: string }) {
+function Thumbnail({
+  post,
+  className = '',
+  sizes = '40px',
+  quality = 'auto',
+}: {
+  post: Post
+  className?: string
+  sizes?: string
+  quality?: string
+}) {
   const src = getThumbnail(post)
 
   if (src) {
@@ -260,6 +270,9 @@ function Thumbnail({ post, className = '' }: { post: Post; className?: string })
           alt={getDisplayTitle(post)}
           width={400}
           height={400}
+          sizes={sizes}
+          format="auto"
+          quality={quality}
           crop="fill"
           gravity="auto"
           deliveryType={isCloudinary ? 'upload' : 'fetch'}
@@ -402,7 +415,14 @@ const GridCard = memo(({ post, index, onClick }: { post: Post; index: number; on
         transition-all duration-200"
     >
       {/* Thumbnail */}
-      {post.type !== PostType.TEXT && <Thumbnail post={post} className="w-full h-40" />}
+      {post.type !== PostType.TEXT && (
+        <Thumbnail
+          post={post}
+          className="w-full h-40"
+          sizes="(min-width: 1024px) 260px, (min-width: 768px) 33vw, 50vw"
+          quality="auto:best"
+        />
+      )}
 
       {/* Type badge — overlaid on thumbnail */}
       <span
@@ -644,11 +664,17 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
   const displayTitle = getDisplayTitle(post)
   const [activeImage, setActiveImage] = useState(0)
   const [isTagsExpanded, setIsTagsExpanded] = useState(false)
+  const dragControls = useDragControls()
   const showDetails = !(post.type === PostType.IMAGE && post.showDetails === false)
   const isFilmDesktop = post.type === PostType.FILM && !isMobile
   const isPoetry = post.type === PostType.TEXT && post.isPoetry
   const label = post.type === PostType.IMAGE ? 'Gallery' : (post.type === PostType.FILM ? 'Film' : (isPoetry ? 'Poetry' : 'Text'))
   const isTextOrPoetry = post.type === PostType.TEXT || isPoetry
+  const desktopPanelWidth = isFilmDesktop
+    ? 'md:w-[900px]'
+    : isTextOrPoetry
+      ? 'md:w-[480px]'
+      : 'md:w-[760px]'
 
   // Close on Escape
   useEffect(() => {
@@ -671,7 +697,7 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-50 bg-BGpageDark/40 backdrop-blur-[2px]"
+        className="fixed inset-0 z-50 bg-BGpageDark/50 backdrop-blur-[3px]"
         onClick={onClose}
       />
 
@@ -680,26 +706,38 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
         initial={isMobile ? { y: '100%' } : { x: '100%', opacity: 0 }}
         animate={isMobile ? { y: 0 } : { x: 0, opacity: 1 }}
         exit={isMobile ? { y: '100%' } : { x: '100%', opacity: 0 }}
-        transition={{ type: 'spring', damping: 28, stiffness: 280, mass: 0.8 }}
-        className={`fixed z-50 bg-BGpage shadow-2xl shadow-BGpageDark/30
-          flex flex-col overflow-hidden transition-[width] duration-300
-          bottom-0 left-0 right-0 rounded-t-2xl max-h-[88dvh]
-          md:right-0 md:left-auto md:transition-all
-          ${isFilmDesktop
-            ? 'md:top-6 md:h-fit md:max-h-[94vh] md:w-[850px] md:max-w-[90vw] md:rounded-2xl md:right-6'
-            : `md:inset-y-0 md:top-0 md:h-screen md:w-fit md:min-w-[400px] ${isTextOrPoetry ? 'md:max-w-[30vw]' : 'md:max-w-[65vw]'} md:rounded-none md:rounded-l-2xl`
-          }`}
+        transition={{ type: 'spring', damping: 32, stiffness: 300, mass: 0.85 }}
+        drag={isMobile ? 'y' : false}
+        dragControls={dragControls}
+        dragListener={false}
+        dragConstraints={{ top: 0, bottom: 0 }}
+        dragElastic={{ top: 0, bottom: 0.18 }}
+        onDragEnd={(_, info) => {
+          if (isMobile && (info.offset.y > 120 || info.velocity.y > 650)) onClose()
+        }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="archive-post-modal-title"
+        className={`fixed z-50 bg-BGpage shadow-2xl shadow-BGpageDark/35
+          flex flex-col overflow-hidden border border-[#9B4000]/20
+          bottom-0 left-0 right-0 h-dvh rounded-t-[24px]
+          md:inset-y-0 md:left-auto md:right-0 md:h-screen md:max-w-[92vw]
+          md:rounded-none md:rounded-l-[28px] md:border-y-0 md:border-r-0
+          ${desktopPanelWidth}`}
       >
         {/* Mobile pull handle */}
-        <div className="flex justify-center pt-3 pb-1 md:hidden">
-          <div className="w-10 h-1 rounded-full bg-[#9B4000]/25" />
+        <div
+          className="flex shrink-0 touch-none justify-center pt-3 pb-1 md:hidden"
+          onPointerDown={(event) => dragControls.start(event)}
+        >
+          <div className="h-1.5 w-12 rounded-full bg-[#9B4000]/25" />
         </div>
 
         {/* Header */}
-        <div className="flex items-start justify-between gap-4 px-6 py-4
-          border-b border-[#9B4000]/15 shrink-0">
+        <div className="sticky top-0 z-10 flex shrink-0 items-start justify-between gap-4
+          border-b border-[#9B4000]/15 bg-BGpage/95 px-5 py-4 backdrop-blur md:px-6">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="mb-1.5 flex flex-wrap items-center gap-2">
               <span
                 className="flex items-center gap-1 text-[9px] px-2 py-0.5 rounded
                   border border-[#9B4000]/25 text-[#9B4000]/55 uppercase tracking-widest"
@@ -716,7 +754,8 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
               </span>
             </div>
             <h2
-              className="text-lg leading-snug text-BGpageDark"
+              id="archive-post-modal-title"
+              className="text-xl leading-tight text-BGpageDark md:text-2xl"
               style={{ fontFamily: "'Pirata One', serif" }}
             >
               {showDetails ? displayTitle : 'Image Entry'}
@@ -725,28 +764,31 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
 
           <button
             onClick={onClose}
-            className="shrink-0 p-1.5 rounded-lg text-[#9B4000]/50 hover:text-[#712F00]
-              hover:bg-[#9B4000]/10 transition-colors mt-0.5"
+            aria-label="Close post"
+            className="mt-0.5 shrink-0 rounded-full border border-[#9B4000]/15 bg-white/45 p-2
+              text-[#9B4000]/60 shadow-sm transition-colors hover:bg-[#9B4000]/10 hover:text-[#712F00]"
           >
             <FiX size={16} />
           </button>
         </div>
 
         {/* Scrollable body */}
-        < div className={`flex-1 overflow-y-auto ${isFilmDesktop ? 'md:flex md:flex-row md:overflow-hidden' : ''}`
-        }>
+        <div className={`min-h-0 flex-1 overflow-y-auto ${isFilmDesktop ? 'md:flex md:flex-row md:overflow-hidden' : ''}`}>
 
           {/* Left Side: Poster (Desktop Film only) */}
           {
             isFilmDesktop && post.images?.[0] && (
-              <div className="md:w-[380px] md:shrink-0 bg-BGpageDark/5 border-r border-[#9B4000]/10 overflow-hidden">
+              <div className="md:w-[400px] md:shrink-0 bg-BGpageDark/5 border-r border-[#9B4000]/10 overflow-hidden">
                 <CldImage
                   src={post.images[0]}
                   alt={post.filmTitle || 'Poster'}
                   width={600}
                   height={900}
+                  sizes="(min-width: 768px) 380px, 100vw"
+                  format="auto"
+                  quality="auto:best"
                   deliveryType={post.images[0].includes('cloudinary.com') ? 'upload' : 'fetch'}
-                  className="w-full h-auto block"
+                  className="h-full w-full object-cover"
                 />
               </div>
             )
@@ -758,8 +800,8 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
             {post.images && post.images.length > 0 && !isFilmDesktop && (
               <div className="shrink-0 flex flex-col">
                 <div
-                  className="relative bg-BGpageDark/5 overflow-hidden flex items-center justify-center"
-                  style={{ aspectRatio: '16/9', height: isMobile ? 'auto' : '65vh' }}
+                  className="relative flex items-center justify-center overflow-hidden bg-BGpageDark/5"
+                  style={{ height: isMobile ? '42dvh' : '62vh' }}
                 >
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -775,6 +817,9 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
                       alt={`Image ${activeImage + 1}`}
                       width={1200}
                       height={800}
+                      sizes="(min-width: 768px) 70vw, 100vw"
+                      format="auto"
+                      quality="auto:best"
                       crop="limit"
                       deliveryType={post.images[activeImage].includes('cloudinary.com') ? 'upload' : 'fetch'}
                       className="w-full h-full object-contain"
@@ -784,21 +829,24 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
               </div>
 
               {post.images.length > 1 && (
-                <div className="flex gap-1.5 px-6 py-3 overflow-x-auto">
+                <div className="flex gap-2 overflow-x-auto border-b border-[#9B4000]/10 px-5 py-3 md:px-6">
                   {post.images.map((img, i) => (
                     <button
                       key={i}
                       onClick={() => setActiveImage(i)}
-                      className={`shrink-0 w-12 h-12 rounded overflow-hidden border-2 transition-all
+                      className={`h-14 w-14 shrink-0 overflow-hidden rounded-md border-2 transition-all
                         ${i === activeImage
-                          ? 'border-[#BE5103] opacity-100'
-                          : 'border-transparent opacity-50 hover:opacity-80'}`}
+                          ? 'border-[#BE5103] opacity-100 shadow-sm'
+                          : 'border-transparent opacity-55 hover:opacity-85'}`}
                     >
                       <CldImage
                         src={img}
                         alt={`Thumb ${i + 1}`}
                         width={100}
                         height={100}
+                        sizes="48px"
+                        format="auto"
+                        quality="auto"
                         crop="thumb"
                         gravity="auto"
                         deliveryType={img.includes('cloudinary.com') ? 'upload' : 'fetch'}
@@ -813,7 +861,7 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
 
           {/* Film details */}
           {post.type === PostType.FILM && (
-            <div className="px-6 py-4 border-b border-[#9B4000]/10">
+            <div className="border-b border-[#9B4000]/10 px-5 py-4 md:px-6">
               <div className="flex items-center gap-4 flex-wrap">
                 {post.year && (
                   <div>
@@ -837,7 +885,7 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
 
           {/* Content body */}
             {post.content && showDetails && (
-            <div className="px-6 py-5 border-b border-[#9B4000]/10">
+            <div className="border-b border-[#9B4000]/10 px-5 py-5 md:px-6">
               <p className="text-[9px] text-[#9B4000]/40 uppercase tracking-widest mb-2"
                 style={{ fontFamily: "'Texturina', serif" }}>
                 {post.type === PostType.TEXT ? 'Note' : 'Description'}
@@ -852,7 +900,7 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
 
           {/* Link */}
           {post.link && (
-            <div className="px-6 py-4 border-b border-[#9B4000]/10">
+            <div className="border-b border-[#9B4000]/10 px-5 py-4 md:px-6">
               <a
                 href={post.link}
                 target="_blank"
@@ -869,7 +917,7 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
 
           {/* Tags */}
           {tags.length > 0 && (
-            <div className="px-6 py-4">
+            <div className="px-5 py-4 md:px-6">
               <p className="text-[9px] text-[#9B4000]/40 uppercase tracking-widest mb-2"
                 style={{ fontFamily: "'Texturina', serif" }}>Tags</p>
                 <div className="flex items-center gap-2 min-w-0">
@@ -903,7 +951,7 @@ function PostModal({ post, onClose, isMobile }: { post: Post; onClose: () => voi
           )}
 
           {/* Bottom padding for mobile safe area */}
-          <div className="h-6 md:h-2" />
+          <div className="h-[calc(env(safe-area-inset-bottom)+1rem)] md:h-4" />
           </div>
         </div>
       </motion.div>

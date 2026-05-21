@@ -1,5 +1,6 @@
 'use client'
 
+import { motion, useReducedMotion } from 'framer-motion'
 import { Post as PostComponent } from '@/app/components/Post'
 import type { Post } from '@/lib/posts'
 
@@ -8,8 +9,10 @@ interface PostGridProps {
 }
 
 export function PostGrid({ posts }: PostGridProps) {
+  const prefersReducedMotion = useReducedMotion()
+
   return (
-    <div
+    <motion.div
       className="w-full"
       style={{
         columnCount: 'auto' as never,
@@ -17,11 +20,19 @@ export function PostGrid({ posts }: PostGridProps) {
         columnGap: '16px',
       }}
     >
-      {posts.map((post) => (
-        <div
+      {posts.map((post, index) => (
+        <motion.div
           key={post.id}
           style={{ breakInside: 'avoid', marginBottom: '16px' }}
           className={post.type === 'FILM' ? 'column-span-all md:column-span-none' : ''}
+          initial={prefersReducedMotion ? false : { opacity: 0, y: 28, scale: 0.98 }}
+          whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: true, amount: 0.18 }}
+          transition={{
+            duration: 0.45,
+            delay: Math.min(index * 0.035, 0.22),
+            ease: [0.22, 1, 0.36, 1],
+          }}
         >
           <PostComponent
             type={post.type}
@@ -37,8 +48,8 @@ export function PostGrid({ posts }: PostGridProps) {
             isPoetry={post.isPoetry ?? undefined}
             showDetails={post.showDetails ?? undefined}
           />
-        </div>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   )
 }

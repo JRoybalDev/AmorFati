@@ -22,7 +22,7 @@ function DesktopNavbar({ navItems, currPath }: NavItems) {
       {/* Hero */}
       <div className="pb-4">
         <Link className="text-4xl font-medium font-manufacturingConsent" href={"/"}>Amor Fati</Link>
-        <h3 className="text-h2 font-pirataOne font-normal">Welcome to a world away from superficial: one with raw insights and emotions. This is for the bitter and the sweet.</h3>
+        <h3 className="text-h2 font-pirataOne pr-2 mt-2">Welcome to a world away from superficial: one with raw insights and emotions. This is for the bitter and the sweet.</h3>
       </div>
 
       <div className='border-b-6 rounded-lg border-BGdivider' />
